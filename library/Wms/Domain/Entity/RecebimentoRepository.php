@@ -230,6 +230,7 @@ class RecebimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
+        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
         $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
         if (count($qtdBloqueada))
@@ -282,14 +283,28 @@ class RecebimentoRepository extends EntityRepository
 
                     break;
                 case ProdutoEntity::TIPO_UNITARIO:
+                    $gravarConfZerada = function ($idRecebimento, $idOs, $lote) use ($produtoEmbalagemRepo, $item) {
+                        $idProdutoEmbalagem = null;
+                        $produtoEmbalagemEn = $produtoEmbalagemRepo->findOneBy(array('codProduto'=> $item['produto'], 'grade' => $item['grade'], 'dataInativacao' => null));
+                        if ($produtoEmbalagemEn != null) {
+                            $idProdutoEmbalagem = $produtoEmbalagemEn->getId();
+                        }
+                        $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOs, $idProdutoEmbalagem, 0);
+                    };
 
                     $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
-                    foreach ($qtdConferida as $lote => $value) {
-                        //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
-                        if ($value == 0) {
-                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, null, $value);
+
+                    //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
+                    if (!empty($qtdConferida)) {
+                        foreach ($qtdConferida as $lote => $value) {
+                            if ($value == 0) {
+                                $gravarConfZerada($idRecebimento, $idOrdemServico, $lote);
+                            }
+                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
                         }
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
+                    } else {
+                        $gravarConfZerada($idRecebimento, $idOrdemServico, $item['lote']);
+                        $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
                     }
 
                     break;
@@ -488,7 +503,7 @@ class RecebimentoRepository extends EntityRepository
         $ordemServicoRepo->finalizar($idOrdemServico);
 
         //altera recebimento para o status finalizado
-        $result = $this->finalizar($idRecebimento);
+        $result = $this->finalizar($idRecebimento, false, $ordemServicoEntity);
 
         $notasFiscaisEntities = $ordemServicoEntity->getRecebimento()->getNotasFiscais();
         $recebimentoErp = false;
@@ -614,11 +629,12 @@ class RecebimentoRepository extends EntityRepository
      * Finaliza o recebimento, alterando status e lançando observações
      * @param integer $idRecebimento
      * @param bool $divergencia
+     * @param OrdemServico|null $ordemServicoEn
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Exception
      */
-    public function finalizar($idRecebimento, $divergencia = false)
+    public function finalizar($idRecebimento, $divergencia = false, $ordemServicoEn = null)
     {
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -633,6 +649,20 @@ class RecebimentoRepository extends EntityRepository
                     $msg = 'Recebimento finalizado e aceito com divergência.';
                 }
 
+                /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
+                $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
+
+                $confLoteInterno = $conferenciaRepo->getProdutosConferidosLoteInterno($idRecebimento);
+                $confLoteNaoRegistrado = $conferenciaRepo->getProdutosConferidosLoteNaoRegistrado($idRecebimento);
+
+                $arrConfLotes = array_merge($confLoteInterno, $confLoteNaoRegistrado);
+
+                /** @var ProdutoEntity\LoteRepository $loteRepo */
+                $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
+
+                $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $arrConfLotes, $ordemServicoEn->getPessoa());
+                $em->flush();
+
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
                 $osRepo = $this->getEntityManager()->getRepository("wms:OrdemServico");
@@ -640,17 +670,6 @@ class RecebimentoRepository extends EntityRepository
                 $paletes = $em->getRepository("wms:Enderecamento\Palete")->findBy(array('recebimento' => $recebimentoEntity->getId(), 'codStatus' => PaleteEntity::STATUS_ENDERECADO));
                 /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
                 $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-
-                /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
-                $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
-
-                $conferenciasOk = $conferenciaRepo->getProdutosConferidosLoteInterno($idRecebimento);
-
-                /** @var ProdutoEntity\LoteRepository $loteRepo */
-                $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
-
-                $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
-                $em->flush();
 
                 $paletesFlush = array();
 
@@ -698,14 +717,15 @@ class RecebimentoRepository extends EntityRepository
 
                 $em->persist($recebimentoEntity);
 
+                $em->flush();
+                $em->commit();
+
                 //$this->atualizaRecebimentoBenner($idRecebimento);
 
                 if ($this->getSystemParameterValue('UTILIZA_INTEGRACAO_RECEBIMENTO_ERP') == 'S') {
                     $this->executaIntegracaoBDFinalizacaoConferencia($idRecebimento);
                 }
 
-                $em->flush();
-                $em->commit();
                 return array('exception' => null);
             } catch (\Exception $e) {
                 $em->rollback();
@@ -2408,7 +2428,8 @@ class RecebimentoRepository extends EntityRepository
                         3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
                         4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                         5 => $notaFiscalEntity->getCodRecebimentoErp(),
-                        6 => $notaFiscalEntity->getDivergencia()
+                        6 => $notaFiscalEntity->getDivergencia(),
+                        7 => $notaFiscalEntity->getRecebimento()->getId()
                     );
                     $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     if (!$resultAcao === true) {

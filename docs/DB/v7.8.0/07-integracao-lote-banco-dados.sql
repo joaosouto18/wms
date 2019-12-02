@@ -44,8 +44,3 @@ UPDATE CLIENTE SET COD_CLIENTE_EXTERNO = COD_CLIENTE_EXTERNO_BKP;
 
 ALTER TABLE CLIENTE
 DROP COLUMN COD_CLIENTE_EXTERNO_BKP;
-
-
---inserir numero do lote na finalização da expedicao...
-insert into acao_integracao values (sq_acao_integracao_01.nextval,2,'update pioneira.pcpedi set numlote = '':?9'' where 1 = 1 :where',609,'S',sysdate,'N',null,null,'D',null,null);
-insert into acao_integracao_filtro values (sq_acao_integracao_filtro_01.nextval,'xxx',612, ' and numped = ''abcd'' and codprod = ''dcba''');

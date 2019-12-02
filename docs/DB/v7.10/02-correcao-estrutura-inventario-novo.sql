@@ -1,4 +1,4 @@
-/*
+/* 
  * SCRIPT PARA: Corrigir estrutura e vinculação entre usuário-contagem-produto no inventario novo
  * DATA DE CRIAÇÃO: 31/10/2019
  * CRIADO POR: Tarcísio César
@@ -6,7 +6,7 @@
  */
 
 INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT)
-VALUES (SYSDATE, '7.11', 'x-correcao-estrutura-inventario-novo.sql');
+VALUES (SYSDATE, '7.10', '02-correcao-estrutura-inventario-novo.sql');
 
 ALTER TABLE INVENTARIO_CONT_END_PROD ADD (COD_INV_CONT_END_OS NUMBER(8));
 
@@ -27,7 +27,7 @@ BEGIN
         SELECT COD_INV_CONT_END_OS FROM INVENTARIO_CONT_END_PROD
     );
 END;
-
+ 
 ALTER TABLE INVENTARIO_CONT_END_PROD MODIFY COD_INV_CONT_END_OS NOT NULL;
 
 ALTER TABLE INVENTARIO_CONT_END_PROD DROP CONSTRAINT FK_INVCONTENDPROD_INVCONTEND;
