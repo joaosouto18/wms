@@ -775,7 +775,6 @@ class EtiquetaEndereco extends Pdf
     //MODELO MOTO ARTE
     public function layoutModelo16 ($codBarras)
     {
-        $codBarras = "99.99.99.999";
         $this->Cell(5,3,"",0,1);
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
