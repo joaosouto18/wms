@@ -154,6 +154,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
+            case 6:
+                //LAYOUT PLANETA
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
