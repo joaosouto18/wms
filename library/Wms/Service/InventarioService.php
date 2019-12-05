@@ -604,7 +604,7 @@ class InventarioService extends AbstractService
 
                 foreach ($estoques as $estoque) {
                     $prod = [
-                        "codProduto" => $estoque->getCodProduto(),
+                        "idProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
                         "lote" => $estoque->getLote(),
                         "idVolume" => (!empty($estoque->getProdutoVolume()))? $estoque->getProdutoVolume()->getId() : null
@@ -622,7 +622,7 @@ class InventarioService extends AbstractService
             $itensRecontPendente = [];
             foreach ($contagemAnterior as $produto) {
                 $prod = [
-                    "codProduto" => $produto['COD_PRODUTO'],
+                    "idProduto" => $produto['COD_PRODUTO'],
                     "grade" => $produto['DSC_GRADE'],
                     "lote" => $produto['DSC_LOTE'],
                     "idVolume" => $produto['COD_PRODUTO_VOLUME']
