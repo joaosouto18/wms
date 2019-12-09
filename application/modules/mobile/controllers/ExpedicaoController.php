@@ -202,6 +202,9 @@ class Mobile_ExpedicaoController extends Action {
     }
 
     public function confereProdutoAjaxAction() {
+        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => "SUCESSO", 'produto' => null, 'volumePatrimonio' => null));
+        $this->_helper->json($vetRetorno);
+        exit;
         $idMapa = $this->_getParam("idMapa");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
