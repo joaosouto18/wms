@@ -320,7 +320,7 @@
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
                 $.ajax({
-                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
+                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-alternativo-ajax')) ?>',
                     data: $('form').serialize(),
                     async: false,
                     type: 'post',

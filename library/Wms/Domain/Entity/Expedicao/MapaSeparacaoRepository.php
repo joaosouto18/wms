@@ -1069,7 +1069,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                 'lote' => $lote
             );
 
-            $conferencia = $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco);
+            //$conferencia = $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco);
+            $conferencia = $this->conferenciaAlternativa($parametrosConferencia,$paramsModeloSeparaco);
 
             if (is_null($ordemServicoId)) {
                 $sessao = new \Zend_Session_Namespace('coletor');
@@ -1515,5 +1516,248 @@ class MapaSeparacaoRepository extends EntityRepository {
                 ORDER BY MS.COD_MAPA_SEPARACAO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param $dadosConferencia
+     * @param $paramsModeloSeparacao
+     * @param bool $checkout
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
+     */
+    public function conferenciaAlternativa($dadosConferencia, $paramsModeloSeparacao, $checkout = false) {
+
+        $idExpedicao = $dadosConferencia['idExpedicao'];
+        $idMapa = $dadosConferencia['idMapa'];
+        $codBarras = $dadosConferencia['codBarras'];
+        $qtd = $dadosConferencia['qtd'];
+        $codPessoa = $dadosConferencia['codPessoa'];
+        $lote = (!empty($dadosConferencia['lote']) && $dadosConferencia['lote'] != Lote::NCL) ? $dadosConferencia['lote'] : null ;
+
+        $ncl = Lote::NCL;
+
+        $utilizaQuebra = $paramsModeloSeparacao['utilizaQuebra'];
+        $tipoDefaultEmbalado = $paramsModeloSeparacao['tipoDefaultEmbalado'];
+        $utilizaVolumePatrimonio = $paramsModeloSeparacao['utilizaVolumePatrimonio'];
+
+        $whereMSPEmbalado = "";
+        $whereMSCEmbalado = "";
+        $whereOnNaoConsolidado = "";
+        if ($codPessoa != null) {
+            $whereMSPEmbalado = "
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                WHERE P.COD_PESSOA = " . $codPessoa;
+            $whereMSCEmbalado = "
+                WHERE COD_PESSOA = " . $codPessoa;
+        } else {
+            $whereOnNaoConsolidado = "AND MSQ.IND_TIPO_QUEBRA <> 'T'";
+        }
+
+        //SE O INDICADOR DE EMBALADO NAO FOR O PRODUTO E SIM A EMBALAGEM FRACIONADA, ENTÂO JA RETORNA ISSO NA QUERY
+        $SQLFields = "";
+        $SQLJoin = "";
+        if ($tipoDefaultEmbalado != "P") {
+            $SQLFields = " PEP.QTD_EMBALAGEM as QTD_EMBALAGEM_PADRAO, ";
+            $SQLJoin   = " LEFT JOIN PRODUTO_EMBALAGEM PEP ON PEP.COD_PRODUTO = MSP.COD_PRODUTO AND PEP.DSC_GRADE = MSP.DSC_GRADE AND PEP.IND_PADRAO = 'S'";
+        }
+
+        //QUERY PRINCIPAL PARA VALIDAÇÃO DE CONFERENCIA
+        $SQL = "SELECT DISTINCT $SQLFields
+                       MS.COD_MAPA_SEPARACAO,
+                       CASE WHEN MS.COD_MAPA_SEPARACAO = $idMapa THEN 0 ELSE 1 END as ORDENADOR,
+                       MSP.QTD_SEPARAR,
+                       P.DSC_PRODUTO,
+                       P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       MSP.DSC_LOTE,
+                       P.IND_FRACIONAVEL,
+                       PE.COD_PRODUTO_EMBALAGEM,
+                       PV.COD_PRODUTO_VOLUME,
+                       NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) as DSC_EMBALAGEM,
+                       NVL(PE.QTD_EMBALAGEM,1) as QTD_EMBAlAGEM,
+                       NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
+                       NVL(PE.IND_EMBALADO,'N') as IND_EMBALADO,
+                       NVL(PE.IS_EMB_FRACIONAVEL_DEFAULT, 'N') as IS_EMB_FRACIONAVEL_DEFAULT,
+                       NVL(PE.IS_EMB_EXPEDICAO_DEFAULT, 'N') as IS_EMB_EXP_DEFAULT
+                  FROM MAPA_SEPARACAO MS
+                  INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
+                  INNER JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
+                                    SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR, NVL(MSP.DSC_LOTE, '$ncl') DSC_LOTE
+                               FROM MAPA_SEPARACAO_PRODUTO MSP
+                               $whereMSPEmbalado
+                              GROUP BY COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0), NVL(MSP.DSC_LOTE, '$ncl')) MSP ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA, 
+                              NVL(DSC_LOTE, '$ncl') DSC_LOTE
+                               FROM MAPA_SEPARACAO_CONFERENCIA
+                               $whereMSCEmbalado
+                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0), NVL(DSC_LOTE, '$ncl')) CONF
+                         ON CONF.COD_PRODUTO = MSP.COD_PRODUTO
+                        AND CONF.DSC_GRADE = MSP.DSC_GRADE
+                        AND CONF.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                        AND CONF.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                        AND CONF.DSC_LOTE = MSP.DSC_LOTE
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = MSP.COD_PRODUTO AND PE.DSC_GRADE = MSP.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
+                  $SQLJoin
+                 WHERE 1 = 1
+                    $whereOnNaoConsolidado
+                    AND ((PE.COD_BARRAS = '$codBarras' AND PE.DTH_INATIVACAO IS NULL) OR (PV.COD_BARRAS = '$codBarras' AND PV.DTH_INATIVACAO IS NULL))";
+
+        //SE UTIILIZAR QUEBRA NA CONFERENCIA ENTÃO COMPARO APENAS COM O MAPA INFORMADO, CASO CONTRARIO COMPARO COM TODOS OS MAPAS DA EXPEDIÇÃO
+        if ($utilizaQuebra == "S") {
+            $SQL = $SQL . " AND MSP.COD_MAPA_SEPARACAO = $idMapa";
+        } else {
+            $SQL = $SQL . " AND MS.COD_EXPEDICAO = $idExpedicao";
+        }
+
+        $SQL .= " ORDER BY ORDENADOR";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        //VERIFICO SE O CÓDIGO DE BARRAS PERTENCE A ALGUM PRODUTO DO MAPA
+        /*if (count($result) == 0) {
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
+            $msgErro = "O Produto " . $produtoEn->getDescricao() . " não pertence ";
+            if ($codPessoa != null) {
+                $msgErro .= " ao cliente selecionado";
+            } else {
+                if ($utilizaQuebra == "S") {
+                    $msgErro .= " ao mapa " . $idMapa;
+                } else {
+                    $msgErro .= " a expedicao " . $idExpedicao;
+                }
+            }
+            throw new \Exception($msgErro);
+        }*/
+
+        $fatorCodBarrasBipado = $result[0]['QTD_EMBALAGEM'];
+        $codBarrasEmbalado = $result[0]['IND_EMBALADO'];
+        $codProdutoEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
+        $codProdutoVolume = $result[0]['COD_PRODUTO_VOLUME'];
+        $dscProduto = $result[0]['DSC_PRODUTO'];
+        $codProduto = $result[0]['COD_PRODUTO'];
+        $dscGrade = $result[0]['DSC_GRADE'];
+        $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "($fatorCodBarrasBipado)";
+        $prodFracionavel = $result[0]['IND_FRACIONAVEL'];
+        $isEmbExpDefault = $result[0]['IS_EMB_EXP_DEFAULT'];
+
+        if ($prodFracionavel == 'S') {
+            /** @var EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            /** @var Embalagem $embExpDefault */
+            $embExpDefault = $embalagemRepo->findOneBy(['codProduto' => $codProduto, 'grade' => $dscGrade, 'isEmbExpDefault' => 'S']);
+            if (!empty($embFracDefault) && $isEmbExpDefault != 'S') {
+                throw new \Exception("Este produto $codProduto - $dscGrade só pode ser expedido na embalagem " . $embExpDefault->getDescricao());
+            }
+        } else {
+            if (Math::resto($qtd, 1) > 0) {
+                throw new \Exception("O produto $codProduto - $dscGrade não pode ser expedido em uma fração da menor embalagem!");
+            }
+        }
+
+        //CALCULO A QUANTIDADE PENDENTE DE CONFERENCIA PARA CADA MAPA, SE UTILIZAR QUEBRA O FILTRO VAI TRAZER APENAS UM MAPA
+        $qtdConferidoTotal = 0;
+        $qtdMapaTotal = 0;
+        $qtdInformada = Math::multiplicar($qtd, $fatorCodBarrasBipado);
+
+        $qtdConferenciaGravar = array();
+        $qtdRestante = $qtdInformada;
+        foreach ($result as $mapa) {
+            //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
+            if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
+
+            //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LOTE ESPECÍFICO
+            if (!empty($lote) && $mapa["DSC_LOTE"] != $lote) continue;
+
+            $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
+            $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
+            $qtdPendenteConferenciaMapa = Math::subtrair($mapa['QTD_SEPARAR'], $mapa['QTD_CONFERIDA']);
+
+            $codMapa = $mapa['COD_MAPA_SEPARACAO'];
+
+            if (Math::compare($qtdRestante, $qtdPendenteConferenciaMapa, "<=")) {
+                $qtdConferir = $qtdRestante;
+            } else {
+                $qtdConferir = (!$checkout) ? $qtdPendenteConferenciaMapa: $qtdRestante ;
+            }
+
+            $qtdConferidoTotalEmb = $qtdConferidoTotal;
+            if ($checkout == $qtdConferidoTotal > 0) {
+                $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
+                $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
+            }
+            if ($qtdConferir > 0) {
+                $qtdConferenciaGravar[] = array(
+                    'codMapaSeparacao' => $codMapa,
+                    'codProduto' => $codProduto,
+                    'dscGrade' => $dscGrade,
+                    'numConferencia' => 1,
+                    'codProdutoEmbalagem' => $codProdutoEmbalagem,
+                    'codPrdutoVolume' => $codProdutoVolume,
+                    'qtdEmbalagem' => $fatorCodBarrasBipado,
+                    'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
+                    'quantidade' => Math::dividir($qtdConferir, $fatorCodBarrasBipado),
+                    'lote' => (!empty($lote))? $lote : Lote::NCL
+                );
+
+                $qtdRestante = Math::subtrair($qtdRestante, $qtdConferir);
+            }
+        }
+
+        if (Math::compare($qtdRestante, 0, ">") && !$checkout) {
+            $strLote = (!empty($lote)) ? " lote: '$lote'" : "";
+            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto ($dscProduto) - $dscGrade$strLote excede o solicitado!");
+        }
+
+        //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
+        if($checkout == true) {
+            if ($qtdMapaTotal == $qtdConferidoTotal) {
+                return array('produto' => $qtdConferenciaGravar, 'checkout' => 'checkout');
+            }else{
+                return array('produto' => $qtdConferenciaGravar);
+            }
+        }
+        if ($qtdMapaTotal == $qtdConferidoTotal) {
+            $msgErro = "O produto $dscProduto já se encontra totalmente conferido ";
+            if ($codPessoa != null) {
+                $msgErro .= "para o cliente selecionado";
+            } else {
+                if ($utilizaQuebra == "S") {
+                    $msgErro .= "no mapa " . $idMapa;
+                } else {
+                    $msgErro .= "na expedicao " . $idExpedicao;
+                }
+            }
+            throw new \Exception($msgErro);
+        } elseif (Math::compare($qtdInformada, Math::subtrair($qtdMapaTotal,$qtdConferidoTotal), '>')) {
+            throw new \Exception("A quantidade de $qtdInformada excede o solicitado!");
+        }
+
+        //VERIFCO SE O PRODUTO É EMBALADO E ESTA UTILIZANDO VOLUME PATRIMONIO
+        $embalado = false;
+        if ($tipoDefaultEmbalado == "P") {
+            if ($codBarrasEmbalado == "S") {
+                $embalado = true;
+            }
+        } else {
+            $QtdPadraoRecebimento = $result[0]['QTD_EMBALAGEM_PADRAO'];
+            if ($fatorCodBarrasBipado < $QtdPadraoRecebimento) {
+                $embalado = true;
+            }
+        }
+
+
+        if ($utilizaVolumePatrimonio == 'S') {
+            if ((!(isset($dadosConferencia['idVolumePatrimonio'])) || ($dadosConferencia['idVolumePatrimonio'] == null)) && ($embalado == true)) {
+                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem é embalado");
+            }
+        }
+
+        return $qtdConferenciaGravar;
     }
 }
