@@ -1,7 +1,7 @@
-<script>
+<script type="text/javascript">
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('codigoBarras').value != "") {
+            if (document.getElementById('enderecoDestino').value != "") {
                 nivel = document.getElementById('nivel');
                 if (nivel) {
                     nivel.focus();
@@ -52,7 +52,7 @@
         </div>
         <div class="wrapper">
             <div class="content-main"><label>Endereço de destino:</label>
-                <input class="focus form-control" type="text" name="enderecoDestino" required id="enderecoDestino" onkeydown="nextInput(event)" /></div>
+                <input class="focus form-control" type="text" name="enderecoDestino" id="enderecoDestino" onkeydown="nextInput(event)" /></div>
             <div class="content-secondary"><label>Nível:</label>
                 <input class="form-control" type="text" name="nivel" id="nivel" value="" required/>
             </div>
