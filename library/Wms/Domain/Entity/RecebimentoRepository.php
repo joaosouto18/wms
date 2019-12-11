@@ -1986,7 +1986,7 @@ class RecebimentoRepository extends EntityRepository
         if (isset($idRecebimento) && !empty($idRecebimento)) {
             $where .= " AND R.COD_RECEBIMENTO = " . $idRecebimento;
         } elseif (isset($uma) && !empty($uma)) {
-            $where .= " AND R.COD_RECEBIMENTO IN (SELECT DISTINCT COD_RECEBIMENTO FROM PALETE WHERE UMA = $idRecebimento)";
+            $where .= " AND R.COD_RECEBIMENTO IN (SELECT DISTINCT COD_RECEBIMENTO FROM PALETE WHERE UMA = $uma)";
         }
 
         $sessao = new \Zend_Session_Namespace('deposito');
