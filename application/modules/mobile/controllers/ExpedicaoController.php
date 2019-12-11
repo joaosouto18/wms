@@ -1879,51 +1879,37 @@ class Mobile_ExpedicaoController extends Action {
             'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
         );
         try {
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+            $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
 
-        $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
+            $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
-        /** @var Expedicao\VolumePatrimonio $volumePatrimonioEn */
-        $volumePatrimonioEn = null;
-        if (!empty($idVolume)) {
-            $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-            $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
-        }
+            /** @var Expedicao\VolumePatrimonio $volumePatrimonioEn */
+            $volumePatrimonioEn = null;
+            if (!empty($idVolume)) {
+                $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
+            }
 
-        $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa, null, $chekcout, $lote);
-        if(isset($result['checkout'])){
-            $msg['msg'] = 'checkout';
-            $msg['produto'] = $result['produto'];
-        }else{
-            $msg['msg'] = 'Quantidade conferida com sucesso';
-            $msg['produto'] = $result['produto'];
-        }
+            $cpfEmbalador = Zend_Auth::getInstance()->getIdentity()->getPessoa()->getCPF(false);
+
+            $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa, null, false, $lote);
+
+            if (isset($result['checkout'])){
+                $msg['msg'] = 'checkout';
+                $msg['produto'] = $result['produto'];
+            } else{
+                $msg['msg'] = 'Quantidade conferida com sucesso';
+                $msg['produto'] = $result['produto'];
+            }
 
         } catch (\Exception $e) {
-            if ($this->bloquearOs == 'S') {
-                $this->bloqueioOs($idExpedicao, $e->getMessage(), \Wms\Domain\Entity\OrdemServico::BLOCK_MAPA);
-                $form = new SenhaLiberacao();
-                $form->setDefault('idExpedicao', $idExpedicao);
-                $htmlForm = $form->render();
-
-                $response = [
-                    'resposta' => 'bloqued_os',
-                    'errorMsg' => "OS bloqueada",
-                    'warningMsg' => $e->getMessage(),
-                    'blockOsForm' => $htmlForm
-                ];
-
-                $vetRetorno = array('retorno' => $response);
-                $this->_helper->json($vetRetorno);
-            } else {
-                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
-                $this->_helper->json($vetRetorno);
-            }
+            $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
+            $this->_helper->json($vetRetorno);
         }
 
-        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto'], 'volumePatrimonio' => $volume));
+        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto'], 'volumePatrimonio' => ""));
         $this->_helper->json($vetRetorno);
     }
 }
