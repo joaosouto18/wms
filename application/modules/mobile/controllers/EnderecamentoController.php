@@ -932,7 +932,8 @@ class Mobile_EnderecamentoController extends Action
             } else if (!empty($codBarras)) {
                 $LeituraColetor = new \Wms\Service\Coletor();
                 $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-                $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
+                $produtoEn = $produtoRepo->getEmbalagensByCodBarras($codBarras);
+                $produtoEn = $produtoEn['produto'];
 
                 if (empty($produtoEn)) throw new Exception("Nenhum produto encontrado com esse código de barras: $codBarras");
 
