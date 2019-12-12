@@ -736,17 +736,17 @@ class InventarioService extends AbstractService
 
                 $arg = [
                     "invContEndOs" => $osContEnd,
-                "codProduto" => $produto,
-                "grade" => $grade,
-                "lote" => (!empty($lote)) ? $lote : null,
-                "produtoVolume" => (!empty($vol)) ? $vol : null
+                    "codProduto" => $produto,
+                    "grade" => $grade,
+                    "lote" => (!empty($lote)) ? $lote : null,
+                    "produtoVolume" => (!empty($vol)) ? $vol : null
                 ];
 
                 /** @var InventarioNovo\InventarioContEndProd $contProd */
                 foreach ($invContEndProdRepo->findBy($arg) as $contProd) {
-                $contProd->setDivergente($isDiverg);
-                $this->em->persist($contProd);
-            }
+                    $contProd->setDivergente($isDiverg);
+                    $this->em->persist($contProd);
+                }
             }
         } catch (\Exception $e) {
             throw $e;
@@ -840,11 +840,11 @@ class InventarioService extends AbstractService
             }
 
             $agroup = [];
-            foreach( $result as $item) {
+            foreach ($result as $item) {
                 $strConcat = "$item[codProduto]--$item[grade]--$item[idVol]--$item[lote]";
                 if (!isset($agroup[$strConcat])) {
                     $agroup[$strConcat] = [
-                            "idProduto" => $item['codProduto'],
+                        "idProduto" => $item['codProduto'],
                         "grade" => $item['grade'],
                         "descricao" => $item['descricao'],
                         "codBarras" => [$item["codBarras"]],
@@ -853,7 +853,7 @@ class InventarioService extends AbstractService
                         "dscVolume" => (isset($item['dscVol'])) ? $item['dscVol'] : null,
                         "zerado" => (isset($item['qtdContada']) && empty($item['qtdContada']))
                     ];
-                    } else {
+                } else {
                     if (!in_array($item["codBarras"], $agroup[$strConcat]["codBarras"]))
                         $agroup[$strConcat]["codBarras"][] = $item["codBarras"];
                 }

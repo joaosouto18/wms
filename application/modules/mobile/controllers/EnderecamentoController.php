@@ -1183,6 +1183,9 @@ class Mobile_EnderecamentoController extends Action
                 $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto'], 'dataInativacao' => null));
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
+                if (empty($embalagemEn) && empty($volumeEn))
+                    throw new \Exception("CÓDIGO DE BARRAS $params[etiquetaProduto] NÃO ENCONTRADO! Verifique se é um código de barras válido");
+
                 if ( !empty($embalagemEn)) {
                     /** @var Wms\Domain\Entity\Produto $produtoEn */
                     $produtoEn = $params['produto'] = $embalagemEn->getProduto();

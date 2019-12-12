@@ -153,11 +153,6 @@ class Web_EnderecoController extends Crud
                         'index' => 'ativo',
                         'render' => 'AtivoOrInativo'
                     ))
-                    ->addcolumn(array(
-                        'label' => 'End Bloqueado',
-                        'index' => 'inventarioBloqueado',
-                        'render' => 'SimOrNao'
-                    ))
                     ->addAction(array(
                         'label' => 'Editar',
                         'actionName' => 'edit',

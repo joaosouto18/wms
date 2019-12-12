@@ -421,10 +421,9 @@ class OrdemServicoRepository extends EntityRepository
                       os.cod_os codOs
                       from ordem_servico os            
                         inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os      
-                        inner join inventario_cont_end ice on ice.cod_inv_cont_end = iceo.cod_inv_cont_end
-                        inner join inventario_cont_end_prod icep on icep.cod_inv_cont_end = ice.cod_inv_cont_end  
-                        inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
-                      where ien.cod_inventario_endereco = $idEndereco                        
+                        inner join inventario_cont_end_prod icep on icep.cod_inv_cont_end_os = iceo.cod_inv_cont_end_os
+                        inner join inventario_cont_end ice on ice.cod_inv_cont_end = iceo.cod_inv_cont_end                  
+                      where ice.cod_inventario_endereco = $idEndereco                        
                         and icep.cod_produto = '$idProduto'                        
                         and icep.dsc_grade = '$grade'                        
                         and os.dth_final_atividade is null";

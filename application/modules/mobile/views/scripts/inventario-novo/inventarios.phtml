@@ -170,11 +170,11 @@
 <div id="bipagem-endereco" style="display: none">
     <div class="input-area">
         <form>
-        <div class="field">
+            <div class="field">
                 <label for="cod-barras-end" class="field required"><div class="lbl-headers">Buscar Endereço</div></label>
                 <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </div>
-            </form>
+        </form>
         <button id="btn-consultar-endereco" class="btn gradientBtn btn-spacing">Buscar</button>
     </div>
     <div class="list-area" id="list-enderecos"></div>
@@ -183,11 +183,11 @@
 <div id="bipagem-produto" style="display: none">
     <div class="input-area">
         <form>
-        <div class="field">
+            <div class="field">
                 <label for="cod-barras-prod" class="field required"><div class="lbl-headers">Buscar Produto</div></label>
                 <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class="required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </div>
-            </form>
+        </form>
         <button id="btn-consultar-produto" class="btn gradientBtn btn-spacing">Buscar</button><br>
         <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
@@ -544,9 +544,9 @@
                         if (result.errorCode === 4000) {
                             getInventarios();
                         } else {
-                        getContagens();
+                            getContagens();
+                        }
                     }
-                }
                 }
             });
         };
@@ -636,9 +636,9 @@
                         if (result.errorCode === 4000) {
                             getInventarios();
                         } else if (result.errorCode === 4001) {
-                        getEnderecos();
+                            getEnderecos();
+                        }
                     }
-                }
                 }
             })
         };
@@ -709,7 +709,7 @@
                     } else if (result.errorCode === 4001) {
                         getEnderecos();
                     } else {
-                openEndereco();
+                        openEndereco();
                     }
                 }
             })
@@ -759,9 +759,9 @@
                         } else if (result.errorCode === 4001) {
                             getEnderecos();
                         } else {
-                        openEndereco();
+                            openEndereco();
+                        }
                     }
-                }
                 }
             })
         };
@@ -889,7 +889,7 @@
                     } else if (result.errorCode === 4001) {
                         getEnderecos();
                     } else {
-                openEndereco();
+                        openEndereco();
                     }
                 }
             })

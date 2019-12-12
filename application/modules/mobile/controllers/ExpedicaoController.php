@@ -130,6 +130,7 @@ class Mobile_ExpedicaoController extends Action {
             $codPessoa = $this->_getParam('cliente', null);
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
+            $sessao->bloquearOs = $this->bloquearOs();
 
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
@@ -182,6 +183,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
             $this->view->agrupContEtiquetas = $modeloSeparacaoEn->getAgrupContEtiquetas();
             $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
+            $this->view->arrCodBarras = $mapaSepProdRepo->getCodBarrasAtivosByMapa($idMapa);
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -210,10 +212,12 @@ class Mobile_ExpedicaoController extends Action {
         $idVolume = $this->_getParam("idVolume");
         $checkout = $this->_getParam("chekcout");
 
-        if ($this->bloquearOs()) {
+        $sessao = new \Zend_Session_Namespace('coletor');
+
+        if ($sessao->bloquearOs == 'S') {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
-            if ($this->bloquearOs() && !$Expedicao->osLiberada()) {
+            if ($sessao->bloquearOs == 'S' && !$Expedicao->osLiberada()) {
                 $form = new SenhaLiberacao();
                 $form->setDefault('idExpedicao', $idExpedicao);
 
