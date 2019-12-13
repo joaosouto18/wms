@@ -267,7 +267,6 @@
     }
 
     function redirectTo(event) {
-        $("#div-principal").append($("<p>").text("keyDown redirect"));
         if (event.which == 13 || event.keyCode == 13) {
             var codBarras = $("#codigoBarras");
             var lote = $("#lote");
@@ -318,6 +317,7 @@
 
     function requestAjax(event, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
+        $("#div-principal").append($("<p>").text("keyDown request"));
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
                 $.ajax({
