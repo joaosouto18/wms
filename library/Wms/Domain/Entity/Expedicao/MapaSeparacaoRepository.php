@@ -1054,9 +1054,11 @@ class MapaSeparacaoRepository extends EntityRepository {
     public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa = null, $ordemServicoId = null, $checkout = false, $lote = Lote::NCL) {
 
         try {
-            $idVolumePatrimonio = null;
-            if ($volumePatrimonioEn != null) {
+
+            if (!empty($volumePatrimonioEn)) {
                 $idVolumePatrimonio = $volumePatrimonioEn->getId();
+            } else {
+                $idVolumePatrimonio = "NULL";
             }
 
             $parametrosConferencia = array(
@@ -1077,7 +1079,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             }
 
             $idMapaSepEmb = null;
-            if ($codPessoa != null) {
+            if (!empty($codPessoa)) {
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
                 $sql = "SELECT * FROM MAPA_SEPARACAO_EMB_CLIENTE WHERE COD_MAPA_SEPARACAO = $idMapa AND COD_PESSOA = $codPessoa ORDER BY COD_MAPA_SEPARACAO_EMB_CLIENTE DESC";
@@ -1093,6 +1095,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                         $idMapaSepEmb = $mapaSeparacaoEmbalado['COD_MAPA_SEPARACAO_EMB_CLIENTE'];
                     }
                 }
+            } else {
+                $codPessoa = "NULL";
             }
 
             $dataConferencia = (new \DateTime())->format("d/m/Y H:i:s");
@@ -1134,7 +1138,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                              $ordemServicoId,
                              $conf[numConferencia],
                              TO_DATE('$dataConferencia', 'DD/MM/YYYY HH24:MI:SS'),
-                             NULL,
+                             $idVolumePatrimonio,
                              $idMapaSepEmb,
                              $codPessoa,
                              '$conf[lote]'
