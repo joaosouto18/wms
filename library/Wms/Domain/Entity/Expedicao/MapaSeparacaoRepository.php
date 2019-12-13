@@ -1078,7 +1078,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $ordemServicoId = $sessao->osID;
             }
 
-            $idMapaSepEmb = null;
+            $idMapaSepEmb = "NULL";
             if (!empty($codPessoa)) {
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
