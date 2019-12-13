@@ -317,7 +317,6 @@
 
     function requestAjax(event, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
-        $("#div-principal").append($("<p>").text("keyDown request"));
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
                 $.ajax({
@@ -435,7 +434,6 @@
 
     });
     $("input").keydown(function (e) {
-        $("#div-principal").append($("<p>").text("keyDown F2"));
         if (e.which == 113) {
             var qtd = $('#qtd');
             qtd.focus();
