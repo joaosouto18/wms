@@ -320,11 +320,14 @@
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
                 $.ajax({
-                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
+                    //url: '<?php //echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>//',
+                    url:"http://phalcon.coletor/conferencia/executar",
                     data: $('form').serialize(),
                     async: false,
                     type: 'post',
                     success: function (data) {
+                        console.log(data);
+                        return false;
                         if (data.retorno.resposta.length > 0) {
                             var inptIdVolume = $("#idVolume");
                             inputCodBarras.val("").focus();
