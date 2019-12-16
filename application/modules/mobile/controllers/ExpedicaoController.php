@@ -1864,4 +1864,52 @@ class Mobile_ExpedicaoController extends Action {
         }
     }
 
+    public function confereAlternativoAjaxAction()
+    {
+        $codBarras = $this->_getParam("codigoBarras");
+        $qtd = $this->_getParam("qtd");
+        $lote = $this->_getParam("lote");
+        $codPessoa = $this->_getParam('cliente');
+        $idExpedicao = $this->_getParam("idExpedicao");
+        $idMapa = $this->_getParam("idMapa");
+
+        $paramsModeloSeparacao = array(
+            'tipoDefaultEmbalado' => $this->_getParam("tipoDefaultEmbalado"),
+            'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
+            'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
+        );
+        try {
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+            $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+
+            $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
+
+            /** @var Expedicao\VolumePatrimonio $volumePatrimonioEn */
+            $volumePatrimonioEn = null;
+            if (!empty($idVolume)) {
+                $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
+            }
+
+            $cpfEmbalador = Zend_Auth::getInstance()->getIdentity()->getPessoa()->getCPF(false);
+
+            $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa, null, false, $lote);
+
+            if (isset($result['checkout'])){
+                $msg['msg'] = 'checkout';
+                $msg['produto'] = $result['produto'];
+            } else{
+                $msg['msg'] = 'Quantidade conferida com sucesso';
+                $msg['produto'] = $result['produto'];
+            }
+
+        } catch (\Exception $e) {
+            $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
+            $this->_helper->json($vetRetorno);
+        }
+
+        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto'], 'volumePatrimonio' => ""));
+        $this->_helper->json($vetRetorno);
+    }
 }
