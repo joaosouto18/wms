@@ -1076,55 +1076,76 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $ordemServicoId = $sessao->osID;
             }
 
-            $mapaSeparacaoEmbaladoEn = null;
+            $idMapaSepEmb = null;
             if ($codPessoa != null) {
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-                $mapaSeparacaoEmbalados = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
-                if (empty($mapaSeparacaoEmbalados)) {
+                $sql = "SELECT * FROM MAPA_SEPARACAO_EMB_CLIENTE WHERE COD_MAPA_SEPARACAO = $idMapa AND COD_PESSOA = $codPessoa ORDER BY COD_MAPA_SEPARACAO_EMB_CLIENTE DESC";
+                $mapaSeparacaoEmbalado = $this->_em->getConnection()->query($sql)->fetch();
+                if (empty($mapaSeparacaoEmbalado)) {
                     $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
+                    $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
                 } else {
-                    /** @var MapaSeparacaoEmbalado $firtsItem */
-                    $firtsItem = $mapaSeparacaoEmbalados[0];
-                    if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                    if (in_array($mapaSeparacaoEmbalado['COD_STATUS'], [Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO, Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO])) {
                         $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento, $firtsItem, false);
+                        $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento);
                     } else {
-                        $mapaSeparacaoEmbaladoEn = $firtsItem;
+                        $idMapaSepEmb = $mapaSeparacaoEmbalado['COD_MAPA_SEPARACAO_EMB_CLIENTE'];
                     }
                 }
             }
 
+            $dataConferencia = (new \DateTime())->format("d/m/Y H:i:s");
+
+            $conn = $this->_em->getConnection();
             foreach ($conferencia as $conf) {
-                $novaConferencia = new MapaSeparacaoConferencia();
-                $novaConferencia->setCodMapaSeparacao($conf['codMapaSeparacao']);
-                $novaConferencia->setCodOS($ordemServicoId);
-                $novaConferencia->setCodProduto($conf['codProduto']);
-                $novaConferencia->setDscGrade($conf['dscGrade']);
-                $novaConferencia->setIndConferenciaFechada("N");
-                $novaConferencia->setNumConferencia($conf['numConferencia']);
-                $novaConferencia->setCodProdutoEmbalagem($conf['codProdutoEmbalagem']);
-                $novaConferencia->setCodProdutoVolume($conf['codPrdutoVolume']);
-                $novaConferencia->setQtdEmbalagem($conf['qtdEmbalagem']);
-                $novaConferencia->setQtdConferida($conf['quantidade']);
-                $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
-                $novaConferencia->setMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
-                $novaConferencia->setDataConferencia(new \DateTime());
-                $novaConferencia->setCodPessoa($codPessoa);
-                $novaConferencia->setLote($conf['lote']);
-                $this->getEntityManager()->persist($novaConferencia);
+
+                $idVolume = (!empty($conf['codPrdutoVolume']))? $conf['codPrdutoVolume'] : 'NULL';
+                $idEmbalagem = (!empty($conf['codProdutoEmbalagem']))? $conf['codProdutoEmbalagem'] : 'NULL';
+
+                $sql = "
+                    INSERT INTO MAPA_SEPARACAO_CONFERENCIA 
+                        (
+                         COD_MAPA_SEPARACAO_CONFERENCIA, 
+                         COD_MAPA_SEPARACAO, 
+                         COD_PRODUTO, 
+                         DSC_GRADE, 
+                         COD_PRODUTO_VOLUME, 
+                         COD_PRODUTO_EMBALAGEM, 
+                         QTD_EMBALAGEM, 
+                         QTD_CONFERIDA, 
+                         COD_OS, 
+                         NUM_CONFERENCIA, 
+                         DTH_CONFERENCIA, 
+                         COD_VOLUME_PATRIMONIO, 
+                         COD_MAPA_SEPARACAO_EMBALADO, 
+                         COD_PESSOA, 
+                         DSC_LOTE
+                         ) 
+                     VALUES (
+                             SQ_MAPA_SEPARACAO_CONF_01.nextval,
+                             $conf[codMapaSeparacao],
+                             '$conf[codProduto]',
+                             '$conf[dscGrade]',
+                             $idVolume,
+                             $idEmbalagem,
+                             $conf[qtdEmbalagem],
+                             $conf[quantidade],
+                             $ordemServicoId,
+                             $conf[numConferencia],
+                             TO_DATE('$dataConferencia', 'DD/MM/YYYY HH24:MI:SS'),
+                             NULL,
+                             $idMapaSepEmb,
+                             $codPessoa,
+                             '$conf[lote]'
+                             ) 
+                ";
+                $conn->executeQuery($sql);
             }
         } catch (\Exception $e) {
             throw $e;
         }
 
-        $this->getEntityManager()->flush();
-
-        if($checkout == true){
-            return  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
-        }
-        
         return true;
 
     }
@@ -1228,23 +1249,6 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        //VERIFICO SE O CÓDIGO DE BARRAS PERTENCE A ALGUM PRODUTO DO MAPA
-        if (count($result) == 0) {
-            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-            $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
-            $msgErro = "O Produto " . $produtoEn->getDescricao() . " não pertence ";
-            if ($codPessoa != null) {
-                $msgErro .= " ao cliente selecionado";
-            } else {
-                if ($utilizaQuebra == "S") {
-                    $msgErro .= " ao mapa " . $idMapa;
-                } else {
-                    $msgErro .= " a expedicao " . $idExpedicao;
-                }
-            }
-            throw new \Exception($msgErro);
-        }
-
         $fatorCodBarrasBipado = $result[0]['QTD_EMBALAGEM'];
         $codBarrasEmbalado = $result[0]['IND_EMBALADO'];
         $codProdutoEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
@@ -1297,7 +1301,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             }
 
             $qtdConferidoTotalEmb = $qtdConferidoTotal;
-            if ($qtdConferidoTotal > 0) {
+            if ($checkout && $qtdConferidoTotal > 0) {
                 $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
                 $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
                 $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);

@@ -6,6 +6,8 @@
 
 <script>
 
+    var codigosDeBarras = [<?php echo implode(", ", $this->arrCodBarras);?>];
+
     function playSound(soundfile) {
         if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
             document.getElementById("bgSoundId").src = soundfile;
@@ -22,43 +24,45 @@
 
     function exibirQtd(event) {
         if (event.which === 13 || event.keyCode === 13) {
+            var codBarras = $('#codigoBarras');
 
-            var qtd = $("#qtd");
-            var qtdLabel = $("#label-qtd");
-            if (qtd) {
-                qtd.removeClass("hidden");
-                qtdLabel.removeClass("hidden");
-                qtd.focus();
-                if (event.preventDefault) {
-                    event.preventDefault();
-                } else {
-                    event.returnValue = false;
+            if (checkCodBarrasMapa(codBarras, event)) {
+                var qtd = $("#qtd");
+                var qtdLabel = $("#label-qtd");
+                if (qtd) {
+                    qtd.removeClass("hidden");
+                    qtdLabel.removeClass("hidden");
+                    qtd.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
                 }
-            }
 
-            var codBarras = $('#codigoBarras').val();
-            dadosProdutos = '';
-            $.ajax({
-                url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras,
-                type: 'get',
-                success: function (data) {
+                dadosProdutos = '';
+                $.ajax({
+                    url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras.val(),
+                    type: 'get',
+                    success: function (data) {
 
-                    var codProduto = data['result']['codProduto'];
-                    var grade = data['result']['grade'];
-                    var descricao = data['result']['descricao'];
-                    var quantidade = data['result']['quantidade'];
-                    var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
+                        var codProduto = data['result']['codProduto'];
+                        var grade = data['result']['grade'];
+                        var descricao = data['result']['descricao'];
+                        var quantidade = data['result']['quantidade'];
+                        var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
 
-                    dadosProdutos =
+                        dadosProdutos =
                             '<table style="border: solid 2px;"class="info">' +
                             '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
                             '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
                             '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
                             '</table>'
-                    ;
-                    $('#dados-produtos').html(dadosProdutos);
-                }
-            });
+                        ;
+                        $('#dados-produtos').html(dadosProdutos);
+                    }
+                });
+            }
         }
         return true;
     }
@@ -299,82 +303,95 @@
     
     <?php  } ?>
 
+    function checkCodBarrasMapa(codBarrasInput, event) {
+        if (event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+        if ($.inArray(codBarrasInput.val(), codigosDeBarras) > -1) return true;
+        codBarrasInput.val("").focus();
+        alert("Código de barras inválido para esse mapa");
+        return false;
+    }
+
     function requestAjax(event, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
-        if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
-            $.ajax({
-                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
-                data: $('form').serialize(),
-                async: false,
-                type: 'post',
-                success: function (data) {
-                    if (data.retorno.resposta.length > 0) {
-                        var inptIdVolume = $("#idVolume");
-                        inputCodBarras.val("").focus();
-                        <?php if ($temLote) { ?> lote.val(""); <?php } ?>
-                        var error = "";
-                        var success = "";
-                        var song = "";
-                        var volumePatrimonio = "";
+        if (checkCodBarrasMapa(inputCodBarras, event))
+            if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
+                $.ajax({
+                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
+                    data: $('form').serialize(),
+                    async: false,
+                    type: 'post',
+                    success: function (data) {
+                        if (data.retorno.resposta.length > 0) {
+                            var inptIdVolume = $("#idVolume");
+                            inputCodBarras.val("").focus();
+                            <?php if ($temLote) { ?> lote.val(""); <?php } ?>
+                            var error = "";
+                            var success = "";
+                            var song = "";
+                            var volumePatrimonio = "";
 
-                        if (data.retorno.resposta == 'error') {
-                            error = data.retorno.message;
-                            success = "";
-                            song = "/alarme.mp3";
-                            volumePatrimonio = data.retorno.volumePatrimonio;
-                        } else if (data.retorno.resposta == 'bloqued_os') {
-                            error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
-                            success = "";
-                            song = "/alarme.mp3";
-                            volumePatrimonio = '';
-                            $("#div-principal").html(data.retorno.blockOsForm);
-                        } else {
-                            success = data.retorno.message;
-                            error = "";
-                            song = "/confirm2.mp3";
-                            volumePatrimonio = data.retorno.volumePatrimonio;
+                            if (data.retorno.resposta == 'error') {
+                                error = data.retorno.message;
+                                success = "";
+                                song = "/alarme.mp3";
+                                volumePatrimonio = data.retorno.volumePatrimonio;
+                            } else if (data.retorno.resposta == 'bloqued_os') {
+                                error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
+                                success = "";
+                                song = "/alarme.mp3";
+                                volumePatrimonio = '';
+                                $("#div-principal").html(data.retorno.blockOsForm);
+                            } else {
+                                success = data.retorno.message;
+                                error = "";
+                                song = "/confirm2.mp3";
+                                volumePatrimonio = data.retorno.volumePatrimonio;
+                            }
+
+                            $("#erro").html(error);
+                            $("#success").html(success);
+
+                            if (volumePatrimonio !== '') {
+                                inptIdVolume.val(volumePatrimonio.idVolume);
+                                $("#spnDscVolume").text(volumePatrimonio.dscVolume);
+                                var href = $("#btnFechaVolume").attr("href");
+                                $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
+                            }
+
+                            if (inptIdVolume.val() !== '') {
+                                $("#divBtnFechaVolume").show();
+                            }
+
+                            try {
+                                playSound(song);
+                            } catch (e) {
+                                alert(message);
+                            }
+
+
                         }
-
-                        $("#erro").html(error);
-                        $("#success").html(success);
-
-                        if (volumePatrimonio !== '') {
-                            inptIdVolume.val(volumePatrimonio.idVolume);
-                            $("#spnDscVolume").text(volumePatrimonio.dscVolume);
-                            var href = $("#btnFechaVolume").attr("href");
-                            $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
-                        }
-
-                        if (inptIdVolume.val() !== '') {
-                            $("#divBtnFechaVolume").show();
-                        }
-
-                        try {
-                            playSound(song);
-                        } catch (e) {
-                            alert(message);
-                        }
-
-
+                        $(".item-lista").remove();
                     }
-                    $(".item-lista").remove();
+                });
+                $('#dados-produtos').html("");
+                var confereQtd = $("#confereQtd").val();
+                if (confereQtd === null || confereQtd === '' || confereQtd === false) {
+                    inputQtd.addClass("hidden").val("");
+                    $("#label-qtd").addClass("hidden");
+                } else {
+                    inputQtd.val(1);
                 }
-            });
-            $('#dados-produtos').html("");
-            var confereQtd = $("#confereQtd").val();
-            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
-                inputQtd.addClass("hidden").val("");
-                $("#label-qtd").addClass("hidden");
             } else {
-                inputQtd.val(1);
+                if (event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
             }
-        } else {
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
-            }
-        }
         return false;
     }
 

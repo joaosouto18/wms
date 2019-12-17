@@ -1186,7 +1186,6 @@ class Mobile_EnderecamentoController extends Action
                 if (empty($embalagemEn) && empty($volumeEn))
                     throw new \Exception("CÓDIGO DE BARRAS $params[etiquetaProduto] NÃO ENCONTRADO! Verifique se é um código de barras válido");
 
-
                 if ( !empty($embalagemEn)) {
                     /** @var Wms\Domain\Entity\Produto $produtoEn */
                     $produtoEn = $params['produto'] = $embalagemEn->getProduto();
