@@ -191,6 +191,11 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
             $this->view->dscVolume = $dscVolume;
             $this->view->confereQtd = $confereQtd;
+            $cpf = Zend_Auth::getInstance()->getIdentity()->getPessoa()->getCPF(false);
+            $embracer = (new DateTime)->getTimestamp();
+            $uniqId = strrev("$cpf*%*#)$embracer(");
+            $this->view->identfier = $uniqId;
+            $this->view->osID = $sessao->osID;
         } catch (\Exception $e) {
             if ($confereQtd == true) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);

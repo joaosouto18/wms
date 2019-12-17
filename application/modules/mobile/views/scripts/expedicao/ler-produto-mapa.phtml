@@ -141,6 +141,8 @@
                         <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                         <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
                         <input type="hidden" name="agrupContEtiquetas" id="agrupContEtiquetas" value="<?php echo $this->agrupContEtiquetas ?>" >
+                        <input type="hidden" name="identfier-conf" id="" value="<?php echo $this->identfier ?>" >
+                        <input type="hidden" name="osID" id="" value="<?php echo $this->osID ?>" >
                         <table>
                             <tr>
                                 <?php if ($this->confereQtd) : ?>
@@ -323,11 +325,10 @@
                     //url: '<?php //echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>//',
                     url:"http://phalcon.coletor/conferencia/executar",
                     data: $('form').serialize(),
+                    crossDomain: true,
                     async: false,
                     type: 'post',
                     success: function (data) {
-                        console.log(data);
-                        return false;
                         if (data.retorno.resposta.length > 0) {
                             var inptIdVolume = $("#idVolume");
                             inputCodBarras.val("").focus();
