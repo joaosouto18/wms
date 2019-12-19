@@ -141,8 +141,8 @@
                         <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                         <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
                         <input type="hidden" name="agrupContEtiquetas" id="agrupContEtiquetas" value="<?php echo $this->agrupContEtiquetas ?>" >
-                        <input type="hidden" name="identfier-conf" id="" value="<?php echo $this->identfier ?>" >
-                        <input type="hidden" name="osID" id="" value="<?php echo $this->osID ?>" >
+                        <input type="hidden" name="identfier-conf" id="identifier" value="<?php echo $this->identfier ?>" >
+                        <input type="hidden" name="osID" id="osID" value="<?php echo $this->osID ?>" >
                         <table>
                             <tr>
                                 <?php if ($this->confereQtd) : ?>
@@ -321,9 +321,10 @@
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
+                var urlConf = "http://"+ window.location.host +":88/conferencia/executar";
                 $.ajax({
                     //url: '<?php //echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>//',
-                    url:"http://phalcon.coletor/conferencia/executar",
+                    url: urlConf,
                     data: $('form').serialize(),
                     crossDomain: true,
                     async: false,
@@ -337,6 +338,7 @@
                             var success = "";
                             var song = "";
                             var volumePatrimonio = "";
+
 
                             if (data.retorno.resposta == 'error') {
                                 error = data.retorno.message;
