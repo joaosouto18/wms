@@ -23,8 +23,25 @@ class Web_Consulta_CorteController extends Action
 
         $form->populate($params);
 
+        $filtrou = false;
+        if (isset($params['dataInicial1']) && $params['dataInicial1'] != "") {
+            $filtrou = true;
+        }
+        if (isset($params['dataInicial2']) && $params['dataInicial2'] != "") {
+            $filtrou = true;
+        }
+        if (isset($params['dataFinal1']) && $params['dataFinal1'] != "") {
+            $filtrou = true;
+        }
+        if (isset($params['dataFinal2']) && $params['dataFinal1'] != "") {
+            $filtrou = true;
+        }
 
-        $Grid = new CorteGrid();
-        $this->view->grid = $Grid->init($params, $utilizaGrade)->render();
+        if ($filtrou) {
+            $Grid = new CorteGrid();
+            $this->view->grid = $Grid->init($params, $utilizaGrade)->render();
+        } else {
+                $this->addFlashMessage('info','Informe ao menos uma data para filtrar');
+        }
     }
 }
