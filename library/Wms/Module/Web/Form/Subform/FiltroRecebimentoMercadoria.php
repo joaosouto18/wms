@@ -68,14 +68,11 @@ class FiltroRecebimentoMercadoria extends \Wms\Module\Web\Form
                     'decorators' => array('ViewHelper'),
                 ))
 
-
-                ->addElement('select', 'fornecedor', array(
-                    'label' => 'Ordenação',
-                    'multiOptions' => array('firstOpt' => 'Selecione', 'options' => array(1 => 'NUM. UMA', 2 => 'ENDEREÇO')),
+                ->addElement('hidden', 'idFornecedor')
+                ->addElement('text', 'fornecedor', array(
+                    'size' => 20,
                     'decorators' => array('ViewHelper'),
                 ))
-
-
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
                     'class' => 'btn',

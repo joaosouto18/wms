@@ -403,7 +403,7 @@ $(document).ready(function(){
     $('#deposito-endereco-form').depositoEndereco();
     $('#grid-veiculo').veiculo();
     $('#sistema-menu-form').menuItem();
-    $('#filtro-nota-fiscal').filtroNotaFiscal();
+    $('#filtro-nota-fiscal, #filtro-recebimento-mercadoria-form').filtroNotaFiscal();
     $('#recebimento-divergencia-form, #form-recebimento-conferencia, #recebimento-index-grid').recebimento();
     $('#filtro-expedicao-mercadoria-form').expedicao();
     $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv').enderecamento();
