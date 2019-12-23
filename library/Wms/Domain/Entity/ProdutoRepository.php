@@ -2045,8 +2045,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $sql .= " AND PROD.DSC_PRODUTO LIKE UPPER('%" . $params['descricao'] . "%')";
         }
 
-        if (isset($params['dataInicial']) && !empty($params['dataInicial'])) {
-            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('" . $params['dataInicial'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        if (isset($params['dataInicial1']) && !empty($params['dataInicial1'])) {
+            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('" . $params['dataInicial1'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['dataInicial2']) && !empty($params['dataInicial2'])) {
+            $sql .= " AND TO_DATE(E.DTH_INICIO) <= TO_DATE('" . $params['dataInicial2'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['dataFinal1']) && !empty($params['dataFinal1'])) {
+            $sql .= " AND TO_DATE(E.DTH_FINALIZACAO) >= TO_DATE('" . $params['dataFinal1'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['dataFinal2']) && !empty($params['dataFinal2'])) {
+            $sql .= " AND TO_DATE(E.DTH_FINALIZACAO) <= TO_DATE('" . $params['dataFinal2'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['status']) && (!empty($params['status']))) {
+            $sql .= " AND E.COD_STATUS = " . $params['status'] . "";
         }
 
         $sql .= " ORDER BY E.DTH_INICIO DESC, PP.COD_PRODUTO";

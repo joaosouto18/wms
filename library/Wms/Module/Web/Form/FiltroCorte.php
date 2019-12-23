@@ -14,10 +14,16 @@ class FiltroCorte extends Form
 {
     public function init($utilizaGrade = 'S')
     {
+
+        $em = $this->getEm();
+        /** @var SiglaRepository $repoSigla */
+        $repoSigla = $em->getRepository('wms:Util\Sigla');
+
+
         $this->addElement('text', 'idExpedicao', array(
             'size' => 10,
-            'label' => 'Cód.Expedição',
             'class' => 'focus',
+            'decorators' => array('ViewHelper'),
         ));
         if ($utilizaGrade == "S") {
             $this->addElement('text', 'grade', array(
@@ -32,20 +38,38 @@ class FiltroCorte extends Form
         }
         $this
             ->addElement('text', 'descricao', array(
-                'label' => 'Produto',
                 'size' => 45,
                 'maxlength' => 40,
+                'decorators' => array('ViewHelper'),
             ))
-            ->addElement('date', 'dataInicial', array(
-                'required' => true,
-                'label' => 'Data Início',
+            ->addElement('date', 'dataInicial1', array(
                 'size' => 10,
+                'decorators' => array('ViewHelper'),
+            ))
+            ->addElement('date', 'dataInicial2', array(
+                'size' => 10,
+                'decorators' => array('ViewHelper'),
+            ))
+            ->addElement('date', 'dataFinal1', array(
+                'size' => 10,
+                'decorators' => array('ViewHelper'),
+            ))
+            ->addElement('date', 'dataFinal2', array(
+                'size' => 10,
+                'decorators' => array('ViewHelper'),
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
+            ->addElement('select', 'status', array(
+                'label' => 'Status da Expedição',
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(53)),
+                'decorators' => array('ViewHelper'),
+            ))
             ->addDisplayGroup($this->getElements(), 'identificacao', array('legend' => 'Filtros de Busca'));
+
+        $this->setDecorators(array(array('ViewScript', array('viewScript' => 'forms/filtro-corte.phtml'))));
     }
 }

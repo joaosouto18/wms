@@ -1,0 +1,30 @@
+<form id="filtro-expedicao-mercadoria-form" class="filtro" action="">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Filtros</legend>
+            <table style="width:100%">
+
+                <tr>
+                    <td>Número da Expedição:</td>
+                    <td>Produto:</td>
+                    <td>Status:</td>
+                    <td><?php echo $this->element->submit; ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->element->idExpedicao; ?></td>
+                    <td><?php echo $this->element->descricao ; ?></td>
+                    <td><?php echo $this->element->status; ?></td>
+                </tr>
+
+                <tr>
+                    <td>Data Inicio da Expedição:</td>
+                    <td>Data Final da Expedição:</td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->element->dataInicial1;?> a <?php echo $this->element->dataInicial2; ?></td>
+                    <td><?php echo $this->element->dataFinal1; ?> a <?php echo $this->element->dataFinal2; ?></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</form>

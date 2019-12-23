@@ -21,20 +21,8 @@ class Web_Consulta_CorteController extends Action
 
         $params = $this->_getAllParams();
 
-        $data = new \DateTime;
-
-        if ( !empty($params) ) {
-            if ( empty($params['dataInicial']) ){
-                $params['dataInicial']=$data->format('d/m/Y');
-            }
-        } else {
-            $data = new \DateTime;
-            $params = array(
-                'dataInicial' => $data->format('d/m/Y')
-            );
-        }
-
         $form->populate($params);
+
 
         $Grid = new CorteGrid();
         $this->view->grid = $Grid->init($params, $utilizaGrade)->render();
