@@ -321,68 +321,76 @@
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
-                var urlConf = "http://"+ window.location.host +":88/conferencia/executar";
-                $.ajax({
-                    //url: '<?php //echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>//',
-                    url: urlConf,
-                    data: $('form').serialize(),
-                    crossDomain: true,
-                    async: false,
-                    type: 'post',
-                    success: function (data) {
-                        if (data.retorno.resposta.length > 0) {
-                            var inptIdVolume = $("#idVolume");
-                            inputCodBarras.val("").focus();
-                            <?php if ($temLote) { ?> lote.val(""); <?php } ?>
-                            var error = "";
-                            var success = "";
-                            var song = "";
-                            var volumePatrimonio = "";
+                var urlConf = "http://"+ window.location.host +":<?php echo $this->phalconApiPort?>/conferencia/executar";
+                try {
+                    $.support.cors = true;
+                    $.ajax({
+                        //url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>//',
+                        url: urlConf,
+                        data: $('form').serialize(),
+                        async: false,
+                        type: 'post',
+                        success: function (data) {
+                            if (data.retorno.resposta.length > 0) {
+                                var inptIdVolume = $("#idVolume");
+                                inputCodBarras.val("").focus();
+                                <?php if ($temLote) { ?> lote.val(""); <?php } ?>
+                                var error = "";
+                                var success = "";
+                                var song = "";
+                                var volumePatrimonio = "";
 
 
-                            if (data.retorno.resposta == 'error') {
-                                error = data.retorno.message;
-                                success = "";
-                                song = "/alarme.mp3";
-                                volumePatrimonio = data.retorno.volumePatrimonio;
-                            } else if (data.retorno.resposta == 'bloqued_os') {
-                                error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
-                                success = "";
-                                song = "/alarme.mp3";
-                                volumePatrimonio = '';
-                                $("#div-principal").html(data.retorno.blockOsForm);
-                            } else {
-                                success = data.retorno.message;
-                                error = "";
-                                song = "/confirm2.mp3";
-                                volumePatrimonio = data.retorno.volumePatrimonio;
+                                if (data.retorno.resposta == 'error') {
+                                    error = data.retorno.message;
+                                    success = "";
+                                    song = "/alarme.mp3";
+                                    volumePatrimonio = data.retorno.volumePatrimonio;
+                                } else if (data.retorno.resposta == 'bloqued_os') {
+                                    error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
+                                    success = "";
+                                    song = "/alarme.mp3";
+                                    volumePatrimonio = '';
+                                    $("#div-principal").html(data.retorno.blockOsForm);
+                                } else {
+                                    success = data.retorno.message;
+                                    error = "";
+                                    song = "/confirm2.mp3";
+                                    volumePatrimonio = data.retorno.volumePatrimonio;
+                                }
+
+                                $("#erro").html(error);
+                                $("#success").html(success);
+
+                                if (!isEmpty(volumePatrimonio)) {
+                                    inptIdVolume.val(volumePatrimonio.idVolume);
+                                    $("#spnDscVolume").text(volumePatrimonio.dscVolume);
+                                    var href = $("#btnFechaVolume").attr("href");
+                                    $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
+                                }
+
+                                if (inptIdVolume.val() !== '') {
+                                    $("#divBtnFechaVolume").show();
+                                }
+
+                                try {
+                                    playSound(song);
+                                } catch (e) {
+                                    alert(message);
+                                }
+
+
                             }
-
-                            $("#erro").html(error);
-                            $("#success").html(success);
-
-                            if (volumePatrimonio !== '') {
-                                inptIdVolume.val(volumePatrimonio.idVolume);
-                                $("#spnDscVolume").text(volumePatrimonio.dscVolume);
-                                var href = $("#btnFechaVolume").attr("href");
-                                $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
-                            }
-
-                            if (inptIdVolume.val() !== '') {
-                                $("#divBtnFechaVolume").show();
-                            }
-
-                            try {
-                                playSound(song);
-                            } catch (e) {
-                                alert(message);
-                            }
-
-
+                            $(".item-lista").remove();
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            alert("alert response: " + xhr.responseText);
+                            alert("alert throw: " + thrownError);
                         }
-                        $(".item-lista").remove();
-                    }
-                });
+                    });
+                } catch (e) {
+                    alert(e.message);
+                }
                 $('#dados-produtos').html("");
                 var confereQtd = $("#confereQtd").val();
                 if (confereQtd === null || confereQtd === '' || confereQtd === false) {

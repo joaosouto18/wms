@@ -131,6 +131,12 @@ class Mobile_ExpedicaoController extends Action {
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
 
+            $config = \Zend_Registry::get('config');
+            if (empty($config->phalconColetorApi->port))
+                throw new Exception("A porta da API Phalcon-Coletor não foi especificada");
+
+            $this->view->phalconApiPort = $config->phalconColetorApi->port;
+
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
             if ($this->bloquearOs()) {
