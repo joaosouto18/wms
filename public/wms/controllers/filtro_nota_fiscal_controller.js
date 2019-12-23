@@ -27,7 +27,7 @@ $.Controller.extend('Wms.Controllers.FiltroNotaFiscal',
             source: function(data, callback) {
                 $.ajax({
                     global: false,
-                    url:  URL_MODULO + '/fornecedor/get-fornecedor-json',
+                    url:  '/fornecedor/get-fornecedor-json',
                     dataType: 'json',
                     data: data,
                     success: callback
