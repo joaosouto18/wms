@@ -272,6 +272,9 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
+        $mapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+
         $ids = explode(',', $idsIntegracao);
         sort($ids);
 
@@ -376,19 +379,27 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?1 - Código da Carga presentes na Expedição
                  * ?2 - Código do Pedido
                  * ?3 - Tipo de Pedido
+                 * ?4 - Quantidade de volumes(caixas) por pedido
                  *
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
                     /** @var Expedicao\Carga $cargaEn */
                     $cargasEn = $expedicaoEn->getCarga();
+                    $arrayClientes = $mapaSeparacaoRepository->getCaixasByExpedicao($expedicaoEn->getId());
 
                     foreach ($cargasEn as $cargaEn) {
                         $pedidos = $cargaEn->getPedido();
                         foreach ($pedidos as $pedidoEn) {
+                            $qtdCaixas = 0;
+                            if (isset($arrayClientes[$pedidoEn->getPessoa()->getId()])) {
+                                $qtdCaixas = $arrayClientes[$pedidoEn->getPessoa()->getId()];
+                                $arrayClientes[$pedidoEn->getPessoa()->getId()] = 0;
+                            }
                             $options = array();
                             $options[] = $cargaEn->getCodCargaExterno();
                             $options[] = $pedidoEn->getCodExterno();
                             $options[] = $pedidoEn->getTipoPedido()->getCodExterno();
+                            $options[] = $qtdCaixas;
 
                             $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                             if (!$resultAcao === true) {

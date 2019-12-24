@@ -67,12 +67,18 @@ class FiltroRecebimentoMercadoria extends \Wms\Module\Web\Form
                     'multiOptions' => array('firstOpt' => 'PADRAO', 'options' => array(1 => 'NUM. UMA', 2 => 'ENDEREÇO')),
                     'decorators' => array('ViewHelper'),
                 ))
+
+                ->addElement('hidden', 'idFornecedor')
+                ->addElement('text', 'fornecedor', array(
+                    'size' => 20,
+                    'decorators' => array('ViewHelper'),
+                ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('idRecebimento', 'uma', 'dataInicial1','dataInicial2', 'dataFinal1', 'dataFinal2', 'status','ordem', 'submit'), 'identificacao', array('legend' => 'Busca')
+                ->addDisplayGroup(array('idRecebimento', 'uma', 'dataInicial1','dataInicial2', 'dataFinal1', 'dataFinal2', 'status','ordem', 'fornecedor', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
 
         $this->setDecorators(array(array('ViewScript', array('viewScript' => 'recebimento/filtro.phtml'))));

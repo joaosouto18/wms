@@ -1520,4 +1520,36 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getCaixasByExpedicao($idExpedicao)
+    {
+        $sql = "SELECT SUM(RESULTADO.NUMERO_CAIXAS) NUMERO_CAIXAS, C.COD_PESSOA 
+                FROM CLIENTE C
+                INNER JOIN (
+                    SELECT COUNT(*) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
+                        FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
+                        INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        WHERE MS.COD_EXPEDICAO = $idExpedicao
+                        GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
+                    UNION
+                    SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
+                        FROM ETIQUETA_SEPARACAO ES
+                        INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                        INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                        INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                        WHERE E.COD_EXPEDICAO = $idExpedicao
+                         AND ES.COD_STATUS = ". EtiquetaSeparacao::STATUS_CONFERIDO ."
+                        GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO) RESULTADO ON RESULTADO.COD_PESSOA = C.COD_PESSOA
+                GROUP BY C.COD_PESSOA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arrayClientes = array();
+        foreach ($result as $item) {
+            $arrayClientes[$item['COD_PESSOA']] = $item['NUMERO_CAIXAS'];
+        }
+
+        return $arrayClientes;
+
+    }
 }

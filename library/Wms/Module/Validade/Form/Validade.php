@@ -54,6 +54,7 @@ class Validade extends Form
                 'label' => 'Linha de separação',
                 'multiOptions' =>  $arr,
             ))
+            ->addElement('hidden', 'idFornecedor')
             ->addElement('text', 'fornecedor', array(
                 'label' => 'Fornecedor',
                 'size' => $yForn,
