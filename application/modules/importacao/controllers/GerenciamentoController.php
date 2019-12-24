@@ -116,7 +116,7 @@ class Importacao_GerenciamentoController extends Action
             }
 
             if (isset($params['submit']) || isset($params['submitCodigos'])) {
-                $result = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
+                $result = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro, $params['codigo']);
             } else if (isset($params['efetivar'])) {
                 $result = $acaoIntRepo->efetivaTemporaria($integracoes, $idFiltro, $params['efetivar']);
             }
