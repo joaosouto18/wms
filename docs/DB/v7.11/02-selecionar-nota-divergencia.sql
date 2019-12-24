@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.11.0', 'xx-selecionar-nota-divergencia.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.11.0', '02-selecionar-nota-divergencia.sql');
 
 alter table nota_fiscal
     add ind_divergencia CHAR(1) default 'N' null;

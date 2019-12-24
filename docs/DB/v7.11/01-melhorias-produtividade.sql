@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.11.0', 'xx-melhorias-produtividade.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.11.0', '01-melhorias-produtividade.sql');
 
 alter table PRODUTIVIDADE_DETALHE
     add COD_ATIVIDADE NUMBER(2);
