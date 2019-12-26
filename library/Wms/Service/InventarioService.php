@@ -1327,9 +1327,9 @@ class InventarioService extends AbstractService
 
     public function exportarInventarioModelo3($id)
     {
-        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
-        $inventarioEn = $this->_em->find('wms:Inventario', $id);
-        $codInvErp = $inventarioEn->getCodInventarioERP();
+        /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
+        $inventarioEn = $this->find($id);
+        $codInvErp = $inventarioEn->getCodErp();
 
 
         if (empty($codInvErp)) {
@@ -1337,7 +1337,7 @@ class InventarioService extends AbstractService
         }
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+        $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
 
 
         $filename = "Exp_Inventario($codInvErp).txt";
