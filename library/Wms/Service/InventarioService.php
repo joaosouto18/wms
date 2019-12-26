@@ -1339,51 +1339,28 @@ class InventarioService extends AbstractService
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
 
+        $inventariosByErp = $this->findBy(array('codErp' => $codInvErp));
+        foreach ($inventariosByErp as $inventario) {
+            $inventarios[] = $inventario->getId();
+        }
 
         $filename = "Exp_Inventario($codInvErp).txt";
         $file = fopen($filename, 'w');
-
-
-        $SQL = "SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(ESTQ.QTD,0) as QTD
-                  FROM PRODUTO P
-                  LEFT JOIN (SELECT E.COD_PRODUTO,
-                                    E.DSC_GRADE, 
-                                    MIN(QTD) as QTD
-                               FROM (SELECT E.COD_PRODUTO,
-                                            E.DSC_GRADE,
-                                            SUM(E.QTD) as QTD,
-                                            NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
-                                       FROM ESTOQUE E
-                                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
-                              GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
-                    ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
-                   AND ESTQ.DSC_GRADE = P.DSC_GRADE 
-                 INNER JOIN (SELECT DISTINCT 
-                                    ICE.COD_PRODUTO,
-                                    ICE.DSC_GRADE
-                               FROM INVENTARIO_ENDERECO IE
-                               LEFT JOIN INVENTARIO I ON I.COD_INVENTARIO = IE.COD_INVENTARIO
-                               LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
-                              WHERE I.COD_INVENTARIO_ERP = $codInvErp AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
-                              GROUP BY ICE.COD_PRODUTO,
-                                       ICE.DSC_GRADE) I
-                    ON I.COD_PRODUTO = P.COD_PRODUTO
-                   AND I.DSC_GRADE = P.DSC_GRADE";
-        $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-
+        $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true);
         $inventario = array();
-        foreach ($produtos as $produto) {
-            $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $produto['COD_PRODUTO'],
-                'grade' => $produto['DSC_GRADE'],
-                'dataInativacao' => null),
-                array('quantidade' => 'ASC'));
 
-            if (!$embalagemEntity) continue;
+        foreach ($contagens as $contagem) {
+            $embs = $embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC'));
+            if (empty($embs)) continue;
+            $embalagemEntity = reset($embs);
 
-            $inventario[$produto['COD_PRODUTO']]['QUANTIDADE'] = $produto['QTD'];
-            $inventario[$produto['COD_PRODUTO']]['NUM_CONTAGEM'] = 1;
-            $inventario[$produto['COD_PRODUTO']]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
-            $inventario[$produto['COD_PRODUTO']]['FATOR'] = reset($embalagemEntity)->getQuantidade();
+            if (isset($inventario[$contagem['COD_PRODUTO']])) {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = Math::adicionar($inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'], $contagem['QTD']);
+            } else {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = $contagem['QTD'];
+                $inventario[$contagem['COD_PRODUTO']]['COD_BARRAS'] = $embalagemEntity->getCodigoBarras();
+                $inventario[$contagem['COD_PRODUTO']]['FATOR'] = $embalagemEntity->getQuantidade();
+            };
         }
         foreach ($inventario as $key => $produto) {
             $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
