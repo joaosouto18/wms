@@ -1325,7 +1325,7 @@ class InventarioService extends AbstractService
         fclose($file);
     }
 
-    public function exportarInventarioModelo03($id)
+    public function exportarInventarioModelo3($id)
     {
         /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
         $inventarioEn = $this->_em->find('wms:Inventario', $id);
