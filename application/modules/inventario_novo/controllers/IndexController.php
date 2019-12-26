@@ -59,6 +59,7 @@ class Inventario_Novo_IndexController  extends Action
             $buttons = [];
             if ($this->view->criterio === \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO) {
                 $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+                $this->view->preSelectedItens = "1010:UNICA;1020:UNICA";
                 $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
                 $this->view->form->init($utilizaGrade);
                 $buttons[] = array(

@@ -1,6 +1,6 @@
 <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/cadastroCtrl.js') ?>"></script>
 <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/previewerCtrl.js') ?>"></script>
-<div ng-app="wms" ng-controller="cadastroInventarioCtrl" ng-init="configGridColumns('<?php echo $this->criterio ?>')">
+<div ng-app="wms" ng-controller="cadastroInventarioCtrl" ng-init="initCreate('<?php echo $this->criterio ?>', '<?php echo $this->preSelectedItens?>')">
     <style>
         tr.gTResultSet:nth-child(even) {
             background-color: #ededed

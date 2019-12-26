@@ -29,6 +29,11 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
         ]
     };
 
+    $scope.initCreate = function (criterio, preSelectedItens) {
+        this.configGridColumns(criterio);
+        console.log("itens: ", preSelectedItens);
+    };
+
     $scope.configGridColumns = function (criterio) {
         if (!isEmpty(criterio)) {
             $scope.criterio = criterio;
