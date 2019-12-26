@@ -278,11 +278,15 @@ class Inventario_Novo_IndexController  extends Action
         try {
 
             $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
-            $caminho = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+            if (empty($modelo))
+                throw new Exception("O modelo de exportação não foi definido! Por favor, defina em <b>Sistemas->Configurações->Inventário->Formato de Exportação do Inventário</b>");
 
             if ($modelo == 1) {
-                $this->getServiceLocator()->getService("Inventario")->exportaInventarioModelo1($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario, $this->getResponse());
             } else {
+                $caminho = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+                if (empty($caminho) || !is_dir($caminho))
+                    throw new Exception("O diretório de importação/exportação não foi definido! Por favor, defina em <b>Sistemas->Configurações->Parâmetros do sistema->Diretório dos Arquivos de Importação</b>");
                 $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario, $caminho);
             }
             $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
@@ -300,8 +304,6 @@ class Inventario_Novo_IndexController  extends Action
         try {
             $id = $this->_getParam('id');
             $codInventarioErp = $this->_getParam('codInventarioErp');
-            $form = new \Wms\Module\Inventario\Form\FormCodInventarioERP();
-            $form->setDefault('id', $id);
 
             if (!empty($codInventarioErp)) {
                 $this->getServiceLocator()->getService("Inventario")->setCodInventarioERP($id, $codInventarioErp);
@@ -309,7 +311,7 @@ class Inventario_Novo_IndexController  extends Action
                 $this->redirect('index');
             }
 
-            $this->view->form = $form;
+            $this->view->id = $id;
         } catch (Exception $e){
             $this->addFlashMessage('error', $e->getMessage());
             $this->redirect('index');

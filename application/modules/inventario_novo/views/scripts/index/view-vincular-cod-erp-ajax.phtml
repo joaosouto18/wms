@@ -1,0 +1,22 @@
+<form id="form-cod-inventario-erp" enctype="application/x-www-form-urlencoded" method="post" action="inventario_novo\index\view-vincular-cod-erp-ajax">
+    <div><fieldset id="fieldset-Vinculo"><legend>Vincular no inventário seu respectivo código no ERP</legend>
+
+            <div class="field"><label for="id" class="field optional">Inventário no WMS</label>
+
+                <input type="text" name="id" id="id" value="<?php echo $this->id?>" readonly="readonly"></div>
+            <div class="field"><label for="codInventarioErp" class="field required">*Código deste Inventário no ERP</label>
+
+                <input type="text" name="codInventarioErp" id="codInventarioErp" value="" class="number  required" alt="numero"></div>
+
+    <input type="submit" name="submit" id="submit" value="Vincular" class="btn"></fieldset></div></form>
+<script>
+    $(function () {
+        $('#form-cod-inventario-erp').submit(function () {
+            var codInvenErp = $('#codInventarioErp').val();
+            if (codInvenErp == '' || codInvenErp == null) {
+                alert('É preciso informar o código do inventário!');
+                return false;
+            }
+        })
+    })
+</script>

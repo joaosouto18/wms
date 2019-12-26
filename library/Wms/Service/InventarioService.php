@@ -1204,7 +1204,7 @@ class InventarioService extends AbstractService
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        $embalagemRepo = $this->getRepository('wms:Produto\Embalagem');
+        $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
 
         $codInvErp = $this->find($id)->getCodErp();
 
@@ -1224,8 +1224,9 @@ class InventarioService extends AbstractService
         $inventario = array();
 
         foreach ($contagens as $contagem) {
-            $embalagemEntity = reset($embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC')));
-            if (empty($embalagemEntity)) continue;
+            $embs = $embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC'));
+            if (empty($embs)) continue;
+            $embalagemEntity = reset($embs);
 
             if (isset($inventario[$contagem['COD_PRODUTO']])) {
                 $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = Math::adicionar($inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'], $contagem['QTD']);
@@ -1258,8 +1259,8 @@ class InventarioService extends AbstractService
 
         readfile($filename);
         flush();
-
         unlink($filename);
+        exit;
     }
 
     /*
