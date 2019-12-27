@@ -44,7 +44,8 @@ class PedidoProdutoRepository extends EntityRepository
             $etiquetasEn = $etiquetaRepo->findBy(array('codProduto'=>$codProduto,
                                                        'dscGrade'=>$grade,
                                                        'pedido'=>$codPedido),
-                                                 array('qtdEmbalagem'=>'DESC'));
+                                                 array('codStatus' => 'ASC',
+                                                       'qtdEmbalagem'=>'DESC'));
 
             $qtdPendente = $qtd;
             foreach ($etiquetasEn as $etiquetaEn){

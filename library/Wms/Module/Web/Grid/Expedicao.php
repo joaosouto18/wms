@@ -160,7 +160,7 @@ class Expedicao extends Grid
                 'controllerName' => 'corte',
                 'actionName' => 'habilita-corte-erp',
                 'pkIndex' => 'id',
-                'cssClass' => 'cancelar',
+                'cssClass' => 'habilitar-corte',
                 'params' => array('origin' => 'expedicao'),
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO";
