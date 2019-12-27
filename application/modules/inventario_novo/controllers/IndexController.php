@@ -94,7 +94,7 @@ class Inventario_Novo_IndexController  extends Action
         $this->configurePage($buttons);
     }
 
-    public function criaInventarioAjax()
+    public function criaInventarioAjaxAction()
     {
         if ($this->getRequest()->isPost()) {
             $data = json_decode($this->getRequest()->getRawBody(),true);
