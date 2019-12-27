@@ -916,11 +916,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $arrayCarga['idExpedicao'] = $entityExpedicao;
         $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
 
-        if ($entityCarga->getExpedicao()->getStatus() == Expedicao::STATUS_FINALIZADO) {
+        if ($entityCarga->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
             throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição finalizada");
         }
 
-        if ($entityCarga->getExpedicao()->getStatus() == Expedicao::STATUS_CANCELADO) {
+        if ($entityCarga->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_CANCELADO) {
             throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição cancelada");
         }
 
