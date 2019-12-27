@@ -1495,6 +1495,10 @@ class InventarioService extends AbstractService
             $invEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEndProd");
             /** @var InventarioNovo\InventarioEndProd $invEndProdEn */
             $invEndProdEn = $invEndProdRepo->findOneBy(["inventarioEndereco" => $invEndEn, "codProduto" => $idProduto, "grade" => $dscGrade]);
+
+            if(empty($invEndProdEn))
+                throw new \Exception("Este produto $idProduto grade $dscGrade não está relacionado para inventário neste endereço");
+
             if (!$invEndProdEn->isAtivo())
                 throw new \Exception("Ação negada. Este produto $idProduto grade $dscGrade foi removido do inventário neste endereço ".$invEndProdEn->getInventarioEndereco()->getDepositoEndereco()->getDescricao() ."!", 4002);
         }
