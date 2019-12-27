@@ -130,6 +130,7 @@ class Mobile_ExpedicaoController extends Action {
             $codPessoa = $this->_getParam('cliente', null);
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
+            $sessao->bloquearOs = $this->bloquearOs();
 
             $config = \Zend_Registry::get('config');
             if (empty($config->phalconColetorApi->port))
@@ -225,10 +226,12 @@ class Mobile_ExpedicaoController extends Action {
         $idVolume = $this->_getParam("idVolume");
         $checkout = $this->_getParam("chekcout");
 
-        if ($this->bloquearOs()) {
+        $sessao = new \Zend_Session_Namespace('coletor');
+
+        if ($sessao->bloquearOs == 'S') {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
-            if ($this->bloquearOs() && !$Expedicao->osLiberada()) {
+            if ($sessao->bloquearOs == 'S' && !$Expedicao->osLiberada()) {
                 $form = new SenhaLiberacao();
                 $form->setDefault('idExpedicao', $idExpedicao);
 

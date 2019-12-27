@@ -435,7 +435,7 @@ class OrdemServicoRepository extends EntityRepository
     }
 
     public function buscaOsEnderecoExcluidoDoInventario($idEndereco){
-        $sql = "select os.cod_os 
+        $sql = "select os.cod_os, iceo.COD_INV_CONT_END_OS contOs
                     from ordem_servico os            
                       inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
                       inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end                                        
@@ -449,7 +449,7 @@ class OrdemServicoRepository extends EntityRepository
     }
 
     public function excluiOsInventarioCancelado($idInventario){
-        $sql = "select os.cod_os codOs
+        $sql = "select os.cod_os codOs, iceo.COD_INV_CONT_END_OS contOs
                     from ordem_servico os            
                       inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
                       inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end 
@@ -465,9 +465,14 @@ class OrdemServicoRepository extends EntityRepository
 
     private function excluiOs($idOs){
         $codigos = array();
+        $idsContsOs = array();
         foreach ($idOs as $item) {
             $codigos[] = $item['CODOS'];
+            $idsContsOs[] = $item['CONTOS'];
         }
+
+        $sql = "delete from inventario_cont_end_prod where COD_INV_CONT_END_OS in (" . implode(",", $idsContsOs).")";
+        $this->getEntityManager()->getConnection()->query($sql)->execute();
 
         $sql = "delete from inventario_cont_end_os where cod_os in (" . implode(",", $codigos).")";
         $this->getEntityManager()->getConnection()->query($sql)->execute();

@@ -604,7 +604,7 @@ class InventarioService extends AbstractService
 
                 foreach ($estoques as $estoque) {
                     $prod = [
-                        "codProduto" => $estoque->getCodProduto(),
+                        "idProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
                         "lote" => $estoque->getLote(),
                         "idVolume" => (!empty($estoque->getProdutoVolume()))? $estoque->getProdutoVolume()->getId() : null
@@ -622,7 +622,7 @@ class InventarioService extends AbstractService
             $itensRecontPendente = [];
             foreach ($contagemAnterior as $produto) {
                 $prod = [
-                    "codProduto" => $produto['COD_PRODUTO'],
+                    "idProduto" => $produto['COD_PRODUTO'],
                     "grade" => $produto['DSC_GRADE'],
                     "lote" => $produto['DSC_LOTE'],
                     "idVolume" => $produto['COD_PRODUTO_VOLUME']
@@ -1204,7 +1204,7 @@ class InventarioService extends AbstractService
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        $embalagemRepo = $this->getRepository('wms:Produto\Embalagem');
+        $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
 
         $codInvErp = $this->find($id)->getCodErp();
 
@@ -1224,8 +1224,9 @@ class InventarioService extends AbstractService
         $inventario = array();
 
         foreach ($contagens as $contagem) {
-            $embalagemEntity = reset($embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC')));
-            if (empty($embalagemEntity)) continue;
+            $embs = $embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC'));
+            if (empty($embs)) continue;
+            $embalagemEntity = reset($embs);
 
             if (isset($inventario[$contagem['COD_PRODUTO']])) {
                 $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = Math::adicionar($inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'], $contagem['QTD']);
@@ -1258,8 +1259,8 @@ class InventarioService extends AbstractService
 
         readfile($filename);
         flush();
-
         unlink($filename);
+        exit;
     }
 
     /*
@@ -1322,6 +1323,85 @@ class InventarioService extends AbstractService
 
         $result = fwrite($file,"\r\n");
         fclose($file);
+    }
+
+    public function exportarInventarioModelo3($id)
+    {
+        /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
+        $inventarioEn = $this->find($id);
+        $codInvErp = $inventarioEn->getCodErp();
+
+
+        if (empty($codInvErp)) {
+            throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
+        }
+
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
+
+        $inventariosByErp = $this->findBy(array('codErp' => $codInvErp));
+        foreach ($inventariosByErp as $inventario) {
+            $inventarios[] = $inventario->getId();
+        }
+
+        $filename = "Exp_Inventario($codInvErp).txt";
+        $file = fopen($filename, 'w');
+        $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true);
+        $inventario = array();
+
+        foreach ($contagens as $contagem) {
+            $embs = $embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC'));
+            if (empty($embs)) continue;
+            $embalagemEntity = reset($embs);
+
+            if (isset($inventario[$contagem['COD_PRODUTO']])) {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = Math::adicionar($inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'], $contagem['QTD']);
+            } else {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = $contagem['QTD'];
+                $inventario[$contagem['COD_PRODUTO']]['COD_BARRAS'] = $embalagemEntity->getCodigoBarras();
+                $inventario[$contagem['COD_PRODUTO']]['FATOR'] = $embalagemEntity->getQuantidade();
+            };
+        }
+        foreach ($inventario as $key => $produto) {
+            $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
+            $txtContagem = '001';
+            $txtLocal = '001';
+            $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+
+            if ($produto["FATOR"] == 0) {
+                $produto["FATOR"] = 1;
+            }
+
+            /*
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 9, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $linha = "$txtCodInventario;" . "$txtContagem;" . "$txtCodProduto;" . "$txtCodBarras;" . "$txtQtd" . "\r\n";
+            */
+            $txtQtd = $produto["QUANTIDADE"] / $produto["FATOR"];
+
+            //$txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, ',', ''), 9, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $txtFator = $produto["FATOR"];
+            $linha = "$txtCodInventario;" . "$txtContagem;" . "$txtCodProduto;" . "$txtCodBarras;" . "$txtQtd;" . $txtFator . "\r\n";
+
+            fwrite($file, $linha, strlen($linha));
+        }
+
+        fclose($file);
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-disposition: attachment; filename=" . $filename);
+        header("Expires: 0");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+
+        readfile($filename);
+        flush();
+
+        unlink($filename);
+        exit;
+
     }
 
     public function setCodInventarioERP($idInventario, $codInventarioERP) {

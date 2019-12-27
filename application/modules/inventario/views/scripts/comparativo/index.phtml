@@ -2,39 +2,54 @@
 echo $this->form;
 echo $this->grid;
 ?>
+<div id="div-form-hidded">
+
+</div>
 <script>
     $('.gAction').hide();
-    $('.gMassAction .gSelect').hide();
-    $('.gMassAction').append('<input style="margin: 5px 15px 5px 10px; width: 200px;" type="submit" name="inventariar" id="inventariar" value="Inventário Parcial por produto" class="btn">');
+    $('.gMassAction').append('<button style="margin: 5px 15px 5px 10px; width: 200px;" type="button" name="inventariar" id="inventariar" class="btn">Inventário Parcial por produto</button>');
 
     $("#inventariar").click(function () {
-        var dados = '';
-        var grade = '';
-        $(".gTable input:checked").each(function (e) {
-            if ($(this).val() != 'on') {
-                if (dados == '') {
-                    dados = $(this).val();
-                    grade = "'" + $(this).parent().siblings().nextAll().first().text() + "'";
-                } else {
-                    dados += ',' + $(this).val();
-                    grade += ",'" + $(this).parent().siblings().nextAll().first().text() + "'";
-                }
-            }
-        });
-        window.open("/inventario/parcial/produto?picking=1&pulmao=1&incluirinput=" + dados + "&grades=" + grade);
-        return false;
+        if ($("#modeloInventario").val() !== "N") {
+            var dados = '';
+            var grade = '';
+            $(".gTable input:checked").each(function (e) {
+                    if ($(this).val() != 'on') {
+                        if (dados == '') {
+                            dados = $(this).val();
+                            grade = "'" + $(this).parent().siblings().nextAll().first().text() + "'";
+                        } else {
+                            dados += ',' + $(this).val();
+                            grade += ",'" + $(this).parent().siblings().nextAll().first().text() + "'";
+                        }
+                    }
+            });
+            window.open("/inventario/parcial/produto?picking=1&pulmao=1&incluirinput=" + dados + "&grades=" + grade);
+            return false;
+        } else {
+            let newForm = $("<form method='post' id='form-hided' action='/inventario_novo/index/criar-inventario/criterio/P'>");
+            let itens = [];
+            $(".gTable input:checked").each(function (k, e) {
+                itens.push({codProduto: $(this).val(), grade: $(this).parent().siblings().nextAll().first().text()})
+            });
+            newForm.append($("<input type='hidden' name='itens' value='"+ JSON.stringify(itens)+"'>"));
+            $("#div-form-hidded").append(newForm);
+            newForm.submit();
+        }
     });
     $(".massaction-check-opt").click(function () {
-        var count = 0;
-        $(".gTable input:checked").each(function (e) {
-            count++;
-        });
-        if (count > 15) {
-            $.wmsDialogAlert({
-                title: 'ERRO',
-                msg: 'Limite excedido.'
+        if ($("#modeloInventario").val() !== "N") {
+            var count = 0;
+            $(".gTable input:checked").each(function (e) {
+                count++;
             });
-            return false;
+            if (count > 15) {
+                $.wmsDialogAlert({
+                    title: 'ERRO',
+                    msg: 'Limite excedido.'
+                });
+                return false;
+            }
         }
     });
 </script>

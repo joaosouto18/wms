@@ -74,7 +74,7 @@ angular.module("wms").controller("previewerInventarioCtrl", function ($scope, $h
         if ($scope.itens.length) {
             $("#sending").show();
             $("#div-form").hide();
-            $http.post(URL_MODULO + '/index/criar-inventario', {
+            $http.post(URL_MODULO + '/index/cria-inventario-ajax', {
                 criterio: $scope.criterio,
                 descricao: $scope.dscInventario,
                 selecionados: $scope.itens,

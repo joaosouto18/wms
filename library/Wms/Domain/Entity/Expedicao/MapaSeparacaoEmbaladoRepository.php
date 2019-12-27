@@ -14,31 +14,6 @@ use Wms\Domain\Entity\UsuarioRepository;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-//    public function save($idMapa, $codPessoa, $os, $mapaSeparacaoEmbalado = null, $flush = true)
-//    {
-//        $pessoaEn = $this->getEntityManager()->getReference('wms:Pessoa',$codPessoa);
-//        $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
-//        $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO);
-//        $sequencia = 1;
-//        if (!empty($mapaSeparacaoEmbalado)) {
-//            $sequencia = $mapaSeparacaoEmbalado->getSequencia() + 1;
-//        }
-//
-//        $mapaSeparacaoEmbalado = new MapaSeparacaoEmbalado();
-//        $mapaSeparacaoEmbalado->generateId($this->_em);
-//        $mapaSeparacaoEmbalado->setMapaSeparacao($mapaSeparacaoEn);
-//        $mapaSeparacaoEmbalado->setPessoa($pessoaEn);
-//        $mapaSeparacaoEmbalado->setSequencia($sequencia);
-//        $mapaSeparacaoEmbalado->setStatus($siglaEn);
-//        $mapaSeparacaoEmbalado->setOs($os);
-//        $mapaSeparacaoEmbalado->setUltimoVolume('N');
-//        $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
-//        if ($flush == true) {
-//            $this->getEntityManager()->flush();
-//        }
-//
-//        return $mapaSeparacaoEmbalado;
-//    }
 
     public function save($idMapa, $codPessoa, $os)
     {
@@ -325,11 +300,6 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (empty($pessoa)) throw new \Exception("Nenhum usuário encontrado com esse CPF: $cpfEmbalador");
 
         $idPessoa = $pessoa[0]['COD_PESSOA'];
-//        /** @var OrdemServico[] $arrOs */
-//        $arrOs = $this->_em->getRepository("wms:OrdemServico")->findBy([
-//            "pessoa" => $idPessoa,
-//            "atividade" => Atividade::EMBALAGEM_EXPEDICAO,
-//            "idExpedicao" => $idExpedicao], ['dataFinal'=> 'DESC']);
         $sql = "SELECT * FROM ORDEM_SERVICO WHERE COD_PESSOA = $idPessoa AND COD_ATIVIDADE = " .Atividade::EMBALAGEM_EXPEDICAO." AND COD_EXPEDICAO = $idExpedicao AND DTH_FINAL_ATIVIDADE IS NULL";
 
         $arrOs = $this->_em->getConnection()->query($sql)->fetch();
@@ -339,7 +309,6 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         }
 
         if ($cine) {
-            //return self::addNewOsEmbalagem($idPessoa, $idExpedicao);
             return self::addNewOsEmbalagemHardCode($idPessoa, $idExpedicao);
         }
 
@@ -366,7 +335,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         return $newOsEn;
     }
-    
+
     public function addNewOsEmbalagemHardCode($idPessoa, $idExpedicao)
     {
 

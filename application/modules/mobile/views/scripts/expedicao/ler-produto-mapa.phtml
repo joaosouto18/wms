@@ -321,7 +321,7 @@
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
         if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
-                var urlConf = "http://"+ window.location.host +":<?php echo $this->phalconApiPort?>/conferencia/executar";
+                var urlConf = "http://"+ window.location.hostname +":<?php echo $this->phalconApiPort?>/conferencia/executar";
                 try {
                     $.support.cors = true;
                     $.ajax({

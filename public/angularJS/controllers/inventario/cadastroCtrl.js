@@ -16,7 +16,7 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
 
     let arrConfigColumns = {
         E:  [
-            { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%'},
+            { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%', orderBy: 'cleanEnd'},
             { name: 'caracEnd', label: 'Característica', type: 'ordenator', width: '19%'},
             { name: 'dscArea', label: 'Área', type: 'ordenator', width: '30%'},
             { name: 'dscEstrutura', label: 'Estrutura', type: 'ordenator', width: '28%'}
@@ -25,8 +25,17 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
             { name: 'codProduto', label: 'Código', type: 'ordenator', width: '19%'},
             { name: 'dscProduto', label: 'Descrição', type: 'ordenator', width: '34%'},
             { name: 'grade', label: 'Grade', type: 'ordenator', width: '24%'},
-            { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%'}
+            { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%', orderBy: 'cleanEnd'}
         ]
+    };
+
+    $scope.initCreate = function (criterio) {
+        this.configGridColumns(criterio);
+        if (!isEmpty(itens)) {
+            $scope.resultForm = itens;
+            $scope.ordenarPor("id","result");
+            preparePaginator('resultForm', $scope.resultForm.length);
+        }
     };
 
     $scope.configGridColumns = function (criterio) {
@@ -97,7 +106,8 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
     $scope.elementsPaginator = newPaginator();
     $scope.resultFormPaginator = newPaginator();
 
-    $scope.ordenarPor = function (campo, grid) {
+    $scope.ordenarPor = function (column, grid) {
+        let campo = (column.hasOwnProperty("orderBy")) ? column.orderBy : column.name;
         $scope[grid + 'Direction'] = (campo !== null && $scope[grid + 'OrderBy'] === campo) ? !$scope[grid + 'Direction'] : true;
         $scope[grid + 'OrderBy'] = campo;
     };
@@ -109,27 +119,27 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
         $scope[grid + 'Paginator'].actPage = $scope[grid + 'Paginator'].pages[ $scope[grid + 'Paginator'].actPage.idPage + destination ];
     };
 
-    $scope.requestForm = function (grid) {
+    $scope.requestForm = function () {
         let params = {criterio: $scope.criterio};
         for (let x in $scope.criterioForm) {
             let val = $scope.criterioForm[x];
             if (val) params[x] = val;
         }
-        $scope[grid] = [];
+        $scope.resultForm = [];
         $scope.gridState.requesting = true ;
         $scope.gridState.noResult = false;
         $scope.resultFormPaginator.show = false;
-        ajaxRequestByFormParams(params, rotasRequest[$scope.criterio], grid);
+        ajaxRequestByFormParams(params, rotasRequest[$scope.criterio]);
     };
 
-    let ajaxRequestByFormParams = function (params, rota, grid) {
+    let ajaxRequestByFormParams = function (params, rota) {
         $http.get(URL_MODULO + rota, {params: params}).then(function (response){
-            $scope[grid] = response.data;
+            $scope.resultForm = response.data;
             $scope.ordenarPor("id","result");
         }).then(function () {
             $scope.gridState.requesting = false;
             $scope.gridState.noResult = ( $scope.resultForm.length === 0 ) ;
-            preparePaginator(grid, $scope.resultForm.length);
+            preparePaginator('resultForm', $scope.resultForm.length);
         });
     };
 
