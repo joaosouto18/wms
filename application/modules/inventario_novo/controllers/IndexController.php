@@ -54,41 +54,49 @@ class Inventario_Novo_IndexController  extends Action
 
     public function criarInventarioAction()
     {
-        if ($this->getRequest()->isGet()) {
-            $this->view->criterio = $this->getRequest()->getParam("criterio");
-            $buttons = [];
-            if ($this->view->criterio === \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO) {
-                $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
-                $this->view->preSelectedItens = "1010:UNICA;1020:UNICA";
-                $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
-                $this->view->form->init($utilizaGrade);
-                $buttons[] = array(
-                    'label' => 'Novo Inventário por Endereço',
-                    'cssClass' => 'button',
-                    'urlParams' => array(
-                        'module' => 'inventario_novo',
-                        'controller' => 'index',
-                        'action' => 'criar-inventario',
-                        'criterio' => \Wms\Domain\Entity\InventarioNovo::CRITERIO_ENDERECO
-                    ),
-                    'tag' => 'a'
-                );
-            } else {
-                $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
-                $buttons[] = array(
-                    'label' => 'Novo Inventário por Produto',
-                    'cssClass' => 'button',
-                    'urlParams' => array(
-                        'module' => 'inventario_novo',
-                        'controller' => 'index',
-                        'action' => 'criar-inventario',
-                        'criterio' => \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO
-                    ),
-                    'tag' => 'a'
-                );
+        $this->view->criterio = $this->getRequest()->getParam("criterio");
+        $buttons = [];
+        $source = [];
+        if ($this->view->criterio === \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO) {
+            $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+            if ($this->getRequest()->isPost()) {
+                $list = json_decode($this->getRequest()->getParam('itens'), true);
+                $source = $this->_em->getRepository('wms:InventarioNovo')->getPreSelectedCriarNovoInventario($list);
             }
-            $this->configurePage($buttons);
-        } elseif ($this->getRequest()->isPost()) {
+            $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
+            $this->view->form->init($utilizaGrade);
+            $buttons[] = array(
+                'label' => 'Novo Inventário por Endereço',
+                'cssClass' => 'button',
+                'urlParams' => array(
+                    'module' => 'inventario_novo',
+                    'controller' => 'index',
+                    'action' => 'criar-inventario',
+                    'criterio' => \Wms\Domain\Entity\InventarioNovo::CRITERIO_ENDERECO
+                ),
+                'tag' => 'a'
+            );
+        } else {
+            $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
+            $buttons[] = array(
+                'label' => 'Novo Inventário por Produto',
+                'cssClass' => 'button',
+                'urlParams' => array(
+                    'module' => 'inventario_novo',
+                    'controller' => 'index',
+                    'action' => 'criar-inventario',
+                    'criterio' => \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO
+                ),
+                'tag' => 'a'
+            );
+        }
+        $this->view->preSelectedItens = json_encode($source);
+        $this->configurePage($buttons);
+    }
+
+    public function criaInventarioAjax()
+    {
+        if ($this->getRequest()->isPost()) {
             $data = json_decode($this->getRequest()->getRawBody(),true);
             $objResponse = new stdClass();
             try{

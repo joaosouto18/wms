@@ -1,6 +1,9 @@
 <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/cadastroCtrl.js') ?>"></script>
 <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/previewerCtrl.js') ?>"></script>
-<div ng-app="wms" ng-controller="cadastroInventarioCtrl" ng-init="initCreate('<?php echo $this->criterio ?>', '<?php echo $this->preSelectedItens?>')">
+<script>
+    let itens = <?php echo (!empty($this->preSelectedItens))? $this->preSelectedItens : 'null'?>;
+</script>
+<div ng-app="wms" ng-controller="cadastroInventarioCtrl" ng-init="initCreate('<?php echo $this->criterio ?>')">
     <style>
         tr.gTResultSet:nth-child(even) {
             background-color: #ededed
@@ -62,7 +65,7 @@
                                         <div ng-if="column.type === 'checkBox'">
                                             <input name="checkAllGridResult" id="checkAllGridResult" type="checkbox" ng-model="resultFormPaginator.actPage.selectedAll" ng-change="selectAllPage('resultForm')">
                                         </div>
-                                        <div ng-if="column.type === 'ordenator'"><a href="" title="" class="sort" ng-click="ordenarPor(column.name, 'resultForm')"><span>{{column.label}}</span></a></div>
+                                        <div ng-if="column.type === 'ordenator'"><a href="" title="" class="sort" ng-click="ordenarPor(column, 'resultForm')"><span>{{column.label}}</span></a></div>
                                         <div ng-if="column.type === 'dropAction'" align="center"><span>Ação</span></div>
                                     </td>
                                 </tr>
