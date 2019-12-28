@@ -1478,7 +1478,7 @@ class InventarioService extends AbstractService
 
         if (!$inventarioEn->isLiberado()) throw new \Exception("Ação negada. Este inventário $idInventario está " . $inventarioEn->getDscStatus(), 4000);
 
-        if (!empty($idInvEnd)) {
+        if (!empty($idEndereco)) {
             /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
             $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
 
@@ -1488,19 +1488,19 @@ class InventarioService extends AbstractService
             if (!$invEndEn->isAtivo()) throw new \Exception("Ação negada. Este endereço '".$invEndEn->getDepositoEndereco()->getDescricao()."' foi removido do inventário!", 4001);
 
             if ($invEndEn->isFinalizado()) throw new \Exception("Ação negada. Este endereço '".$invEndEn->getDepositoEndereco()->getDescricao()."' já está finalizado!", 4001);
-        }
 
-        if (!empty($idInvEnd) && !empty($idProduto) && !empty($dscGrade) && $inventarioEn->isPorProduto()) {
-            /** @var InventarioNovo\InventarioEndProdRepository $invEndProdRepo */
-            $invEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEndProd");
-            /** @var InventarioNovo\InventarioEndProd $invEndProdEn */
-            $invEndProdEn = $invEndProdRepo->findOneBy(["inventarioEndereco" => $invEndEn, "codProduto" => $idProduto, "grade" => $dscGrade]);
+            if ($inventarioEn->isPorProduto() && !empty($idProduto) && !empty($dscGrade)) {
+                /** @var InventarioNovo\InventarioEndProdRepository $invEndProdRepo */
+                $invEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEndProd");
+                /** @var InventarioNovo\InventarioEndProd $invEndProdEn */
+                $invEndProdEn = $invEndProdRepo->findOneBy(["inventarioEndereco" => $invEndEn, "codProduto" => $idProduto, "grade" => $dscGrade]);
 
-            if(empty($invEndProdEn))
-                throw new \Exception("Este produto $idProduto grade $dscGrade não está relacionado para inventário neste endereço");
+                if(empty($invEndProdEn))
+                    throw new \Exception("Ação negada. Este produto $idProduto grade $dscGrade não está relacionado para inventário neste endereço", 4002);
 
-            if (!$invEndProdEn->isAtivo())
-                throw new \Exception("Ação negada. Este produto $idProduto grade $dscGrade foi removido do inventário neste endereço ".$invEndProdEn->getInventarioEndereco()->getDepositoEndereco()->getDescricao() ."!", 4002);
+                if (!$invEndProdEn->isAtivo())
+                    throw new \Exception("Ação negada. Este produto $idProduto grade $dscGrade foi removido do inventário neste endereço ".$invEndProdEn->getInventarioEndereco()->getDepositoEndereco()->getDescricao() ."!", 4002);
+            }
         }
 
         return true;
