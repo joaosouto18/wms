@@ -135,7 +135,15 @@ class EstoqueErpRepository extends EntityRepository
                                        INNER JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
                                        INNER JOIN INVENTARIO_CONT_END_OS ICEO ON ICEO.COD_INV_CONT_END = ICE.COD_INV_CONT_END
                                        INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
-                                       WHERE INVN.COD_INVENTARIO IN ($params[inventario])) I
+                                       WHERE INVN.COD_INVENTARIO IN ($params[inventario])
+                                       UNION  
+                                      SELECT DISTINCT 
+                                             IEP.COD_PRODUTO, 
+                                             IEP.DSC_GRADE
+                                        FROM INVENTARIO_ENDERECO_NOVO IEN
+                                        LEFT JOIN INVENTARIO_END_PROD  IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
+                                       WHERE IEN.COD_INVENTARIO IN ($params[inventario])
+                                       ) I
                              ON (I.COD_PRODUTO = ERP.COD_PRODUTO AND I.DSC_GRADE = ERP.DSC_GRADE)
                              OR (I.COD_PRODUTO = WMS.COD_PRODUTO AND I.DSC_GRADE = WMS.DSC_GRADE)";
             }
