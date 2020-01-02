@@ -55,7 +55,7 @@ class InventarioProdutoForm extends Form
                     'label' => 'Buscar',
                     'decorators' => array('ViewHelper'),
                     'attribs' => array('id' => 'btn-buscar'),
-                    'ng-click' => "requestForm('resultForm')"
+                    'ng-click' => "requestForm()"
                 ))
                 ->addElement('button', 'clearForm', array(
                     'class' => 'btn btn-form',
