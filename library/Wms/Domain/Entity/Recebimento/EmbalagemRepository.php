@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 
 class EmbalagemRepository extends EntityRepository
 {
-    public function getEmbalagemByRecebimento($recebimento, $codProduto, $grade, $notArray = false, $lote = null, $desconsiderarValidade = false)
+    public function getEmbalagemByRecebimento($recebimento, $codProduto, $grade, $notArray = false, $lote = null, $controlaData = false)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('re')
@@ -18,9 +18,9 @@ class EmbalagemRepository extends EntityRepository
         if($lote != null) {
             $source->andWhere("re.lote = '$lote'");
         }
-        if ($desconsiderarValidade)
-            $source->andWhere('re.dataValidade is null');
-
+        if ($controlaData) {
+            $source->andWhere("re.dataValidade IS NOT NULL");
+        }
 
         if ($notArray)
             return $source->getQuery()->getResult();
