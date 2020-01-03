@@ -20,6 +20,13 @@ $.Controller.extend('Wms.Controllers.FiltroNotaFiscal',
                 $( "#idFornecedor" ).val('');
             }
         });
+
+        this.autocompleteFabricante();
+        $( "#fabricante" ).keyup(function(event) {
+            if ($( "#fabricante" ).val() == '') {
+                $( "#idFabricante" ).val('');
+            }
+        });
     },
     
     autocompleteFornecedor: function(  ){
@@ -40,6 +47,28 @@ $.Controller.extend('Wms.Controllers.FiltroNotaFiscal',
             },
             search : function() {
                 $("#idFornecedor").val('');
+            }
+        });
+    },
+
+    autocompleteFabricante: function(  ){
+        $( "#fabricante" ).autocomplete({
+            source: function(data, callback) {
+                $.ajax({
+                    global: false,
+                    url:  '/fornecedor/get-fabricante-json',
+                    dataType: 'json',
+                    data: data,
+                    success: callback
+                });
+            },
+            minLength: 3,
+            autoFocus: true,
+            select: function( event, ui ) {
+                $( "#idFabricante" ).val( ui.item.id);
+            },
+            search : function() {
+                $("#idFabricante").val('');
             }
         });
     }

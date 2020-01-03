@@ -131,4 +131,30 @@ class Web_FornecedorController extends \Wms\Controller\Action
         $this->_helper->json($array, true);
     }
 
+    public function getFabricanteJsonAction()
+    {
+        $term = $this->getRequest()->getParam('term');
+        $term = mb_strtoupper($term, 'UTF-8');
+
+        $em = $this->getEntityManager();
+
+        // busco fornecedores
+        $dql = $this->em->createQueryBuilder()
+            ->select('f.id, f.nome')
+            ->from('wms:Fabricante', 'f')
+            ->where("f.nome LIKE UPPER('%{$term}%')");
+
+        $fabricantes = $dql->getQuery()->execute();
+
+        $array = array();
+        foreach ($fabricantes as $fabricante) {
+            $array[] = array(
+                'id' => $fabricante['id'],
+                'value' => $fabricante['nome'],
+            );
+        }
+
+        $this->_helper->json($array, true);
+    }
+
 }

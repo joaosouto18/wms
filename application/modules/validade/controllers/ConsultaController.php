@@ -22,16 +22,12 @@ class Validade_ConsultaController extends Action {
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
             $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['GRADE'], $value['QTD']);
-            if(reset($vetEmbalagens) != null){
-                $result[$key]['QTD_MAIOR'] = reset($vetEmbalagens);
+            if(is_array($vetEmbalagens)) {
+                $qtdEstoque = implode(' + ', $vetEmbalagens);
             }else{
-                $result[$key]['QTD_MAIOR'] = ' - ';
+                $qtdEstoque = $vetEmbalagens;
             }
-            if(count($vetEmbalagens) > 1){
-                $result[$key]['QTD_MENOR'] = end($vetEmbalagens);
-            }else{
-                $result[$key]['QTD_MENOR'] = ' - ';
-            }
+            $result[$key]['QTD_MAIOR'] = $qtdEstoque;
         }
         $grid = new ValidadeGrid();
         $this->view->grid = $grid->init($result);

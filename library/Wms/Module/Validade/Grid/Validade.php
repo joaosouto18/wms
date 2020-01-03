@@ -39,25 +39,28 @@ class Validade extends Grid
                 'index' => 'LINHA_SEPARACAO',
             ))
             ->addColumn(array(
-                'label' => 'Fornecedor',
-                'index' => 'FORNECEDOR',
+                'label' => 'Fabricante/Fornecedor',
+                'index' => 'FABRICANTE',
             ))
             ->addColumn(array(
                 'label' => 'Endereço',
                 'index' => 'ENDERECO',
             ))
             ->addColumn(array(
+                'label' => 'Picking',
+                'index' => 'PICKING'
+            ))
+            ->addColumn(array(
                 'label' => 'Validade',
                 'index' => 'VALIDADE',
             ))
             ->addColumn(array(
-                'label' => 'Emb. Maior',
-                'index' => 'QTD_MAIOR',
-                'width' => 'auto'
+                'label' => 'Dias P/ Vencer',
+                'index' => 'DIASVENCER'
             ))
             ->addColumn(array(
-                'label' => 'Emb. Menor',
-                'index' => 'QTD_MENOR',
+                'label' => 'Quantidade',
+                'index' => 'QTD_MAIOR',
                 'width' => 'auto'
             ))
             ->addLogicalFeatured(
