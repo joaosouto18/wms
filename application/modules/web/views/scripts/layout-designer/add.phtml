@@ -1,0 +1,77 @@
+<?php
+$this->headLink()->appendStylesheet('/css/layout-designer.css');
+?>
+<script src="<?php echo $this->baseUrl('angularJs/controllers/layoutDesigner/layoutDesignerCtrl.js') ?>"></script>
+<div class="ld-content-area" ng-controller="layoutDesingerCtrl" ng-init="startList()">
+    <form>
+        <dt id="Template-label">&nbsp;</dt>
+        <dd id="Template-element">
+            <fieldset id="fieldset-Template">
+                <dl>
+                    <div class="field"><label for="template" class="field optional">Layout para:</label>
+                        <select name="template" id="template" mostrarselecione="1">
+                            <option value="" label="Selecione...">Selecione...</option>
+                            <option value="1" label="Etiqueta de Separação">Etiqueta de Separação</option>
+                            <option value="2" label="Mapa de Separação">Mapa de Separação</option>
+                            <option value="3" label="Etiqueta de Produto">Etiqueta de Produto</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="largura" class="field optional">Largura</label>
+                        <input type="text" name="largura" id="largura" ng-model="displayArea.width" ng-change="changeSize(this)" size="8">
+                    </div>
+                    <div class="field">
+                        <label for="altura" class="field optional">Altura</label>
+                        <input type="text" name="altura" id="altura" ng-model="displayArea.height" size="8">
+                    </div>
+                    <div class="field"><label for="component" class="field optional">Componente</label>
+                        <select ng-model="componentForm.selected" ng-options="component.desc for component in componentForm.list">
+                            <option value="">Selecione o componente</option>
+                        </select>
+                        <button ng-click="addComponent()" class="btn">Adicionar</button>
+                    </div>
+                    <div class="field">
+                    </div>
+                </dl>
+            </fieldset>
+        </dd>
+    </form>
+    <div id="display-area" class="ld-content">
+        <div id="side_bar_components" class="side-bar-components">
+            <h4>Componentes</h4>
+            <div id="components-list">
+                <p class="component-item" ng-class="{'selected': component.selected}" ng-repeat="component in componentAdded" ng-click="selectComponent(component)">{{component.desc}}</p>
+            </div>
+        </div>
+        <div class="canvas">
+            <h3>Preview</h3>
+            <div class="ld-drawing-area" style="width: {{displayArea.width + displayArea.unit}}; height: {{displayArea.height + displayArea.unit}};">
+                <div class="component-drwg" ng-click="selectComponent(component)" ng-class="{'selected': component.selected}"
+                     data-x="{{component.posX}}" data-y="{{component.posY}}"
+                     style="width: {{component.width}}px; height: {{component.height}}px;  transform: translate({{component.posX}}px, {{component.posY}}px);"
+                     ng-repeat="component in componentAdded" ld-interact="prepareInteract">
+                    <p ng-if="component.type == 'text'">{{component.desc}}</p>
+                    <img ng-if="component.type == 'img'" width="{{component.width}}" height="{{component.height}}" alt="Logomarca" src="{{component.src}}"/>
+                </div>
+            </div>
+        </div>
+        <div id="side_bar_options" class="side-bar-options">
+            <h4>Configurações</h4>
+            <div class="ld-row align-center">
+                <div class="ld-field">
+                    <label for="posX" class="field optional">Pos. X</label>
+                    <input type="text" id="posX" ng-bind="" size="5">
+                </div>
+                <div class="ld-field">
+                    <label for="inp2" class="field optional">Pos. Y</label>
+                    <input type="text" id="inp2" size="5">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row ld-btn-group">
+    <button class="btn btn-form btn-danger">Limpar</button>
+    <button class="btn btn-form btn-primary">Salvar</button>
+</div>
+<script src="<?php echo $this->baseUrl('interactJs/interactJs.min.js') ?>"></script>

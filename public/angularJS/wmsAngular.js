@@ -20,6 +20,15 @@ angular.module("wms", ['uiDialogService', 'ui.mask'])
     };
 });
 
+angular.module("wms").directive("ldInteract", function(){
+    return {
+        link: function(scope, elm, args){
+            scope.$eval(args.ldInteract).call([], elm[0]);
+        }
+    }
+});
+
+
 function typeSensitiveComparatorFn () {
     return function(v1, v2) {
         // If we don't get strings, just compare by index
