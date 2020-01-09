@@ -65,7 +65,7 @@ class FormComparativo extends Form
                 'class' => 'filtro'
             ))
             ->addElement('text', 'inventario', array(
-                'size' => 10,
+                'size' => 50,
                 'label' => 'Num. Inventario',
             ))
             ->addElement('select', 'divergencia', array(

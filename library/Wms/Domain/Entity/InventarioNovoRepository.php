@@ -177,7 +177,8 @@ class InventarioNovoRepository extends EntityRepository
                 c.descricao as caracEnd,
                 aa.descricao as dscArea,
                 ea.descricao as dscEstrutura,
-                de.rua, de.predio, de.nivel, de.apartamento")
+                de.rua, de.predio, de.nivel, de.apartamento,
+                REPLACE(de.descricao, '.', '') cleanEnd")
             ->from('wms:Deposito\Endereco', 'de')
             ->innerJoin('de.caracteristica', 'c')
             ->innerJoin('de.estruturaArmazenagem', 'ea')
@@ -306,7 +307,8 @@ class InventarioNovoRepository extends EntityRepository
                 p.id as codProduto,
                 p.grade,
                 p.descricao as dscProduto,
-                de.rua, de.predio, de.nivel, de.apartamento")
+                de.rua, de.predio, de.nivel, de.apartamento,
+                REPLACE(de.descricao, '.', '') cleanEnd")
             ->from('wms:Enderecamento\Estoque', 'e')
             ->innerJoin('e.depositoEndereco', 'de')
             ->innerJoin('e.produto', 'p')
@@ -355,7 +357,8 @@ class InventarioNovoRepository extends EntityRepository
                     p.id as codProduto,
                     p.grade,
                     p.descricao as dscProduto,
-                    de.rua, de.predio, de.nivel, de.apartamento")
+                    de.rua, de.predio, de.nivel, de.apartamento,
+                    REPLACE(de.descricao, '.', '') cleanEnd")
                 ->from("wms:Produto", 'p')
                 ->innerJoin('p.classe', 'cl')
                 ->innerJoin('p.fabricante', 'f')
@@ -395,6 +398,67 @@ class InventarioNovoRepository extends EntityRepository
 
             $arr = array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR);
         }
+
+        return $arr;
+    }
+
+    public function getPreSelectedCriarNovoInventario($itens)
+    {
+        $query1 = $this->_em->createQueryBuilder()
+            ->select("
+                de.id,
+                de.descricao as dscEndereco, 
+                c.descricao as caracEnd,
+                p.id as codProduto,
+                p.grade,
+                p.descricao as dscProduto,
+                de.rua, de.predio, de.nivel, de.apartamento,
+                REPLACE(de.descricao, '.', '') cleanEnd")
+            ->from('wms:Enderecamento\Estoque', 'e')
+            ->innerJoin('e.depositoEndereco', 'de')
+            ->innerJoin('e.produto', 'p')
+            ->innerJoin('p.classe', 'cl')
+            ->innerJoin('p.fabricante', 'f')
+            ->innerJoin('de.caracteristica', 'c')
+            ->innerJoin('p.linhaSeparacao', 'ls')
+        ;
+
+        $query1->distinct(true);
+
+        foreach($itens as $iten) {
+            $query1->orWhere("p.id = '$iten[codProduto]' AND p.grade = '$iten[grade]'");
+        }
+
+        $query1->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
+
+        $query2 = $this->_em->createQueryBuilder()
+            ->select("
+                de.id,
+                de.descricao as dscEndereco, 
+                c.descricao as caracEnd,
+                p.id as codProduto,
+                p.grade,
+                p.descricao as dscProduto,
+                de.rua, de.predio, de.nivel, de.apartamento,
+                CONCAT(CONCAT(CONCAT(de.rua, de.predio), de.nivel), de.apartamento) endConcated")
+            ->from("wms:Produto", 'p')
+            ->innerJoin('p.classe', 'cl')
+            ->innerJoin('p.fabricante', 'f')
+            ->innerJoin('p.linhaSeparacao', 'ls')
+            ->leftJoin('p.embalagens', 'pe')
+            ->leftJoin('p.volumes', 'pv')
+            ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco')
+            ->innerJoin('de.caracteristica', 'c');
+
+        $query2->distinct(true);
+
+        foreach($itens as $iten) {
+            $query2->orWhere("p.id = '$iten[codProduto]' AND p.grade = '$iten[grade]'");
+        }
+
+        $query2->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
+
+        $arr = array_unique(array_merge($query1->getQuery()->getResult(), $query2->getQuery()->getResult()), SORT_REGULAR);
 
         return $arr;
     }
@@ -448,7 +512,11 @@ class InventarioNovoRepository extends EntityRepository
                             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN2 ON INVN.COD_INVENTARIO = IEN2.COD_INVENTARIO  AND IEN2.IND_ATIVO = 'S'
                             LEFT JOIN INVENTARIO_END_PROD IEP2 ON IEN2.COD_INVENTARIO_ENDERECO = IEP2.COD_INVENTARIO_ENDERECO AND IEP2.IND_ATIVO = 'S'
                             WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido)
-                  ) INVATV ON INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO OR (INVATV.COD_PRODUTO = IEP.COD_PRODUTO AND INVATV.DSC_GRADE = IEP.DSC_GRADE)
+                  ) INVATV ON CASE WHEN INV.IND_CRITERIO = 'E' THEN
+                                CASE WHEN INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO THEN 1 ELSE 0 END
+                              ELSE
+                                CASE WHEN INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO AND INVATV.COD_PRODUTO = IEP.COD_PRODUTO AND INVATV.DSC_GRADE = IEP.DSC_GRADE THEN 1 ELSE 0 END
+                              END = 1
                 WHERE IEN.COD_INVENTARIO = $id AND 
                       CASE WHEN ( IEP.COD_PRODUTO IS NULL) OR (
                           (IEP.COD_PRODUTO = REP.COD_PRODUTO AND IEP.DSC_GRADE = REP.DSC_GRADE) 
