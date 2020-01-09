@@ -293,7 +293,7 @@ class Inventario_Novo_IndexController  extends Action
             if ($modelo == 1) {
                 $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario);
             } elseif ($modelo == 2){
-            $caminho = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+                $caminho = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
                 if (empty($caminho) || !is_dir($caminho))
                     throw new Exception("O diretório de importação/exportação não foi definido! Por favor, defina em <b>Sistemas->Configurações->Parâmetros do sistema->Diretório dos Arquivos de Importação</b>");
                 $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario, $caminho);
