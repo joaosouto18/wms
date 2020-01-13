@@ -20,6 +20,8 @@ class Validade_ConsultaController extends Action {
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
         $result = $produtoRepo->getProdutoByParametroVencimento($params);
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
+        $utilizaGrade = $this->getSystemParameterValue('UTILIZA_GRADE');
         foreach ($result as $key => $value) {
             $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['GRADE'], $value['QTD']);
             if(is_array($vetEmbalagens)) {
@@ -32,8 +34,8 @@ class Validade_ConsultaController extends Action {
         $grid = new ValidadeGrid();
         $this->view->grid = $grid->init($result);
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
-            $pdfReport = new \Wms\Module\Validade\Report\ProdutosAVencer();
-            $pdfReport->generatePDF($result, $params['dataReferencia']);
+            $pdfReport = new \Wms\Module\Validade\Report\ProdutosAVencer("L","mm","A4");
+            $pdfReport->generatePDF($result, $params['dataReferencia'], $utilizaGrade);
         }
         if (isset($params['gerarCsv']) && !empty($params['gerarCsv'])) {
             $this->exportCSV($result,'produtos_a_vencer',true);
