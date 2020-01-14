@@ -5,6 +5,10 @@
     min-height: 320px;
 }
 
+.ld-content-area {
+    width: 100%;
+}
+
 .canvas {
     display: flex;
     margin: 5px 10px;
@@ -108,4 +112,8 @@
     flex-grow: 1;
     flex-direction: column;
     padding: 2px 5px;
+}
+
+.ld-field.btn-field {
+    margin-top: 19px;
 }

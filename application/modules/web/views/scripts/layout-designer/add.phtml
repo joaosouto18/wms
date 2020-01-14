@@ -3,39 +3,40 @@ $this->headLink()->appendStylesheet('/css/layout-designer.css');
 ?>
 <script src="<?php echo $this->baseUrl('angularJs/controllers/layoutDesigner/layoutDesignerCtrl.js') ?>"></script>
 <div class="ld-content-area" ng-controller="layoutDesingerCtrl" ng-init="startList()">
-    <form>
-        <dt id="Template-label">&nbsp;</dt>
-        <dd id="Template-element">
-            <fieldset id="fieldset-Template">
-                <dl>
-                    <div class="field"><label for="template" class="field optional">Layout para:</label>
-                        <select name="template" id="template" mostrarselecione="1">
-                            <option value="" label="Selecione...">Selecione...</option>
-                            <option value="1" label="Etiqueta de Separação">Etiqueta de Separação</option>
-                            <option value="2" label="Mapa de Separação">Mapa de Separação</option>
-                            <option value="3" label="Etiqueta de Produto">Etiqueta de Produto</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="largura" class="field optional">Largura</label>
-                        <input type="text" name="largura" id="largura" ng-model="displayArea.width" ng-change="changeSize(this)" size="8">
-                    </div>
-                    <div class="field">
-                        <label for="altura" class="field optional">Altura</label>
-                        <input type="text" name="altura" id="altura" ng-model="displayArea.height" size="8">
-                    </div>
-                    <div class="field"><label for="component" class="field optional">Componente</label>
-                        <select ng-model="componentForm.selected" ng-options="component.desc for component in componentForm.list">
-                            <option value="">Selecione o componente</option>
-                        </select>
-                        <button ng-click="addComponent()" class="btn">Adicionar</button>
-                    </div>
-                    <div class="field">
-                    </div>
-                </dl>
-            </fieldset>
-        </dd>
-    </form>
+    <fieldset id="fieldset-Template">
+        <div class="ld-row">
+            <div class="ld-field">
+                <label for="template" class="field optional">Layout para:</label>
+                <select name="template" class="disable-enter" id="template" mostrarselecione="1">
+                    <option value="" label="Selecione...">Selecione...</option>
+                    <option value="1" label="Etiqueta de Separação">Etiqueta de Separação</option>
+                    <option value="2" label="Mapa de Separação">Mapa de Separação</option>
+                    <option value="3" label="Etiqueta de Produto">Etiqueta de Produto</option>
+                </select>
+            </div>
+            <div class="ld-field">
+                <label for="largura" class="field optional">Largura</label>
+                <input type="text" class="disable-enter" name="largura" id="largura" ng-keyup="checkEnter($event)" ng-model="displayArea.width" ng-blur="changeSizeArea()" size="8">
+            </div>
+            <div class="ld-field">
+                <label for="altura" class="field optional">Altura</label>
+                <input type="text" class="disable-enter" name="altura" id="altura" ng-keyup="checkEnter($event)" ng-model="displayArea.height" ng-blur="changeSizeArea()" size="8">
+            </div>
+            <div class="ld-field">
+                <label for="unit" class="field optional">Unid</label>
+                <select type="text" class="disable-enter" name="unit" id="unit" ng-model="displayArea.unit" ng-options="unitIten.dsc for unitIten in unitList" ng-change="updateUnitArea()"></select>
+            </div>
+            <div class="ld-field">
+                <label for="component" class="field optional">Componente</label>
+                <select ng-model="componentForm.selected" ng-options="component.desc for component in componentForm.list">
+                    <option value="">Selecione o componente</option>
+                </select>
+            </div>
+            <div class="ld-field btn-field">
+                <button ng-click="addComponent()" class="btn">Adicionar</button>
+            </div>
+        </div>
+    </fieldset>
     <div id="display-area" class="ld-content">
         <div id="side_bar_components" class="side-bar-components">
             <h4>Componentes</h4>
@@ -45,13 +46,13 @@ $this->headLink()->appendStylesheet('/css/layout-designer.css');
         </div>
         <div class="canvas">
             <h3>Preview</h3>
-            <div class="ld-drawing-area" style="width: {{displayArea.width + displayArea.unit}}; height: {{displayArea.height + displayArea.unit}};">
+            <div class="ld-drawing-area" style="width: {{displayArea.realWidth}}px; height: {{displayArea.realHeight}}px;">
                 <div class="component-drwg" ng-click="selectComponent(component)" ng-class="{'selected': component.selected}"
-                     data-x="{{component.posX}}" data-y="{{component.posY}}"
-                     style="width: {{component.width}}px; height: {{component.height}}px;  transform: translate({{component.posX}}px, {{component.posY}}px);"
-                     ng-repeat="component in componentAdded" ld-interact="prepareInteract">
+                     data-x="{{component.realX}}" data-y="{{component.realY}}"
+                     style="width: {{component.realWidth}}px; height: {{component.realHeight}}px;  transform: translate({{component.realX}}px, {{component.realY}}px);"
+                     ng-repeat="component in componentAdded" ld-interact="prepareInteract" ld-component-id="{{component.$$hashKey}}" >
                     <p ng-if="component.type == 'text'">{{component.desc}}</p>
-                    <img ng-if="component.type == 'img'" width="{{component.width}}" height="{{component.height}}" alt="Logomarca" src="{{component.src}}"/>
+                    <img ng-if="component.type == 'img'" width="{{component.realWidth}}" height="{{component.realHeight}}" alt="Logomarca" src="{{component.src}}"/>
                 </div>
             </div>
         </div>
@@ -60,11 +61,11 @@ $this->headLink()->appendStylesheet('/css/layout-designer.css');
             <div class="ld-row align-center">
                 <div class="ld-field">
                     <label for="posX" class="field optional">Pos. X</label>
-                    <input type="text" id="posX" ng-bind="" size="5">
+                    <input type="text" id="componentConfig_posX" ng-keyup="checkEnter($event)" ng-model="componentConfig.posX" ng-blur="changePosComponent()" size="5">
                 </div>
                 <div class="ld-field">
-                    <label for="inp2" class="field optional">Pos. Y</label>
-                    <input type="text" id="inp2" size="5">
+                    <label for="posY" class="field optional">Pos. Y</label>
+                    <input type="text" id="componentConfig_posY" ng-keyup="checkEnter($event)" ng-model="componentConfig.posY" ng-blur="changePosComponent()" size="5">
                 </div>
             </div>
         </div>
