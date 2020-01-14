@@ -281,6 +281,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
+                        $row = array_change_key_case($row,CASE_UPPER);
                         if (!in_array($row['COD_PRODUTO'],$dadosFiltrar)) {
                             $dadosFiltrar[] = $row['COD_PRODUTO'];
                         }
