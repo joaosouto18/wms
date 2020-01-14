@@ -1086,7 +1086,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setNumero($numero);
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
-            $notaFiscalEntity->setDataEmissao($objDataEmissao);
+            $notaFiscalEntity->setDataEmissao(new \DateTime);
             $notaFiscalEntity->setFornecedor($fornecedorEntity);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);
