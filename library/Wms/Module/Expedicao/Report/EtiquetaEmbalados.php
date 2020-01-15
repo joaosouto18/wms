@@ -261,22 +261,22 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 6, $impressao, 0, 'L');
             $this->Line(0,7,80,7);
 
-            $this->SetFont('Arial', 'B', 12.5);
-            $impressao = utf8_decode('CLIENTE: '."\n");
+            $this->SetFont('Arial', 'B', 16);
+            $impressao = utf8_decode($volume['DSC_PLACA_CARGA']."\n");
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 11.3);
             $impressao = utf8_decode(substr($volume['NOM_PESSOA']."\n",0,30));
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', '', 10);
+            $this->SetFont('Arial', 'B', 10);
             $impressao = utf8_decode(substr($volume['DSC_ENDERECO'].', '.$volume['NUM_ENDERECO'] ."\n",0,50));
             $this->MultiCell(110, 5, $impressao, 0, 'L');
             $impressao = utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
             $this->Line(0,30,110,30);
 
-            $this->SetFont('Arial', '', 10);
+            $this->SetFont('Arial', 'B', 10);
 
             if ($fechaEmbaladosNoFinal)
                 $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
