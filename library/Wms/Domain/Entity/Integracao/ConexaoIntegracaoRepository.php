@@ -234,7 +234,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $arr = pg_fetch_all($result);
 
             if (!$arr)
-                $arr = null;
+                $arr = array();
 
             pg_close($conexao);
             return $arr;
