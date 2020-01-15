@@ -1150,6 +1150,12 @@ class MapaSeparacaoRepository extends EntityRepository {
             throw $e;
         }
 
+        $this->getEntityManager()->flush();
+
+        if($checkout == true){
+            return  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
+        }
+
         return true;
 
     }
