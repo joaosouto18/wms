@@ -1259,6 +1259,23 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
+        //VERIFICO SE O CÓDIGO DE BARRAS PERTENCE A ALGUM PRODUTO DO MAPA
+        if (count($result) == 0) {
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
+            $msgErro = "O Produto " . $produtoEn->getDescricao() . " não pertence ";
+            if ($codPessoa != null) {
+                $msgErro .= " ao cliente selecionado";
+            } else {
+                if ($utilizaQuebra == "S") {
+                    $msgErro .= " ao mapa " . $idMapa;
+                } else {
+                    $msgErro .= " a expedicao " . $idExpedicao;
+                }
+            }
+            throw new \Exception($msgErro);
+        }
+
         $fatorCodBarrasBipado = $result[0]['QTD_EMBALAGEM'];
         $codBarrasEmbalado = $result[0]['IND_EMBALADO'];
         $codProdutoEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
