@@ -41,7 +41,7 @@ $this->headLink()->appendStylesheet('/css/layout-designer.css');
         <div id="side_bar_components" class="side-bar-components">
             <h4>Componentes</h4>
             <div id="components-list">
-                <p class="component-item" ng-class="{'selected': component.selected}" ng-repeat="component in componentAdded" ng-click="selectComponent(component)">{{component.desc}}</p>
+                <p class="component-item" ng-class="{'selected': component.selected}" ng-repeat="component in componentAdded" ng-click="selectComponent(component)">{{component.label}}</p>
             </div>
         </div>
         <div class="canvas">
@@ -51,8 +51,8 @@ $this->headLink()->appendStylesheet('/css/layout-designer.css');
                      data-x="{{component.realX}}" data-y="{{component.realY}}"
                      style="width: {{component.realWidth}}px; height: {{component.realHeight}}px;  transform: translate({{component.realX}}px, {{component.realY}}px);"
                      ng-repeat="component in componentAdded" ld-interact="prepareInteract" ld-component-id="{{component.$$hashKey}}" >
-                    <p ng-if="component.type == 'text'">{{component.desc}}</p>
-                    <img ng-if="component.type == 'img'" width="{{component.realWidth}}" height="{{component.realHeight}}" alt="Logomarca" src="{{component.src}}"/>
+                    <p ng-if="component.isText()">{{component.exampleValue}}</p>
+                    <img ng-if="component.isImage()" width="{{component.realWidth}}" height="{{component.realHeight}}" alt="Logomarca" src="{{component.src}}"/>
                 </div>
             </div>
         </div>
@@ -61,11 +61,11 @@ $this->headLink()->appendStylesheet('/css/layout-designer.css');
             <div class="ld-row align-center">
                 <div class="ld-field">
                     <label for="posX" class="field optional">Pos. X</label>
-                    <input type="text" id="componentConfig_posX" ng-keyup="checkEnter($event)" ng-model="componentConfig.posX" ng-blur="changePosComponent()" size="5">
+                    <input type="text" id="componentConfig_posX" ng-keyup="checkEnter($event)" ng-model="componentConfig.posX" ng-blur="changePosComponent(componentConfig)" size="5">
                 </div>
                 <div class="ld-field">
                     <label for="posY" class="field optional">Pos. Y</label>
-                    <input type="text" id="componentConfig_posY" ng-keyup="checkEnter($event)" ng-model="componentConfig.posY" ng-blur="changePosComponent()" size="5">
+                    <input type="text" id="componentConfig_posY" ng-keyup="checkEnter($event)" ng-model="componentConfig.posY" ng-blur="changePosComponent(componentConfig)" size="5">
                 </div>
             </div>
         </div>

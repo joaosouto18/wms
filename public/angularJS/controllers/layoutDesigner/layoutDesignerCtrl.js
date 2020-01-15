@@ -1,7 +1,7 @@
 angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $filter, uiDialogService) {
 
     let convertToPx = function(val, unit) {
-        switch (unit) {
+        switch (unit.id) {
             case 'px':
                 return parseFloat(val);
             case 'mm':
@@ -12,62 +12,100 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     };
 
     let convertPxTo = function(val, unit) {
-        switch (unit) {
+        switch (unit.id) {
             case 'px':
-                return parseFloat(val);
+                return parseFloat(val).toFixed(3);
             case 'mm':
-                return parseFloat(val) / 3.7795275590551;
+                return (parseFloat(val) / 3.7795275590551).toFixed(3);
             case 'cm':
-                return (parseFloat(val) / 3.7795275590551) / 10;
+                return ((parseFloat(val) / 3.7795275590551) / 10).toFixed(3);
         }
     };
 
-    let Component = class Component{
-        constructor(dataInit, dpa) {
-            this.posX = 0;
-            this.realX = 0;
-            this.posY = 0;
-            this.realY = 0;
-            this.posZ = 0;
+    class Component{
+        constructor(dataInit, dpa, posZ) {
+            let centerArea = dpa.getCenter();
+            this.realX = this.posX = (centerArea.x - (dataInit.minW / 2));
+            this.realY = this.posY = (centerArea.y - (dataInit.minH / 2));
+            this.posZ = posZ;
             this.selected = false;
             this.width = dataInit.minW;
             this.height = dataInit.minH;
             this.realWidth = dataInit.minW;
             this.realHeight = dataInit.minH;
+            this.label = dataInit.desc;
+        }
+
+        isSelected() {
+            return this.selected;
+        }
+
+        isImage() {
+            return (this instanceof ImageComponent);
+        }
+
+        isText() {
+            return (this instanceof TextComponent)
         }
 
         select() {
             this.selected = true;
+            return this;
         }
 
-        updateUnit(unit, decimals = 3) {
-            this.width = convertPxTo(this.realWidth, unit.id).toFixed((decimals) );
-            this.height = convertPxTo(this.realHeight, unit.id).toFixed(decimals);
-            this.posX = convertPxTo(this.realX, unit.id).toFixed(decimals);
-            this.posY = convertPxTo(this.realY, unit.id).toFixed(decimals);
+        unSelect() {
+            this.selected = false;
+            return this;
         }
 
+        updateUnit(unit) {
+            this.updateUnitSize(unit);
+            this.updateUnitPos(unit);
+            return this;
+        }
 
-    };
+        updateUnitSize(unit) {
+            this.width = convertPxTo(this.realWidth, unit);
+            this.height = convertPxTo(this.realHeight, unit);
+            return this;
+        }
+
+        updateUnitPos(unit) {
+            this.posX = convertPxTo(this.realX, unit);
+            this.posY = convertPxTo(this.realY, unit);
+            return this;
+        }
+
+        verifyPositionOut(dpa) {
+            let minX = parseFloat(this.realX) + (parseFloat(this.realWidth) + 1);
+            let minY = parseFloat(this.realY) + (parseFloat(this.realHeight) + 1);
+            return (dpa.realWidth < minX || dpa.realHeight < minY);
+        }
+    }
+
+    class ImageComponent extends Component {
+        constructor(dataInit, dpa, posZ) {
+            super(dataInit, dpa, posZ);
+            this.src = dataInit.src;
+        }
+    }
+
+    class TextComponent extends Component {
+        constructor(dataInit, dpa, posZ) {
+            super(dataInit, dpa, posZ);
+            this.exampleValue = dataInit.exampleValue;
+        }
+    }
 
     let verifyPosItensOutArea = function (dpa) {
         let isOut = false;
         $.each($scope.componentAdded, function (k, component) {
-            if (verifyPositionOut(dpa, component)) {
-                isOut = true;
-                return;
-            }
+            isOut = component.verifyPositionOut(dpa);
+            if (isOut) return;
         });
         return isOut;
     };
 
-    let verifyPositionOut = function(dpa, component) {
-        let minX = parseFloat(component.realX) + (parseFloat(component.realWidth) + 1);
-        let minY = parseFloat(component.realY) + (parseFloat(component.realHeight) + 1);
-        return (dpa.realWidth < minX || dpa.realHeight < minY);
-    };
-
-    $scope.componentsList = [];
     $scope.componentAdded = [];
     $scope.unitList = [
         {id:'px', dsc: "Pixel"},
@@ -96,42 +134,14 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         }
     };
 
-    let initComponent = function(dataComp) {
-        let centerArea = $scope.displayArea.getCenter();
-
-        component.selected = false;
-        component.realWidth = component.minW;
-        component.realHeight = component.minH;
-        component.posX = (centerArea.x - (component.realWidth / 2));
-        component.bkpX = component.realX = component.posX;
-        component.posY = (centerArea.y - (component.realHeight / 2));
-        component.bkpY = component.realY = component.posY;
-        component.posZ = ($scope.componentsList.length + 1);
-        component.select = function() { this.selected = true};
-        component.updateUnit = function () {
-            let unit = $scope.displayArea.unit;
-            let rwp = this;
-            let rhp = component.realHeight;
-            let rxp = component.realX;
-            let ryp = component.realY;
-
-            component.width = convertPxTo(rwp, unit.id).toFixed(3);
-            component.height = convertPxTo(rhp, unit.id).toFixed(3);
-            component.posX = convertPxTo(rxp, unit.id).toFixed(3);
-            component.posY = convertPxTo(ryp, unit.id).toFixed(3);
-        };
-
-        return component
-    };
-
-    let repositionComponent = function (target) {
-        let x = parseFloat(target.getAttribute('data-x'));
-        let y = parseFloat(target.getAttribute('data-y'));
+    let repositionComponent = function (x, y) {
         let component = $scope.componentConfig;
-        if (!isNaN(x)) component.bkpX = component.realX = x;
-        if (!isNaN(y)) component.bkpY = component.realY = y;
+        if (!isNaN(x))
+            component.realX = x;
+        if (!isNaN(y))
+            component.realY = y;
 
-        $scope.componentConfig = updateUnitPosComponent(component, $scope.displayArea.unit);
+        component.updateUnitPos($scope.displayArea.unit, 3);
         listenerComponentChanged(component);
     };
 
@@ -144,22 +154,34 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
                 modifiers: [
                     interact.modifiers.restrictRect({
                         restriction: 'parent',
-                        endOnly: false
+                        endOnly: true
                     })
                 ],
                 // enable autoScroll
                 autoScroll: false,
 
                 onstart: function(event) {
-                    let target = event.target;
-                    $scope.selectComponent($scope.componentAdded.filter((item) => item.$$hashKey === target.getAttribute('ld-component-id'))[0]);
-
+                    $scope.selectComponent($scope.componentAdded.filter((item) => item.$$hashKey === event.target.getAttribute('ld-component-id'))[0]);
                 },
                 // call this function on every dragmove event
                 onmove: dragMoveListener,
                 // call this function on every dragend event
                 onend: function (event) {
-                    repositionComponent(event.target);
+                    let target = event.target;
+                    let x = parseFloat(target.getAttribute('data-x'));
+                    let y = parseFloat(target.getAttribute('data-y'));
+                    if (x < 0 || y < 0) {
+                        if (x < 0) {
+                            x = 0;
+                            target.setAttribute('data-x', x);
+                        }
+                        if (y < 0) {
+                            y = 0;
+                            target.setAttribute('data-y', y);
+                        }
+                        dragMoveListener(event);
+                    }
+                    repositionComponent(x, y);
                 }
             });
 
@@ -169,10 +191,10 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     };
 
     $scope.startList = function () {
-        $scope.componentForm.list.push({type:'text', name:"codProduto", desc:"Cod. Produto", selected:false, width:80, minW:80, minH: 12, height: 12});
-        $scope.componentForm.list.push({type:'text', name:"grade", desc:"Grade", selected:false, width:80, minW:80, minH: 12, height: 12});
-        $scope.componentForm.list.push({type:'text', name:"codEtiqueta", desc:"Num. Etiqueta", selected:false, width:80, minW:80, minH: 12, height: 12});
-        $scope.componentForm.list.push({type:'text', name:"codPedido", desc:"Pedido", selected:false, width:80, minW:80, minH: 12, height: 12});
+        $scope.componentForm.list.push({type:'text', exampleValue: "102030", name:"codProduto", desc:"Cod. Produto", selected:false, width:80, minW:80, minH: 12, height: 12});
+        $scope.componentForm.list.push({type:'text', exampleValue: "UNICA", name:"grade", desc:"Grade", selected:false, width:80, minW:80, minH: 12, height: 12});
+        $scope.componentForm.list.push({type:'text', exampleValue: "552154", name:"codEtiqueta", desc:"Num. Etiqueta", selected:false, width:80, minW:80, minH: 12, height: 12});
+        $scope.componentForm.list.push({type:'text', exampleValue: "223542", name:"codPedido", desc:"Pedido", selected:false, width:80, minW:80, minH: 12, height: 12});
         $scope.componentForm.list.push({type:'img',  name:"logo", desc:"Logomarca", selected:false, src:'/img/layoutDesigner/logo_cliente.png', width:120, minW:120, minH: 60, height: 60});
     };
 
@@ -181,31 +203,10 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         let rhp = $scope.displayArea.realHeight;
         let unit = $scope.displayArea.unit;
 
-        $scope.displayArea.width = convertPxTo(rwp, unit.id).toFixed(3);
-        $scope.displayArea.height = convertPxTo(rhp, unit.id).toFixed(3);
+        $scope.displayArea.width = convertPxTo(rwp, unit);
+        $scope.displayArea.height = convertPxTo(rhp, unit);
 
-        let componentSelected = $scope.componentConfig;
-        if (!isEmpty(componentSelected)) $scope.componentConfig = updateUnitComponent(componentSelected);
-    };
-
-    let updateUnitComponent = function (component) {
-        let unit = $scope.displayArea.unit;
-        let rwp = component.realWidth;
-        let rhp = component.realHeight;
-
-        component.width = convertPxTo(rwp, unit.id).toFixed(3);
-        component.height = convertPxTo(rhp, unit.id).toFixed(3);
-
-        return updateUnitPosComponent(component, unit);
-    };
-
-    let updateUnitPosComponent = function(component, unit){
-        let rxp = component.realX;
-        let ryp = component.realY;
-
-        component.posX = convertPxTo(rxp, unit.id).toFixed(3);
-        component.posY = convertPxTo(ryp, unit.id).toFixed(3);
-        return component;
+        if (!isEmpty($scope.componentConfig)) $scope.componentConfig.updateUnit(unit);
     };
 
     $scope.addComponent = function () {
@@ -213,20 +214,27 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
             uiDialogService.dialogAlert("Selecione o componente que deseja adicionar!");
             return;
         }
-        let componentInitialized = initComponent(angular.copy($scope.componentForm.selected));
-        $scope.componentAdded.push(componentInitialized);
-        $scope.selectComponent(componentInitialized);
+        let component = null;
+        switch ($scope.componentForm.selected.type) {
+            case 'text':
+                component = new TextComponent($scope.componentForm.selected, $scope.displayArea, ($scope.componentAdded.length + 1));
+                break;
+            case 'img':
+                component = new ImageComponent($scope.componentForm.selected, $scope.displayArea, ($scope.componentAdded.length + 1));
+        }
+        $scope.componentAdded.push(component);
+        $scope.selectComponent(component);
     };
 
     $scope.changeSizeArea = function() {
         let dpa = $scope.displayArea;
-        dpa.realWidth = convertToPx(dpa.width, dpa.unit.id);
-        dpa.realHeight = convertToPx(dpa.height, dpa.unit.id);
+        dpa.realWidth = convertToPx(dpa.width, dpa.unit);
+        dpa.realHeight = convertToPx(dpa.height, dpa.unit);
         if (verifyPosItensOutArea(dpa)) {
             dpa.realWidth = dpa.widthBkp;
             dpa.realHeight = dpa.heightBkp;
-            dpa.width = convertPxTo(dpa.realWidth, dpa.unit.id);
-            dpa.height = convertPxTo(dpa.realHeight, dpa.unit.id);
+            dpa.width = convertPxTo(dpa.realWidth, dpa.unit);
+            dpa.height = convertPxTo(dpa.realHeight, dpa.unit);
             uiDialogService.dialogAlert("Existem compontentes posicionados fora da área de impressão! Ajuste antes de prosseguir.");
         } else {
             dpa.widthBkp = dpa.realWidth;
@@ -240,19 +248,23 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     };
 
     let listenerComponentChanged = function (component) {
-        let index = $scope.componentAdded.findIndex(function (el) { return (el.$$hashKey === component.$$hashKey) });
-        $scope.componentAdded[index] = component;
+        let index = $scope.componentAdded.findIndex(function (el) { return (el.$$hashKey === component.referedId) });
+        $scope.componentAdded[index] = angular.copy(component);
+    };
+
+    let rollbackComponentChanged = function (component){
+        $scope.componentConfig = angular.copy($scope.componentAdded.filter((item) => item.$$hashKey === component.referedId)[0]);
     };
 
     let dragMoveListener = function(event) {
-        var target = event.target;
+        let target = event.target;
         // keep the dragged position in the data-x/data-y attributes
 
         let dirX = parseFloat(target.getAttribute('data-x'));
         let dirY = parseFloat(target.getAttribute('data-y'));
 
-        var x = dirX + event.dx;
-        var y = dirY + event.dy;
+        let x = dirX + event.dx;
+        let y = dirY + event.dy;
 
         //translate the element
         target.style.webkitTransform =
@@ -265,32 +277,27 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     };
 
     $scope.selectComponent = function (component) {
-        let activeItem = $scope.componentAdded.filter((item) => item.selected === true)[0];
-        if (!isEmpty(activeItem)) activeItem.selected = false;
+        let activeItem = $scope.componentAdded.filter((item) => item.isSelected())[0];
+        if (!isEmpty(activeItem)) activeItem.unSelect();
+        component.updateUnit($scope.displayArea.unit, 3);
         component.select();
-        $scope.componentConfig = updateUnitComponent(component);
+
+        $scope.componentConfig = angular.copy(component);
+        $scope.componentConfig.referedId = component.$$hashKey;
     };
 
-    $scope.changePosComponent = function () {
-        let component = $scope.componentConfig;
+    $scope.changePosComponent = function (component) {
         let unit = $scope.displayArea.unit;
-        component.realX = convertToPx(component.posX, unit.id);
-        component.realY = convertToPx(component.posY, unit.id);
-        if (!verifyPositionOut($scope.displayArea, component)) {
-            component.bkpX = component.realX;
-            component.bkpY = component.realY;
+        component.realX = convertToPx(component.posX, unit);
+        component.realY = convertToPx(component.posY, unit);
+        if (component.verifyPositionOut($scope.displayArea)) {
+            rollbackComponentChanged(component);
         } else {
-            component.realX = component.bkpX;
-            component.realY = component.bkpY;
-            component.posX = convertPxTo(component.realX, unit.id);
-            component.posY = convertPxTo(component.realY, unit.id);
+            listenerComponentChanged(component);
         }
-        listenerComponentChanged(component);
     };
 
     $scope.checkEnter = function (e) {
-        if (e.keyCode === 13) {
-            e.target.blur();
-        }
+        if (e.keyCode === 13) e.target.blur();
     }
 });
