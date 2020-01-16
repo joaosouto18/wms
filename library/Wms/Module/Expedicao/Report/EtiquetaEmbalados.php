@@ -262,7 +262,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->Line(0,7,80,7);
 
             $this->SetFont('Arial', 'B', 16);
-            $impressao = utf8_decode($volume['DSC_PLACA_CARGA']."\n");
+            $impressao = utf8_decode(substr($volume['DSC_PLACA_CARGA'],0,18)."\n");
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 11.3);
