@@ -126,7 +126,7 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         constructor(dataInit, dpa, posZ) {
             super(dataInit, dpa, posZ);
             this.src = dataInit.src;
-            this.file = {name: "default.png"}
+            this.file = {name: "default.png"};
         }
 
         loadNewImage() {

@@ -43,6 +43,7 @@ angular.module("wms").directive("ngFile", function() {
                     scope.ngModel = elem[0].files[0];
                 scope.$apply();
                 scope.ngChange();
+                scope.$apply();
             });
         }
     }
