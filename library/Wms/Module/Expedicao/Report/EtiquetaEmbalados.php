@@ -455,14 +455,14 @@ class EtiquetaEmbalados extends eFPDF
             $this->AddPage();
             //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 16);
-            $impressao = utf8_decode(substr($pessoaEntity->getNome()."\n",0,20));
+            $impressao = utf8_decode(substr($pessoaEntity->getNome()."\n",0,50));
             $this->MultiCell(110, 10, $impressao, 0, 'L');
-            $this->Line(0,10,80,10);
+            $this->Line(0,10,130,10);
 
             $this->MultiCell(110, 6, $volume['DSC_PLACA_CARGA'], 0, 'L');
 
             $this->SetFont('Arial', 'B', 11.5);
-            $impressao = utf8_decode(substr($volume['NOM_PESSOA']."\n",0,30));
+            $impressao = utf8_decode(substr($volume['NOM_PESSOA']."\n",0,50));
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
 //            $this->SetFont('Arial', '', 10);
@@ -470,9 +470,9 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 5, $impressao, 0, 'L');
             $impressao = utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
-            $impressao = utf8_decode('CARGA: '.$volume['COD_CARGA_EXTERNO']);
+            $impressao = utf8_decode('CARGA: '.$volume['COD_CARGA_EXTERNO']) . ' - EXP.:' . $volume['COD_EXPEDICAO'];
             $this->MultiCell(110, 5, $impressao, 0, 'L');
-            $this->Line(0,45,110,45);
+            $this->Line(0,45,130,45);
 
             $this->SetFont('Arial', '', 20);
             $this->MultiCell(110, 6, '', 0, 'L');
@@ -491,8 +491,8 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 52, 50 , 50, 16);
-            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 75, 0, 23, 12);
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 52, 50 , 70, 20);
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 120, 0, 23, 12);
 
         }
     }
