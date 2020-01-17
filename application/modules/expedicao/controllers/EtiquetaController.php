@@ -649,6 +649,7 @@ class Expedicao_EtiquetaController  extends Action
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;
                 case 2:
+                case 7:
                     //LAYOUT WILSO
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                     break;
