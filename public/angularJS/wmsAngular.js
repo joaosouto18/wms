@@ -22,8 +22,28 @@ angular.module("wms", ['uiDialogService', 'ui.mask'])
 
 angular.module("wms").directive("ldInteract", function(){
     return {
-        link: function(scope, elm, args){
-            scope.$eval(args.ldInteract).call([], elm[0], args.ldComponentId);
+        link: function(scope, elm, attrs){
+            scope.$eval(attrs.ldInteract).call([], elm[0]);
+        }
+    }
+});
+angular.module("wms").directive("ngFile", function() {
+    return {
+        require: "ngModel",
+        scope: {
+            ngModel: '=',
+            ngChange: '&',
+            type: '@'
+        },
+        link: function (scope,elem, attrs) {
+            elem.bind("change", function(e) {
+                if (attrs.ngFile === 'multiple')
+                    scope.ngModel = elem[0].files;
+                else if (attrs.ngFile === 'single')
+                    scope.ngModel = elem[0].files[0];
+                scope.$apply();
+                scope.ngChange();
+            });
         }
     }
 });

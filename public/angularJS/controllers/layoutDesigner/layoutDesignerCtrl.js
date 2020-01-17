@@ -24,15 +24,14 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
 
     class Component{
         constructor(dataInit, dpa, posZ) {
-            let centerArea = dpa.getCenter();
+            this.displayArea = dpa;
+            let centerArea = this.displayArea.getCenter();
             this.realX = this.posX = (centerArea.x - (dataInit.minW / 2));
             this.realY = this.posY = (centerArea.y - (dataInit.minH / 2));
             this.posZ = posZ;
             this.selected = false;
-            this.width = dataInit.minW;
-            this.height = dataInit.minH;
-            this.realWidth = dataInit.minW;
-            this.realHeight = dataInit.minH;
+            this.realWidth = this.width = dataInit.minW;
+            this.realHeight = this.height = dataInit.minH;
             this.label = dataInit.desc;
         }
 
@@ -58,28 +57,68 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
             return this;
         }
 
-        updateUnit(unit) {
-            this.updateUnitSize(unit);
-            this.updateUnitPos(unit);
+        updateUnit() {
+            this.updateUnitSize();
+            this.updateUnitPos();
             return this;
         }
 
-        updateUnitSize(unit) {
+        updateUnitSize() {
+            let unit = this.displayArea.unit;
             this.width = convertPxTo(this.realWidth, unit);
             this.height = convertPxTo(this.realHeight, unit);
             return this;
         }
 
-        updateUnitPos(unit) {
+        updateUnitPos() {
+            let unit = this.displayArea.unit;
             this.posX = convertPxTo(this.realX, unit);
             this.posY = convertPxTo(this.realY, unit);
             return this;
         }
 
-        verifyPositionOut(dpa) {
-            let minX = parseFloat(this.realX) + (parseFloat(this.realWidth) + 1);
-            let minY = parseFloat(this.realY) + (parseFloat(this.realHeight) + 1);
-            return (dpa.realWidth < minX || dpa.realHeight < minY);
+        verifyPositionOut() {
+            let unit = this.displayArea.unit;
+
+            let posX = convertToPx(this.posX, unit);
+            let compWidth = convertToPx(this.width, unit);
+            let minWidth = posX + (compWidth+ 1);
+
+            let posY = convertToPx(this.posY, unit);
+            let compHeight = convertToPx(this.height, unit);
+            let minHeight = posY + (compHeight+ 1);
+
+            let dpaW = convertToPx(this.displayArea.width, this.displayArea.unit);
+            let dpaH = convertToPx(this.displayArea.height, this.displayArea.unit);
+            return (dpaW < minWidth || dpaH < minHeight);
+        }
+
+        updatePos() {
+            let unit = this.displayArea.unit;
+            this.realX = convertToPx(this.posX, unit);
+            this.realY = convertToPx(this.posY, unit);
+            return this;
+        }
+
+        rollbackPos() {
+            let unit = this.displayArea.unit;
+            this.posX = convertPxTo(this.realX, unit);
+            this.posY = convertPxTo(this.realY, unit);
+            return this;
+        }
+
+        updateSize() {
+            let unit = this.displayArea.unit;
+            this.realWidth = convertToPx(this.width, unit);
+            this.realHeight = convertToPx(this.height, unit);
+            return this;
+        }
+
+        rollbackSize() {
+            let unit = this.displayArea.unit;
+            this.width = convertPxTo(this.realWidth, unit);
+            this.height = convertPxTo(this.realHeight, unit);
+            return this;
         }
     }
 
@@ -87,6 +126,11 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         constructor(dataInit, dpa, posZ) {
             super(dataInit, dpa, posZ);
             this.src = dataInit.src;
+            this.file = {name: "default.png"}
+        }
+
+        loadNewImage() {
+            this.src = loadImage(this.file, true);
         }
     }
 
@@ -96,15 +140,6 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
             this.exampleValue = dataInit.exampleValue;
         }
     }
-
-    let verifyPosItensOutArea = function (dpa) {
-        let isOut = false;
-        $.each($scope.componentAdded, function (k, component) {
-            isOut = component.verifyPositionOut(dpa);
-            if (isOut) return;
-        });
-        return isOut;
-    };
 
     $scope.componentAdded = [];
     $scope.unitList = [
@@ -125,12 +160,26 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         height: 200,
         realWidth: 400,
         realHeight: 200,
-        widthBkp: 400,
-        heightBkp: 200,
         unit: $scope.unitList[0],
         proportion: 1,
         getCenter: function () {
             return {x: (this.realWidth / 2), y: (this.realHeight / 2)}
+        },
+        updateArea: function () {
+            this.realWidth = convertToPx(this.width, this.unit);
+            this.realHeight = convertToPx(this.height, this.unit);
+        },
+        rollbackArea: function () {
+            this.width = convertPxTo(this.realWidth, this.unit);
+            this.height = convertPxTo(this.realHeight, this.unit);
+        },
+        verifyHasItensOutArea: function () {
+            let isOut = false;
+            $.each($scope.componentAdded, function (k, component) {
+                isOut = component.verifyPositionOut();
+                if (isOut) return;
+            });
+            return isOut;
         }
     };
 
@@ -141,8 +190,7 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         if (!isNaN(y))
             component.realY = y;
 
-        component.updateUnitPos($scope.displayArea.unit, 3);
-        listenerComponentChanged(component);
+        component.updateUnitPos();
     };
 
     $scope.prepareInteract = function(element) {
@@ -199,14 +247,12 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     };
 
     $scope.updateUnitArea = function () {
-        let rwp = $scope.displayArea.realWidth;
-        let rhp = $scope.displayArea.realHeight;
         let unit = $scope.displayArea.unit;
 
-        $scope.displayArea.width = convertPxTo(rwp, unit);
-        $scope.displayArea.height = convertPxTo(rhp, unit);
+        $scope.displayArea.width = convertPxTo($scope.displayArea.realWidth, unit);
+        $scope.displayArea.height = convertPxTo($scope.displayArea.realHeight, unit);
 
-        if (!isEmpty($scope.componentConfig)) $scope.componentConfig.updateUnit(unit);
+        if (!isEmpty($scope.componentConfig)) $scope.componentConfig.updateUnit();
     };
 
     $scope.addComponent = function () {
@@ -228,32 +274,12 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
 
     $scope.changeSizeArea = function() {
         let dpa = $scope.displayArea;
-        dpa.realWidth = convertToPx(dpa.width, dpa.unit);
-        dpa.realHeight = convertToPx(dpa.height, dpa.unit);
-        if (verifyPosItensOutArea(dpa)) {
-            dpa.realWidth = dpa.widthBkp;
-            dpa.realHeight = dpa.heightBkp;
-            dpa.width = convertPxTo(dpa.realWidth, dpa.unit);
-            dpa.height = convertPxTo(dpa.realHeight, dpa.unit);
-            uiDialogService.dialogAlert("Existem compontentes posicionados fora da área de impressão! Ajuste antes de prosseguir.");
+        if (dpa.verifyHasItensOutArea()) {
+            dpa.rollbackArea();
+            uiDialogService.dialogAlert("Existem compontentes que ficarão fora da área de impressão! Ajuste antes de prosseguir.");
         } else {
-            dpa.widthBkp = dpa.realWidth;
-            dpa.heightBkp = dpa.realHeight;
+            dpa.updateArea();
         }
-        $scope.displayArea = dpa;
-    };
-
-    $scope.changeSizeComponent = function() {
-
-    };
-
-    let listenerComponentChanged = function (component) {
-        let index = $scope.componentAdded.findIndex(function (el) { return (el.$$hashKey === component.referedId) });
-        $scope.componentAdded[index] = angular.copy(component);
-    };
-
-    let rollbackComponentChanged = function (component){
-        $scope.componentConfig = angular.copy($scope.componentAdded.filter((item) => item.$$hashKey === component.referedId)[0]);
     };
 
     let dragMoveListener = function(event) {
@@ -279,25 +305,30 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     $scope.selectComponent = function (component) {
         let activeItem = $scope.componentAdded.filter((item) => item.isSelected())[0];
         if (!isEmpty(activeItem)) activeItem.unSelect();
-        component.updateUnit($scope.displayArea.unit, 3);
+        component.updateUnit();
         component.select();
-
-        $scope.componentConfig = angular.copy(component);
-        $scope.componentConfig.referedId = component.$$hashKey;
+        $scope.componentConfig = component;
     };
 
     $scope.changePosComponent = function (component) {
-        let unit = $scope.displayArea.unit;
-        component.realX = convertToPx(component.posX, unit);
-        component.realY = convertToPx(component.posY, unit);
-        if (component.verifyPositionOut($scope.displayArea)) {
-            rollbackComponentChanged(component);
+        if (component.verifyPositionOut()) {
+            component.rollbackPos();
+            uiDialogService.dialogAlert("Valor inválido! O componente ficará fora da área de impressão!");
         } else {
-            listenerComponentChanged(component);
+            component.updatePos();
+        }
+    };
+
+    $scope.changeSizeComponent = function(component) {
+        if (component.verifyPositionOut()) {
+            component.rollbackSize();
+            uiDialogService.dialogAlert("Valor inválido! O componente ficará fora da área de impressão!");
+        } else {
+            component.updateSize();
         }
     };
 
     $scope.checkEnter = function (e) {
         if (e.keyCode === 13) e.target.blur();
-    }
+    };
 });
