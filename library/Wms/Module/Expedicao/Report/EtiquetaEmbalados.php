@@ -491,7 +491,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 52, 50 , 70, 20);
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 47, 50 , 65, 20);
             $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 120, 0, 23, 12);
 
         }
