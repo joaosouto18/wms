@@ -43,7 +43,7 @@ class EtiquetaEmbalados extends eFPDF
                 self::bodyExpedicaoModelo6($volumePatrimonio);
                 break;
             case 7:
-                //LAYOUT WILSO
+                //LAYOUT MBLED
                 self::bodyExpedicaoModelo7($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             default:

@@ -1715,6 +1715,9 @@ class ExpedicaoRepository extends EntityRepository {
                         ";
 
         switch ($sequencia) {
+            case 4:
+                $order = " ORDER BY  ";
+                break;
             case 3:
                 $order = " ORDER BY c.placaExpedicao,
                                     ls.descricao,
@@ -1742,6 +1745,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     p.id";
         }
 
+        echo $this->getEntityManager()->createQuery($query . $order)->getSQL(); exit;
         $result = $this->getEntityManager()->createQuery($query . $order)->getResult();
 
         return array_filter($result, function($item) {
