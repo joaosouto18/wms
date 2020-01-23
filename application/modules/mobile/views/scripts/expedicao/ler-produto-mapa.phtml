@@ -325,7 +325,6 @@
                 try {
                     $.support.cors = true;
                     $.ajax({
-                        //url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>//',
                         url: urlConf,
                         data: $('form').serialize(),
                         async: false,
@@ -378,14 +377,19 @@
                                 } catch (e) {
                                     alert(message);
                                 }
-
-
                             }
                             $(".item-lista").remove();
                         },
-                        error: function (xhr, ajaxOptions, thrownError) {
-                            alert("alert response: " + xhr.responseText);
-                            alert("alert throw: " + thrownError);
+                        // error: function (xhr, ajaxOptions, thrownError) {
+                        //     var out = dump(thrownError);
+                        //     $("#div-principal")
+                        //         .append($("<p>").text(thrownError.message))
+                        //         //.append($("<p>").text(ajaxOptions))
+                        //         //.append($("<p>").text(thrownError));
+                        // }
+                        error: function(xhr,error, errorThrown) {
+                            //$("#div-principal").append($("<p>").text(dump(xhr)));
+                            alert("deu erro");
                         }
                     });
                 } catch (e) {
@@ -412,6 +416,15 @@
     $('#submit').on('click', function (ev) {
         return requestAjax(ev, $("#qtd"), $("#codigoBarras"));
     });
+
+    function dump(obj) {
+        var out = '';
+        for (var i in obj) {
+            out += i + ": " + obj[i] + "\n";
+        }
+
+        return out;
+    }
 
     $('#next').click(function (e) {
         if ($(".item-lista").length === 0) {
