@@ -1409,21 +1409,30 @@ class EtiquetaSeparacao extends Pdf
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
-        $this->SetFont('Arial', 'B', 17);
-
+        $this->SetFont('Arial', 'B', 17.5);
         $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
         $impressao .= "$etiqueta[placaExpedicao]\n";
-        $this->MultiCell(100, 6, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 11);
-        $impressao = substr(utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
-        $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
-        $impressao .= substr(trim($etiqueta['produto']),0,37)."\n";
-        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        $this->MultiCell(100, 9, $impressao, 0, 'L');
+        $this->Line(0,18.5,100,18.5);
+
+        $this->SetY(20);
+        $this->SetFont('Arial', '', 13);
+        $impressao = 'CLIENTE: ' . utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]")."\n";
+        $this->MultiCell(100, 5, $impressao, 0, 'L');
+        $this->Line(0,30,100,30);
+
+        $this->SetY(32.5);
+        $this->SetFont('Arial', '', 13);
+        $impressao = 'PRODUTO: '.$etiqueta['codProduto'] . ' - ' . trim($etiqueta['produto'])."\n";
+        $this->MultiCell(100, 5, $impressao, 0, 'L');
+
         $this->InFooter = true;
         if ($reentrega == false) {
+            $this->Line(0,45,100,45);
+            $this->SetY(47);
             $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao]\n");
-            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+            $this->MultiCell(100, 5, $impressao, 0, 'L');
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 55, 68,17);
         } else {
             $this->SetFont('Arial', 'B', 20);
             $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
