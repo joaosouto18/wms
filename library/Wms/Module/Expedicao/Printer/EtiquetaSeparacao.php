@@ -1422,10 +1422,10 @@ class EtiquetaSeparacao extends Pdf
         $this->Line(0,24,100,24);
         $this->SetY(25.5);
         $this->SetFont('Arial', '', 13);
-        if (strlen(utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]")) > 55) {
+        if (strlen(utf8_encode("$etiqueta[cliente]")) > 55) {
             $this->SetFont('Arial', '', 10);
         }
-        $impressao = 'CLIENTE: ' . utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]")."\n";
+        $impressao = utf8_encode("$etiqueta[cliente]").' - ('.$etiqueta['siglaEstado'].')'."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
         $this->Line(0,35.5,100,35.5);
