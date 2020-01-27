@@ -455,21 +455,18 @@ class EtiquetaEmbalados extends eFPDF
             $this->AddPage();
             //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 18);
-//            $impressao = utf8_decode(substr($pessoaEntity->getNome()."\n",0,50));
-//            $this->MultiCell(110, 9, $impressao, 0, 'L');
-//            $this->Line(0,10,130,10);
             $impressao = str_replace(array('0','1','2','3','4','5','6','7','8','9','-'),'',substr($volume['DSC_PLACA_CARGA'],0,16))."\n";
             $this->MultiCell(110, 9, $impressao, 0, 'L');
 
+            $this->SetY(15);
             $this->SetFont('Arial', 'B', 13);
             $impressao = utf8_decode($volume['NOM_PESSOA']."\n");
-            $this->MultiCell(110, 6, $impressao, 0, 'L');
+            $this->MultiCell(110, 5, $impressao, 0, 'L');
 
-            $this->SetY(25);
+            $this->SetY(27);
             $impressao = utf8_decode($volume['DSC_ENDERECO'].', '.$volume['NUM_ENDERECO'] ."\n");
-            $this->MultiCell(110, 6, $impressao, 0, 'L');
-            $impressao = utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
-            $this->MultiCell(110, 6, $impressao, 0, 'L');
+            $impressao .= utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
+            $this->MultiCell(110, 5, $impressao, 0, 'L');
 
             $this->SetY(45);
             $impressao = utf8_decode('PEDIDO: '.$volume['COD_CARGA_EXTERNO']) . ' - EXP.:' . $volume['COD_EXPEDICAO'];
