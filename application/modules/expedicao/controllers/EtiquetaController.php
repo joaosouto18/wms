@@ -674,7 +674,7 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 7:
                     //LAYOUT MBLED
-                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(145,75));
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
                     break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
