@@ -1423,7 +1423,7 @@ class EtiquetaSeparacao extends Pdf
 
         $this->SetY(32.5);
         $this->SetFont('Arial', '', 13);
-        $impressao = 'PRODUTO: '.$etiqueta['codProduto'] . ' - ' . utf8_encode(trim($etiqueta['produto']))."\n";
+        $impressao = 'PRODUTO: '.$etiqueta['codProduto'] . ' - ' . utf8_decode(trim($etiqueta['produto']))."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
         $this->InFooter = true;
