@@ -1409,28 +1409,33 @@ class EtiquetaSeparacao extends Pdf
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
-        $this->SetFont('Arial', 'B', 17.5);
-        $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
-        $impressao .= "$etiqueta[placaExpedicao]\n";
-        $this->MultiCell(100, 9, $impressao, 0, 'L');
-        $this->Line(0,18.5,100,18.5);
+        $this->SetFont('Arial', 'B', 15);
+        $impressao = utf8_decode("EXP:$etiqueta[codExpedicao]");
+        $this->MultiCell(100, 7, $impressao, 0, 'L');
 
-        $this->SetY(20);
+        $impressao = "PEDIDO: $etiqueta[codCargaExterno]";
+        $this->MultiCell(100, 7, $impressao, 0, 'L');
+
+        $impressao = str_replace(array('0','1','2','3','4','5','6','7','8','9','-'),'',substr($etiqueta['placaExpedicao'],0,16))."\n";
+        $this->MultiCell(100, 7, $impressao, 0, 'L');
+
+        $this->Line(0,24,100,24);
+        $this->SetY(25.5);
         $this->SetFont('Arial', '', 13);
         $impressao = 'CLIENTE: ' . utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]")."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
-        $this->Line(0,30,100,30);
 
-        $this->SetY(32.5);
+        $this->Line(0,35.5,100,35.5);
+        $this->SetY(37);
         $this->SetFont('Arial', '', 13);
         $impressao = 'PRODUTO: '.$etiqueta['codProduto'] . ' - ' . utf8_decode(trim($etiqueta['produto']))."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
         $this->InFooter = true;
         if ($reentrega == false) {
-            $this->Line(0,45,100,45);
-            $this->SetY(47);
-            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao]\n");
+            $this->Line(0,49,100,49);
+            $this->SetY(51);
+            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao] - ($etiqueta[quantidade])\n");
             $this->MultiCell(100, 5, $impressao, 0, 'L');
             $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 55, 68,17);
         } else {
