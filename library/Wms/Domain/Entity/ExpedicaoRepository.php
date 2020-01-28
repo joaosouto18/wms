@@ -327,7 +327,7 @@ class ExpedicaoRepository extends EntityRepository {
                             }
                             $options[$pedidoEn->getId().'-'.$key][] = 2;
                         }
-                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, false);
                         if (!$resultAcao === true) {
                             throw new \Exception($resultAcao);
                         }
