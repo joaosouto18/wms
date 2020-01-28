@@ -325,7 +325,7 @@ class ExpedicaoRepository extends EntityRepository {
                                 $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['FATOR_EMBALAGEM_VENDA']);
                                 $options[$pedidoEn->getId().'-'.$key][] = $item['DSC_LOTE']; //oitavo indice do array
                             }
-                            $options[$pedidoEn->getId().'-'.$key][] = $qtdCaixas;
+                            $options[$pedidoEn->getId().'-'.$key][] = 2;
                         }
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
                         if (!$resultAcao === true) {
