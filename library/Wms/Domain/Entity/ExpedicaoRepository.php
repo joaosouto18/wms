@@ -300,10 +300,16 @@ class ExpedicaoRepository extends EntityRepository {
                 $idTipoAcao = $acaoEn->getTipoAcao()->getId();
                 if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
                     $cargasEn = $expedicaoEn->getCarga();
+                    $arrayClientes = $mapaSeparacaoRepository->getCaixasByExpedicao($expedicaoEn->getId());
                     foreach ($cargasEn as $cargaEn) {
                         $pedidosEn = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
                         foreach ($pedidosEn as $pedidoEn) {
                             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+                            $qtdCaixas = 0;
+                            if (isset($arrayClientes[$pedidoEn->getPessoa()->getId()])) {
+                                $qtdCaixas = $arrayClientes[$pedidoEn->getPessoa()->getId()];
+                                $arrayClientes[$pedidoEn->getPessoa()->getId()] = 0;
+                            }
                             foreach ($produtos as $key => $item) {
                                 $options[$pedidoEn->getId() . '-' . $key][] = $cargaEn->getCodCargaExterno();
                                 $options[$pedidoEn->getId() . '-' . $key][] = $pedidoEn->getCodExterno();
@@ -319,6 +325,7 @@ class ExpedicaoRepository extends EntityRepository {
                                 $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['FATOR_EMBALAGEM_VENDA']);
                                 $options[$pedidoEn->getId().'-'.$key][] = $item['DSC_LOTE']; //oitavo indice do array
                             }
+                            $options[$pedidoEn->getId().'-'.$key][] = $qtdCaixas;
                         }
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
                         if (!$resultAcao === true) {
