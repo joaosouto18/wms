@@ -1428,7 +1428,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = "PEDIDO: $etiqueta[codCargaExterno]";
         $this->MultiCell(100, 7, $impressao, 0, 'L');
 
-        $this->SetY(15);
+        $this->SetY(16);
         $impressao = 'TRANSP.: '.str_replace(array('0','1','2','3','4','5','6','7','8','9','-'),'',substr($etiqueta['placaExpedicao'],0,16))."\n";
         $this->MultiCell(100, 7, $impressao, 0, 'L');
 
