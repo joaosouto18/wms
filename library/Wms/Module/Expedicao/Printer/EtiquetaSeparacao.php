@@ -1438,7 +1438,7 @@ class EtiquetaSeparacao extends Pdf
         if (strlen(utf8_encode("$etiqueta[cliente]")) > 55) {
             $this->SetFont('Arial', 'B', 10);
         }
-        $impressao = utf8_encode("$etiqueta[cliente]").' - ('.$etiqueta['siglaEstado'].')'."\n";
+        $impressao = utf8_encode("$etiqueta[cliente]")."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
         $this->Line(0,35.5,100,35.5);
