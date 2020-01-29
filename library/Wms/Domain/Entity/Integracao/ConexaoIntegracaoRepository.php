@@ -55,7 +55,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $result = $conexao->query($query);
 
             if (!$result) {
-                $error = $conexao->error;
+                $error = $conexao->erro r;
                 throw new \Exception($error);
             }
 

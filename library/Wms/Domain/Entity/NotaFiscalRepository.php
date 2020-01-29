@@ -1023,7 +1023,7 @@ class NotaFiscalRepository extends EntityRepository {
         return $entity;
     }
 
-    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $tipoNota = null) {
+    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $tipoNota = null, $cnpjProprietario = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -1034,14 +1034,21 @@ class NotaFiscalRepository extends EntityRepository {
             $filial = null;
             $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
             if($controleProprietario == 'S'){
-                $cnpjDestinatario = trim($cnpjDestinatario);
-                $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
+                $cnpjProprietario = trim($cnpjProprietario);
+                $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario);
                 if($codProprietario == false){
                     throw new \Exception('CNPJ do destinatário não encontrado');
                 }
-            } elseif ($controleProprietario != 'S' && !empty($cnpjDestinatario)) {
+            }
+            /** @var FilialRepository $filialRepo */
+            $filialRepo = $em->getRepository("wms:Filial");
+
+            if (!empty($cnpjDestinatario)) {
                 $cnpj = str_replace(array(".", "-", "/"), "", $cnpjDestinatario);
-                $filial = $em->getRepository("wms:Filial")->getFilialByCnpj($cnpj);
+                $filial = $filialRepo->getFilialByCnpj($cnpj);
+            } else {
+                /** @var Filial $filial */
+                $filial = $filialRepo->getFilialPrincipal();
             }
 
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
