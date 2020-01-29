@@ -463,9 +463,8 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = utf8_decode($volume['NOM_PESSOA']."\n");
             $this->MultiCell(110, 5, $impressao, 0, 'L');
 
-            $this->SetY(27);
-            $impressao = utf8_decode($volume['DSC_ENDERECO'].', '.$volume['NUM_ENDERECO'] ."\n");
-            $impressao .= utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
+            $this->SetY(30);
+            $impressao = utf8_decode($volume['DSC_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
 
             $this->SetY(45);
