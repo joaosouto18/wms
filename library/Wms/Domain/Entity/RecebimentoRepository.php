@@ -692,11 +692,8 @@ class RecebimentoRepository extends EntityRepository
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                 }
 
-                $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
-                if ($controleProprietario == 'S') {
-                    if (empty($result)) {
-                        $em->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($recebimentoEntity->getId());
-                    }
+                if ($this->getSystemParameterValue('CONTROLE_PROPRIETARIO') == 'S') {
+                    $em->getRepository("wms:Enderecamento\EstoqueProprietario")->checkLiberarSaldoProprietario($recebimentoEntity->getId());
                 }
 
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);

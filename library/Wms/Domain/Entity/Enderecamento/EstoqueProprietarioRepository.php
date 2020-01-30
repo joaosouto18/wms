@@ -402,4 +402,10 @@ class EstoqueProprietarioRepository extends EntityRepository
 
         return $entityFilial;
     }
+
+    public function checkLiberarSaldoProprietario($idRecebimento)
+    {
+        if (empty($this->_em->getRepository("wms:Recebimento")->checkRecebimentoEnderecado($idRecebimento)))
+            self::efetivaEstoquePropRecebimento($idRecebimento);
+    }
 }
