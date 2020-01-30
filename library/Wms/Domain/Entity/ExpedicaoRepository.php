@@ -3249,7 +3249,6 @@ class ExpedicaoRepository extends EntityRepository {
                   $FullWhereFinal ";
 
         $resultResumo = \Wms\Domain\EntityRepository::nativeQuery($sqlEtiquetas);
-        echo $sql;exit;
         $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
 
         $qtdPedidos = 0;
