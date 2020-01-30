@@ -28,9 +28,11 @@ class FilialRepository extends AtorRepository
         $filial->setIndUtilizaRessuprimento($values['pessoa']['juridica']['indRessuprimento']);
         $filial->setIndRecTransbObg($values['pessoa']['juridica']['indRecTransbObg']);
         $filial->setIsAtivo($values['pessoa']['juridica']['isAtivo']);
-        $filial->setIsPrincipal($values['pessoa']['juridica']['isPrincipal']);
         $em->persist($filial);
-        $this->persistirAtor($filial, $values);
+        $filial = $this->persistirAtor($filial, $values);
+
+        if ($values['pessoa']['juridica']['isPrincipal'] == 'S')
+            self::trocarPrincipal($filial->getId());
     }
 
      /**

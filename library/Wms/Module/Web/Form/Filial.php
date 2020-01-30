@@ -78,6 +78,16 @@ class Filial extends Form
             'label' => 'Utiliza Ressuprimento',
             'multiOptions' => $valores_booleanos,
             'class' => 'focus',
+            'value' => 'N'
+        ));
+
+        $param4 = $formPJ->createElement('select','isPrincipal' , array (
+            'label' => 'Esta é a filal principal',
+            'mostrarSelecione' => false,
+            'multiOptions' => $valores_booleanos,
+            'class' => 'focus',
+            'required' => true,
+            'value' => 'N',
         ));
 
         $codExterno = $formPJ->createElement('text', 'codExterno', array(
@@ -85,9 +95,10 @@ class Filial extends Form
             'required' => true
         ));
 
-        $nGroup = $formPJ->addDisplayGroup(array($codExterno,$param1,$param2, $param3),'param', array('legend' => 'Parametros'));
+        $nGroup = $formPJ->addDisplayGroup(array($codExterno, $param1,$param2, $param3, $param4),'param', array('legend' => 'Parametros'));
         if ($filial != null) {
             $nGroup->getElement('codExterno')->setValue($filial->getCodExterno());
+            $nGroup->getElement('isPrincipal')->setValue($filial->getIsPrincipal());
             $nGroup->getElement('indRecTransbObg')->setValue($filial->getIndRecTransbObg());
             $nGroup->getElement('indLeitEtqProdTransbObg')->setValue($filial->getIndLeitEtqProdTransbObg());
             $nGroup->getElement('indRessuprimento')->setValue($filial->getIndUtilizaRessuprimento());

@@ -1037,7 +1037,7 @@ class NotaFiscalRepository extends EntityRepository {
                 $cnpjProprietario = trim($cnpjProprietario);
                 $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario);
                 if($codProprietario == false){
-                    throw new \Exception('CNPJ do destinatário não encontrado');
+                    throw new \Exception('CNPJ do proprietario não encontrado');
                 }
             }
             /** @var FilialRepository $filialRepo */
