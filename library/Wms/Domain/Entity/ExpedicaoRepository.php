@@ -3096,7 +3096,7 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
                                     (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS QTDETIQUETA,
-                                    C1.COD_EXPEDICAO
+                                    C.COD_EXPEDICAO
                                FROM ETIQUETA_SEPARACAO ESEP
                          INNER JOIN PEDIDO P ON P.COD_PEDIDO = ESEP.COD_PEDIDO
                          INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA  ' . $JoinExpedicao . $JoinSigla . '
@@ -3108,7 +3108,7 @@ class ExpedicaoRepository extends EntityRepository {
                                       WHERE ES.COD_STATUS IN(526, 531, 532) ' . $FullWhere . '
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
-                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) COUNTETIQUETA ON COUNTETIQUETA.COD_EXPEDICAO = E.COD_EXPEDICAO
+                         GROUP BY C.COD_EXPEDICAO, C1.Etiqueta) COUNTETIQUETA ON COUNTETIQUETA.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT MS.COD_EXPEDICAO,
                                 NVL(SUM(QTD_CONF.QTD),0) + NVL(SUM(QTD_SEP.QTD_CORTADO),0) as QTD_CONFERIDA,
                                 NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL,
