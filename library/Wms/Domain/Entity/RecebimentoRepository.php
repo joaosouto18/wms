@@ -13,6 +13,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Domain\Entity\Enderecamento\Palete as PaleteEntity;
 use Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Domain\Entity\Enderecamento\ReservaEstoqueProprietario;
+use Wms\Domain\Entity\Enderecamento\ReservaEstoqueProprietarioRepository;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 use Wms\Math;
 use Wms\Service\Integracao;
@@ -660,8 +662,10 @@ class RecebimentoRepository extends EntityRepository
                 /** @var ProdutoEntity\LoteRepository $loteRepo */
                 $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
 
-                $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $arrConfLotes, $ordemServicoEn->getPessoa());
-                $em->flush();
+                if (!empty($arrConfLotes)) {
+                    $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $arrConfLotes, $ordemServicoEn->getPessoa());
+                    $em->flush();
+                }
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
@@ -693,7 +697,10 @@ class RecebimentoRepository extends EntityRepository
                 }
 
                 if ($this->getSystemParameterValue('CONTROLE_PROPRIETARIO') == 'S') {
-                    $em->getRepository("wms:Enderecamento\EstoqueProprietario")->checkLiberarSaldoProprietario($recebimentoEntity->getId());
+                    /** @var ReservaEstoqueProprietarioRepository $reservaPropRepo */
+                    $reservaPropRepo = $em->getRepository(ReservaEstoqueProprietario::class);
+                    $reservaPropRepo->criarReservas($recebimentoEntity->getId(), true);
+                    $reservaPropRepo->checkLiberacaoReservas($recebimentoEntity->getId(), true);
                 }
 
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);

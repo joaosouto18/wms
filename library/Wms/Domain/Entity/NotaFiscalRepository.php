@@ -20,17 +20,28 @@ use Wms\Math;
  */
 class NotaFiscalRepository extends EntityRepository {
 
-    public function getItensNotaByRecebimento($idRecebimento) {
-        $dql = $this->_em->createQueryBuilder()
-            ->select('nfi.codProduto, nfi.grade')
-            ->distinct(true)
-            ->from('wms:NotaFiscal\Item', 'nfi')
-            ->innerJoin('nfi.notaFiscal', 'nf')
-            ->innerJoin('wms:Recebimento\VQtdRecebimento', 'vr', 'WITH', 'vr.codRecebimento = nf.recebimento and nfi.codProduto = vr.codProduto and nfi.grade = vr.grade')
-            ->where('nf.recebimento = :recebimento')
-            ->setParameter(':recebimento', $idRecebimento);
+    public function getItensNotaByRecebimento($idRecebimento, $returnEntity = false) {
+        if (!$returnEntity) {
+            $dql = $this->_em->createQueryBuilder()
+                ->select('nfi.codProduto, nfi.grade')
+                ->distinct(true)
+                ->from('wms:NotaFiscal\Item', 'nfi')
+                ->innerJoin('nfi.notaFiscal', 'nf')
+                ->innerJoin('wms:Recebimento\VQtdRecebimento', 'vr', 'WITH', 'vr.codRecebimento = nf.recebimento and nfi.codProduto = vr.codProduto and nfi.grade = vr.grade')
+                ->where('nf.recebimento = :recebimento')
+                ->setParameter(':recebimento', $idRecebimento);
 
-        return $dql->getQuery()->getResult();
+            return $dql->getQuery()->getResult();
+        } else {
+            $dql = $this->_em->createQueryBuilder()
+                ->select('nfi')
+                ->from('wms:NotaFiscal\Item', 'nfi')
+                ->innerJoin('nfi.notaFiscal', 'nf')
+                ->where('nf.recebimento = :recebimento')
+                ->setParameter(':recebimento', $idRecebimento);
+
+            return $dql->getQuery()->getResult();
+        }
     }
 
     /**

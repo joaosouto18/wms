@@ -222,20 +222,20 @@ class EstoqueProprietarioRepository extends EntityRepository
 
     public function getSaldoProp($codProduto, $grade, $codPessoa){
         $sql = "SELECT * FROM ESTOQUE_PROPRIETARIO 
-                WHERE COD_PRODUTO = $codProduto 
+                WHERE COD_PRODUTO = '$codProduto' 
                   AND DSC_GRADE = '$grade' 
                   AND COD_PESSOA = $codPessoa 
                 ORDER BY COD_ESTOQUE_PROPRIETARIO DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-        if (count($result) >0) {
+        if (count($result) > 0) {
             return reset($result)['SALDO_FINAL'];
         } else {
             return 0;
         }
     }
 
-    public function efetivaEstoquePropRecebimento($idRecebimento){
+    public function criarEstoquePropRecebimento($idRecebimento){
         $nfRepository = $this->getEntityManager()->getRepository('wms:NotaFiscal');
         $nfVetEntity = $nfRepository->findBy(array('recebimento' => $idRecebimento));
         if(!empty($nfVetEntity)){
@@ -258,7 +258,7 @@ class EstoqueProprietarioRepository extends EntityRepository
 
                             $found = [];
                             foreach ($itensInserting as $entity) {
-                                if (is_a($entity, "Wms\Domain\Entity\Enderecamento\EstoqueProprietario")) {
+                                if (is_a($entity, "Wms\Domain\Entity\Enderecamento\ReservaEstoqueProprietario")) {
                                     foreach ($arrCriterio as $prop => $value) {
                                         $method = "get" . ucfirst($prop);
                                         if (method_exists($entity, $method) && (call_user_func(array($entity, $method)) != $value))  break;
@@ -359,17 +359,25 @@ class EstoqueProprietarioRepository extends EntityRepository
                   PJ.NOM_FANTASIA AS PROPRIETARIO,
                   EP.COD_PRODUTO AS PRODUTO,
                   EP.DSC_GRADE AS GRADE,
-                  EP.SALDO_FINAL AS SALDO
+                  EP.SALDO_FINAL AS SALDO,
+                  NVL(REP.PEND, 0) AS \"RECEB./ENDER.\"
                 FROM 
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                  LEFT JOIN (
+                      SELECT SUM(QTD) PEND, COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO
+                      FROM RESERVA_ESTOQUE_PROPRIETARIO 
+                      WHERE IND_APLICADO = 'N' GROUP BY COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO) REP 
+                      ON REP.COD_PRODUTO = EP.COD_PRODUTO 
+                     AND REP.DSC_GRADE = EP.DSC_GRADE 
+                     AND REP.COD_PROPRIETARIO = EP.COD_PESSOA
                 WHERE EP.SALDO_FINAL IS NOT NULL AND EP.SALDO_FINAL > 0 AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO EP2
                       $whereSub
                       GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE)
                   GROUP BY 
-                      EP.SALDO_FINAL, EP.COD_PRODUTO, EP.DSC_GRADE, PJ.NOM_FANTASIA
+                      EP.SALDO_FINAL, EP.COD_PRODUTO, EP.DSC_GRADE, PJ.NOM_FANTASIA, NVL(REP.PEND, 0)
                   ORDER BY 
                       PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -403,9 +411,15 @@ class EstoqueProprietarioRepository extends EntityRepository
         return $entityFilial;
     }
 
-    public function checkLiberarSaldoProprietario($idRecebimento)
-    {
-        if (empty($this->_em->getRepository("wms:Recebimento")->checkRecebimentoEnderecado($idRecebimento)))
-            self::efetivaEstoquePropRecebimento($idRecebimento);
+    /**
+     * @param $codProduto
+     * @param $grade
+     * @param $proprietario
+     * @return EstoqueProprietario|null
+     */
+    public function getlastMov($codProduto, $grade, $proprietario) {
+        /** @var EstoqueProprietario[]|array $last */
+        $last = $this->findBy(['codProduto' => $codProduto, 'grade' => $grade, 'codPessoa' => $proprietario], ['id' => 'DESC'], 1);
+        return (!empty($last)) ? $last[0] : null;
     }
 }
