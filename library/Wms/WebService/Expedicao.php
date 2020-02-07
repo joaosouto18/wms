@@ -61,6 +61,8 @@ class produto {
     /** @var string */
     public $quantidadeAtendida;
     /** @var string */
+    public $quantidadeConferida;
+    /** @var string */
     public $fatorEmbalagemVenda;
     /** @var string */
     public $proprietario;
@@ -77,6 +79,8 @@ class pedido {
     public $cliente;
     /** @var string */
     public $situacao;
+    /** @var string */
+    public $corteHabilitadoErp;
     /** @var string */
     public $tipo;
     /** @var  boolean */
@@ -495,6 +499,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             /** @var \Wms\Domain\Entity\Expedicao\Pedido $EntPedido */
             $EntPedido = $pedidoRepository->find($idPedido);
 
+            if ($EntPedido->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Pedido $codExterno se encontra em uma expedição finalizada e não pode ser cancelado");
+            }
+
             $pedidoRepository->cancelar($idPedido);
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
             $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
@@ -754,6 +762,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido->itinerario = $itinerario;
             $pedido->cliente = $cliente;
             $pedido->conferido = $pedidoRepo->getSituacaoPedido($pedidoEn->getId());
+            $pedido->corteHabilitadoErp = $pedidoEn->getCarga()->getExpedicao()->getCorteERPHabilitado();
             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
             if(is_array($produtos)) {
                 foreach ($produtos as $item) {
@@ -763,6 +772,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $produto->quantidade = $item['QTD_PEDIDO'];
                     $produto->proprietario = $item['CNPJ'];
                     $produto->lote = (isset($item['DSC_LOTE'])) ? $item['DSC_LOTE'] : null;
+                    $produto->quantidadeConferida = $item['QTD_CONFERIDA'];
                     if (is_null($item['ATENDIDA'])) {
                         $produto->quantidadeAtendida = 0;
                     } else {
@@ -841,6 +851,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $result->linhaEntrega = $pedidoEn->getLinhaEntrega();
         $result->situacao = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getSigla();
         $result->conferido = $pedidoRepo->getSituacaoPedido($idPedido);
+        $result->corteHabilitadoErp = $pedidoEn->getCarga()->getExpedicao()->getCorteERPHabilitado();
         $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
         foreach ($produtos as $item) {
             $produto = new produto();
@@ -849,6 +860,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $produto->quantidade = $item['QTD_PEDIDO'];
             $produto->proprietario = $item['CNPJ'];
             $produto->lote = (isset($item['DSC_LOTE'])) ? $item['DSC_LOTE'] : null;
+            $produto->quantidadeConferida = $item['QTD_CONFERIDA'];
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {
@@ -903,6 +915,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $arrayCarga['idExpedicao'] = $entityExpedicao;
         $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
+
+        if ($entityCarga->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
+            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição finalizada");
+        }
+
+        if ($entityCarga->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_CANCELADO) {
+            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição cancelada");
+        }
 
         $i = 0;
         $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
@@ -1573,7 +1593,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             if ($parametro->getValor() == 'S') {
                 if ($notaFiscalEn->getStatus()->getId() != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
-                    throw new \Exception('Nota Fiscal de reentrega ' . $numeroNf . " / " . $serieNF . " ainda não foi recebida");
+                    throw new \Exception('NF de reentrega ' . $numeroNf . " / " . $serieNF . " ainda não foi recebida");
                 }
             }
 

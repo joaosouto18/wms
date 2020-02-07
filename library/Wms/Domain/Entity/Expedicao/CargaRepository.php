@@ -2,6 +2,7 @@
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Util\Sigla;
 
 class CargaRepository extends EntityRepository
@@ -58,6 +59,10 @@ class CargaRepository extends EntityRepository
             if (empty($cargaEntity)) {
                 $tipoCarga = $siglaTipoCarga->getReferencia();
                 throw new \Exception("Carga de codigo $idCargaExterno de tipo $tipoCarga não foi encontrada");
+            }
+
+            if ($cargaEntity->getExpedicao()->getStatus()->getId == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Carga de codigo $idCargaExterno de tipo $tipoCarga, se encontra em uma expedição já finalizada e não pode mais ser cancelada");
             }
 
             $idCarga = $cargaEntity->getId();

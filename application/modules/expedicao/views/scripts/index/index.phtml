@@ -13,4 +13,11 @@ echo $this->grid;
         }
     });
 
+    $('.habilitar-corte').click(function () {
+        if (!confirm('Deseja realmente habilitar os cortes no ERP para esta expedicao?')) {
+            return false;
+        }
+    });
+
+
 </script>
