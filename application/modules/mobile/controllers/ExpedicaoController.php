@@ -434,7 +434,9 @@ class Mobile_ExpedicaoController extends Action {
         $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa, $idPessoa);
 
         $returnToCliente = (!empty($qtdPendenteConferencia));
+	$isBeginTransaction = false;
         try {
+
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
@@ -501,6 +503,7 @@ class Mobile_ExpedicaoController extends Action {
             };
 
             $isLast = false;
+	    $isBeginTransaction = true;
             $this->getEntityManager()->beginTransaction();
             if (!empty($mapaSeparacaoEmbaladoEn)) {
                 $mapaSeparacaoConferencias = $mapaSeparacaoConferenciaRepo->findBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
@@ -547,7 +550,7 @@ class Mobile_ExpedicaoController extends Action {
 
             $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas), $isLast);
         } catch (Exception $e) {
-            $this->getEntityManager()->rollback();
+            if ($isBeginTransaction) $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
             if (!$returnToCliente) {
                 if ($checkout == 1) {
