@@ -54,9 +54,9 @@ class Validade extends Form
                 'label' => 'Linha de separação',
                 'multiOptions' =>  $arr,
             ))
-            ->addElement('hidden', 'idFornecedor')
-            ->addElement('text', 'fornecedor', array(
-                'label' => 'Fornecedor',
+            ->addElement('hidden', 'idFabricante')
+            ->addElement('text', 'fabricante', array(
+                'label' => 'Fabricante/Fornecedor',
                 'size' => $yForn,
             ))
             ->addElement('date', 'dataReferencia', array(
@@ -87,7 +87,7 @@ class Validade extends Form
             'br',
             'linhaSeparacao',
             'br',
-            'fornecedor',
+            'fabricante',
             'dataReferencia',
             'submit',
             'gerarPdf',
@@ -105,7 +105,7 @@ class Validade extends Form
                 'descricao',
                 'linhaSeparacao',
                 'br',
-                'fornecedor',
+                'fabricante',
                 'dataReferencia',
                 'submit',
                 'gerarPdf',

@@ -254,6 +254,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
                 } elseif ($modelo == '14') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 75));
+                } elseif ($modelo == '15') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(100, 75));
                 } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
@@ -415,6 +417,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 40));
                 } elseif ($modelo == '10') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
+                } elseif ($modelo == '15') {
+                    $Etiqueta = new Etiqueta('L', 'mm',array(100,75));
                 } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
@@ -658,7 +662,7 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 4:
                     //LAYOUT HIDRAU
-                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                     break;
                 case 5:
                     //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
@@ -667,6 +671,10 @@ class Expedicao_EtiquetaController  extends Action
                 case 6:
                     //LAYOUT PLANETA
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 7:
+                    //LAYOUT MBLED
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
                     break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));

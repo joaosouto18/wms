@@ -163,6 +163,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT PLANETA
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
+            case 7:
+                //LAYOUT MBLED
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
@@ -225,8 +229,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       E.COD_EXPEDICAO, MAX(C.COD_CARGA_EXTERNO) COD_CARGA_EXTERNO, 
                       I.DSC_ITINERARIO,  MAX(C.DSC_PLACA_CARGA) DSC_PLACA_CARGA, 
                       P.NOM_PESSOA, MSE.NUM_SEQUENCIA,  MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
-                      PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, 
-                      SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO,
+                      PE.DSC_ENDERECO, MAX(PE.NUM_ENDERECO) NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, 
+                      SIGLA.COD_REFERENCIA_SIGLA, SIGLA.DSC_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO,
                       MSE.POS_VOLUME, E.COUNT_VOLUMES, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
                       NVL(R.NUM_SEQ, 0) SEQ_ROTA, NVL(PR.NUM_SEQ, 0) SEQ_PRACA,
                       NVL(R.NOME_ROTA, '') NOME_ROTA, NVL(PR.NOME_PRACA, '') NOME_PRACA,
@@ -250,7 +254,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
                 WHERE $where
              GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
-                      PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
+                      PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, SIGLA.DSC_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
                       NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX
              ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 

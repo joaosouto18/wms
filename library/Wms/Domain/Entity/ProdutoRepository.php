@@ -1922,8 +1922,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if (isset($params['descricao']) && !empty($params['descricao'])) {
             $where .= "AND LOWER(P.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
         }
-        if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
-            $where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
+        if (isset($params['idFabricante']) && !empty($params['idFabricante'])) {
+            $where .= " AND P.COD_FABRICANTE = $params[idFabricante] ";
         }
 
         $picking = Endereco::PICKING;
@@ -1941,30 +1941,39 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       P.DSC_GRADE AS grade, 
                       P.DSC_PRODUTO AS descricao, 
                       NVL(L.DSC_LINHA_SEPARACAO,'PADRAO') AS linha_separacao, 
-                      NVL(PES.NOM_PESSOA,'NÃO IDENTIFICADO') AS fornecedor, 
+                      NVL(F.NOM_FABRICANTE,'NÃO IDENTIFICADO') AS FABRICANTE, 
                       DE.DSC_DEPOSITO_ENDERECO AS endereco, 
                       TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY') AS VALIDADE,
-                      SUM(E.QTD) AS qtd
+                      SUM(E.QTD) AS qtd,
+                      PICKING.DSC_DEPOSITO_ENDERECO PICKING,
+                      CASE WHEN TO_CHAR(E.DTH_VALIDADE - SYSDATE) < 0
+                        THEN 'VENCIDO'
+                      ELSE
+                        TO_CHAR(TO_DATE(TO_CHAR(E.DTH_VALIDADE,'dd/mm/yyyy'),'dd/mm/yyyy') - TO_DATE(TO_CHAR(SYSDATE,'dd/mm/yyyy'),'dd/mm/yyyy'))
+                      END AS DIASVENCER
                   FROM ESTOQUE E 
                   INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE AND P.POSSUI_VALIDADE = 'S'
                   LEFT JOIN LINHA_SEPARACAO L ON L.COD_LINHA_SEPARACAO = P.COD_LINHA_SEPARACAO
                   LEFT JOIN PALETE PLT ON PLT.UMA = E.UMA AND PLT.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = E.COD_PRODUTO_EMBALAGEM
+                  LEFT JOIN FABRICANTE F ON F.COD_FABRICANTE = P.COD_FABRICANTE
                   LEFT JOIN (
                       SELECT COD_RECEBIMENTO, MAX(COD_FORNECEDOR) AS COD_FORNECEDOR 
                       FROM NOTA_FISCAL 
                       GROUP BY COD_RECEBIMENTO) NF ON NF.COD_RECEBIMENTO = PLT.COD_RECEBIMENTO
                   LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_FORNECEDOR
+                  LEFT JOIN DEPOSITO_ENDERECO PICKING ON PICKING.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                   $where
                   GROUP BY 
                       P.COD_PRODUTO, 
                       P.DSC_GRADE, 
                       P.DSC_PRODUTO, 
                       L.DSC_LINHA_SEPARACAO, 
-                      PES.NOM_PESSOA, 
+                      F.NOM_FABRICANTE, 
                       DE.DSC_DEPOSITO_ENDERECO,
-                      TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY')
+                      E.DTH_VALIDADE,
+                      PICKING.DSC_DEPOSITO_ENDERECO
                   ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
         return $this->_em->getConnection()->query($query)->fetchAll();
