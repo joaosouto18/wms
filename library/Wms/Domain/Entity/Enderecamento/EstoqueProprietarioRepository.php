@@ -360,7 +360,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   EP.COD_PRODUTO AS PRODUTO,
                   EP.DSC_GRADE AS GRADE,
                   EP.SALDO_FINAL AS SALDO,
-                  NVL(REP.PEND, 0) AS \"RECEB./ENDER.\"
+                  NVL(REP.PEND, 0) AS \"RESERVA ENDERE.\"
                 FROM 
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
