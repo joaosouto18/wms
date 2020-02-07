@@ -2,7 +2,6 @@
 namespace Wms\Module\Armazenagem\Report;
 
 use Core\Pdf;
-use Wms\Module\Web\Form\Deposito\Endereco;
 
 class Inventario extends Pdf
 {

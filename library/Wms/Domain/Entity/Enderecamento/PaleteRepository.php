@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Recebimento;
 use Wms\Domain\Entity\Armazenagem\UnitizadorRepository;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoque;
@@ -124,6 +125,7 @@ class PaleteRepository extends EntityRepository {
                NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
                ROUND(NVL(QTD_END.QTD,0)/NVL(QTD_TOTAL.QTD_TOTAL,1) * 100,2) as PERCENTUAL
           FROM RECEBIMENTO R
+          INNER JOIN DEPOSITO D ON D.COD_DEPOSITO = R.COD_DEPOSITO
           LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
           LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
                        FROM (SELECT SUM (QTD) as QTD, COD_RECEBIMENTO
@@ -140,7 +142,7 @@ class PaleteRepository extends EntityRepository {
                            $whereCodRecebimento AND R.COD_STATUS = $stsPaleteEnderecado
                            GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO, PV.QTD_VOLUMES)
                      GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
-        $query = $query . $whereCodRecebimento;
+        $query = $query . $whereCodRecebimento . " AND NVL(D.IND_USA_ENDERECAMENTO, 'S') = 'S' ";
 
         if (isset($status) && (!empty($status))) {
             if ($status == $stsPaleteEnderecado) {
@@ -687,18 +689,22 @@ class PaleteRepository extends EntityRepository {
                 if (Math::compare($espacoDisponivel, $item['QTD'], ">")) {
                     $qtdEnderecar = $item['QTD'];
                 } else {
-                    /** @var Produto\Embalagem $embalagenDefault */
-                    $embalagenDefault = $produtoEn->getEmbalagens()->filter(
-                        function($item) {
-                            return (is_null($item->getDataInativacao()) && $item->getIsPadrao() == 'S');
-                        }
-                    )->first();
+                    if ($tipo == "V") {
+                        $qtdEnderecar = $espacoDisponivel;
+                    } else {
+                        /** @var Produto\Embalagem $embalagenDefault */
+                        $embalagenDefault = $produtoEn->getEmbalagens()->filter(
+                            function($item) {
+                                return (is_null($item->getDataInativacao()) && $item->getIsPadrao() == 'S');
+                            }
+                        )->first();
 
-                    $resto = Math::resto($item['QTD'], $embalagenDefault->getQuantidade());
-                    if ($resto > 0) {
-                        $qtdEnderecar = $resto;
+                        $resto = Math::resto($item['QTD'], $embalagenDefault->getQuantidade());
+                        if ($resto > 0) {
+                            $qtdEnderecar = $resto;
+                        }
+                        $qtdEnderecar += Math::multiplicar((int) Math::dividir(Math::subtrair($espacoDisponivel, $resto), $embalagenDefault->getQuantidade()), $embalagenDefault->getQuantidade());
                     }
-                    $qtdEnderecar += Math::multiplicar((int) Math::dividir(Math::subtrair($espacoDisponivel, $resto), $embalagenDefault->getQuantidade()), $embalagenDefault->getQuantidade());
                 }
 
                 if ($qtdEnderecar <= 0)
@@ -1717,11 +1723,16 @@ class PaleteRepository extends EntityRepository {
         $embalagem = $produtosPalete[0]->getEmbalagemEn();
         $qtdPaleteProduto = $produtosPalete[0]->getQtd();
 
+        /** @var Endereco $pickingEn */
         $pickingEn = $embalagem->getEndereco();
+
         $capacidadePicking = $embalagem->getCapacidadePicking();
 
         //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
         if ($pickingEn != null) {
+
+            if ($pickingEn->isBloqueadaEntrada()) return null;
+
             $idVolume = null;
             $volumes = array();
             if ($produtosPalete[0]->getCodProdutoVolume() != NULL) {
@@ -1863,6 +1874,7 @@ class PaleteRepository extends EntityRepository {
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
+                    AND DE.BLOQUEADA_ENTRADA = 0
                ORDER BY CE.NUM_PRIORIDADE,
                         ET.NUM_PRIORIDADE,
                         AA.NUM_PRIORIDADE,

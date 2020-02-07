@@ -85,7 +85,7 @@ class Mobile_RecebimentoTransbordoController extends Action
         }
 
         if ($etiqueta->getCodExpedicao() != $idExpedicao) {
-            $this->bloqueioOs($idExpedicao, 'Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta->getCodExpedicao(), false);
+            $this->bloqueioOs($idExpedicao, 'Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta->getCodExpedicao(), \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
             if ($this->_request->isXmlHttpRequest()) {
                 $this->createXml('error', 'Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta->getCodExpedicao(), "/mobile/recebimento-transbordo/liberar-os/idExpedicao/$idExpedicao");
             } else {

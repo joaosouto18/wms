@@ -13,6 +13,9 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class OrdemServico
 {
+
+    const BLOCK_MAPA = 'M';
+    const BLOCK_ETIQ = 'E';
     /**
      * Formas de conferencia 
      */
@@ -133,6 +136,12 @@ class OrdemServico
      * @var string
      */
     protected $bloqueio;
+
+    /**
+     * @var string
+     * @Column("BLOQUEIO_DE", type="string", length=1)
+     */
+    protected $bloqDe;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\RecebimentoReentrega")
@@ -332,4 +341,35 @@ class OrdemServico
         $this->recebimentoReentrega = $recebimentoReentrega;
     }
 
+    /**
+     * @return string
+     */
+    public function getBloqDe()
+    {
+        return $this->bloqDe;
+    }
+
+    /**
+     * @param string $bloqDe
+     */
+    public function setBloqDe($bloqDe)
+    {
+        $this->bloqDe = $bloqDe;
+    }
+
+    /**
+     * @return bool
+     */
+    public function bloqueioEtiqueta()
+    {
+        return ($this->bloqDe == self::BLOCK_ETIQ);
+    }
+
+    /**
+     * @return bool
+     */
+    public function bloqueioMapa()
+    {
+        return ($this->bloqDe == self::BLOCK_MAPA);
+    }
 }

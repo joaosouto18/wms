@@ -47,14 +47,27 @@ class AcaoIntegracaoRepository extends EntityRepository
         }
     }
 
-    private function getDadosTemporarios($tipoAcao, $dados = null) {
+    private function getDadosTemporarios($tipoAcao, $dados = null, $efetivar = false) {
         $SQL = null;
         $where = 'WHERE 1 = 1';
         switch ($tipoAcao) {
             case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
-                if (isset($dados) && !empty($dados)) {
+                if (!$efetivar) {
                     $where .= " AND NUM_NOTA_FISCAL IN ($dados)";
+                } else {
+                    $detalhesNotas = explode(',', $dados);
+                    $where .= " AND ";
+
+                    foreach ($detalhesNotas as $key => $detalhesNota) {
+                        $dadosNotasConcatenados = explode('*-*', $detalhesNota);
+                        $where .= (" (TRIM(NUM_NOTA_FISCAL) = '$dadosNotasConcatenados[0]' AND TRIM(COD_SERIE_NOTA_FISCAL) = '$dadosNotasConcatenados[1]' AND TRIM(COD_FORNECEDOR) = '$dadosNotasConcatenados[2]') ");
+
+                        if ($detalhesNotas[$key] != end($detalhesNotas))
+                            $where .= ' OR ';
+
+                    }
                 }
+
                 $SQL = "
                   SELECT COD_INTEGRACAO_NF_ENTRADA,
                          COD_FORNECEDOR,
@@ -69,7 +82,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                          DSC_PLACA_VEICULO,
                          QTD_ITEM,
                          VALOR_TOTAL,
-                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH,
+                         DSC_LOTE
                         FROM INTEGRACAO_NF_ENTRADA
                         $where
                   ORDER by NUM_NOTA_FISCAL, COD_SERIE_NOTA_FISCAL, COD_FORNECEDOR, TO_DATE(DAT_EMISSAO)
@@ -146,7 +160,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $acaoEn = $acoes[0];
 
         /* Consulto os dados da tabela temporaria referente a ação */
-        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId(), $dados);
+        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId(), $dados, true);
 
         /* Executo uma unica ação com todos os dados retornados */
         $result = $this->processaAcao($acaoEn,null,"E","P", $dados,$IdFiltro);
@@ -157,7 +171,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         return $result;
     }
 
-    public function listaTemporaria($acoes, $options = null, $idFiltro) {
+    public function listaTemporaria($acoes, $options = null, $idFiltro, $codigo = null) {
 
         $this->validaAcoesMesmoTipo($acoes);
 
@@ -174,7 +188,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         }
 
         /* Faz a consulta na tabela temporaria, para retornar as informações no mesmo modelo do ERP */
-        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
+        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId(), $codigo);
 
         /* Executa uma integração apenas para pegar o array formatado */
         $integracaoService = new Integracao($this->getEntityManager(),
@@ -241,7 +255,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
                     if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
                         $options[] = $data->format("Y-m-d");
-                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
+                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE
+                        || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_POSTGRE) {
                         $options[] = $data->format("d/m/Y H:i:s");
                     } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MSSQL
                         || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_SQLSRV) {

@@ -1,6 +1,5 @@
 <?php
 use Wms\Module\Web\Controller\Action,
-    Wms\Module\Web\Grid\Enderecamento\Produtos as ProdutosGrid,
     Wms\Module\Web\Page;
 
 class Enderecamento_ProdutoController extends Action
@@ -10,36 +9,45 @@ class Enderecamento_ProdutoController extends Action
      */
     public function indexAction()
     {
-        $codRecebimento  = $this->getRequest()->getParam('COD_RECEBIMENTO');
-        if (isset($codRecebimento)) {
-            $idRecebimento = $codRecebimento;
-            $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
+        try {
+            $codRecebimento = $this->getRequest()->getParam('COD_RECEBIMENTO');
+            if (isset($codRecebimento)) {
+                $idRecebimento = $codRecebimento;
+                $this->_redirect('enderecamento/produto/index/id/' . $idRecebimento);
+            }
+
+            $idRecebimento = $this->getRequest()->getParam('id');
+            $this->configurePage();
+
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+            /** @var \Wms\Domain\Entity\Recebimento $recebimento */
+            $recebimento = $recebimentoRepo->find($idRecebimento);
+
+            if (empty($recebimento)) throw new Exception("O recebimento $idRecebimento não foi encontrado!");
+            if (!$recebimento->getDeposito()->getUsaEnderecamento()) throw new Exception("Esse recebimento $idRecebimento pertence à um depósito que não utiliza endereçamento");
+
+            $this->view->recebimento = $recebimento;
+
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
+
+            if ($notaFiscalEntity)
+                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+            $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
+            $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
+
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
+            $this->view->produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+            $this->view->repository = $this->getEntityManager()->getRepository('wms:Produto');
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $this->view->embalagemRepository = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+            $this->redirect('index', 'index', 'enderecamento');
         }
-
-        $idRecebimento   = $this->getRequest()->getParam('id');
-        $this->configurePage();
-
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-        $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
-        $recebimento = $recebimentoRepo->find($idRecebimento);
-
-        $this->view->recebimento = $recebimento;
-
-        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-        $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
-
-        if ($notaFiscalEntity)
-            $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
-
-        $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
-        $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
-
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-        $recebimentoRepo      = $this->getEntityManager()->getRepository('wms:Recebimento');
-        $this->view->produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
-        $this->view->repository = $this->getEntityManager()->getRepository('wms:Produto');
-        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        $this->view->embalagemRepository = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
     }
 
     public function enderecamentoPickingAction(){

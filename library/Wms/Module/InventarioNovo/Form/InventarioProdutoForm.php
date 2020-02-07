@@ -32,6 +32,11 @@ class InventarioProdutoForm extends Form
                     'multiOptions' => $this->getEm()->getRepository("wms:Fabricante")->getIdValue(),
                     'ng-model' => 'criterioForm.fabricante'
                 ))
+                ->addElement('checkbox', 'incluirPicking', array(
+                    'label' => 'Incluir picking (mesmo se estiver vazio)',
+                    'checkedValue' => 'true',
+                    'ng-model' => 'criterioForm.incluirPicking'
+                ))
                 ->addElement('select', 'linhaSep', array(
                     'mostrarSelecione' => true,
                     'label' => 'Linha de Separação',
@@ -50,7 +55,7 @@ class InventarioProdutoForm extends Form
                     'label' => 'Buscar',
                     'decorators' => array('ViewHelper'),
                     'attribs' => array('id' => 'btn-buscar'),
-                    'ng-click' => "requestForm('resultForm')"
+                    'ng-click' => "requestForm()"
                 ))
                 ->addElement('button', 'clearForm', array(
                     'class' => 'btn btn-form',
@@ -68,7 +73,7 @@ class InventarioProdutoForm extends Form
                 ));
             }
 
-            $this->addDisplayGroup(array('criterio', 'codProduto', 'grade', 'descricao', 'fabricante', 'classe', 'linhaSep', 'btnBuscar', 'clearForm'), 'identificacao', array('legend' => 'Filtros de Busca'));
+            $this->addDisplayGroup(array('criterio', 'codProduto', 'grade', 'descricao', 'fabricante', 'classe', 'linhaSep', 'incluirPicking', 'btnBuscar', 'clearForm'), 'identificacao', array('legend' => 'Filtros de Busca'));
         }
         catch (\Zend_Form_Exception $e) {
 

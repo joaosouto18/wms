@@ -22,7 +22,7 @@ class Deposito
     protected $id;
 
     /**
-     * @var smallint $idFilial
+     * @var int $idFilial
      *
      * @Column(name="COD_FILIAL", type="smallint", nullable=false)
      */
@@ -36,7 +36,7 @@ class Deposito
     protected $descricao;
 
     /**
-     * @var Wms\Domain\Entity\Filial $filial
+     * @var Filial $filial
      * 
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Filial")
      * @JoinColumn(name="COD_FILIAL", referencedColumnName="COD_FILIAL") 
@@ -47,7 +47,7 @@ class Deposito
      * Usuários que tem acesso a este depósito
      * 
      * @ManyToMany(targetEntity="Wms\Domain\Entity\Usuario", mappedBy="depositos", cascade={"persist"})
-     * @var ArrayCollection
+     * @var Usuario[]
      */
     protected $usuarios;
 
@@ -56,6 +56,12 @@ class Deposito
      * @var string se o deposito está ativo
      */
     protected $isAtivo;
+
+    /**
+     * @Column(name="IND_USA_ENDERECAMENTO", type="string", length=1, nullable=true)
+     * @var string se o deposito está tem processo de endereçamento
+     */
+    protected $usaEnderecamento;
 
     public function addUsuario(\Wms\Domain\Entity\Usuario $usuario)
     {
@@ -108,6 +114,31 @@ class Deposito
     public function setIsAtivo($isAtivo)
     {
         $this->isAtivo = ($isAtivo) ? 'S' : 'N';
+        return $this;
+    }
+
+    /**
+     * @return bool | string
+     * @param $strVal bool
+     */
+    public function getUsaEnderecamento($strVal = false)
+    {
+        return (empty($strVal)) ? ($this->usaEnderecamento == 'S') : $this->usaEnderecamento;
+    }
+
+    /**
+     * @param string|bool $usaEnderecamento
+     * @return Deposito
+     */
+    public function setUsaEnderecamento($usaEnderecamento)
+    {
+        if (is_bool($usaEnderecamento)) {
+            $this->usaEnderecamento = ($usaEnderecamento) ? 'S' : 'N';
+        } elseif (is_string($usaEnderecamento)) {
+            $this->usaEnderecamento = $usaEnderecamento;
+        } else {
+            $this->usaEnderecamento = 'N';
+        }
         return $this;
     }
 

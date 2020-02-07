@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity;
 
 use Wms\Domain\Entity\Ator as AtorInterface;
+use Wms\Domain\Entity\Pessoa\Juridica;
 
 /**
  *
@@ -57,6 +58,8 @@ class Filial implements AtorInterface
     protected $depositos;
 
     /**
+     * @var Juridica
+     *
      * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica")
      * @JoinColumn(name="COD_FILIAL", referencedColumnName="COD_PESSOA")
      */

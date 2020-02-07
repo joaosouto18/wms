@@ -7,6 +7,7 @@ use Wms\Domain\Entity\Produto,
     Wms\Module\Web\Form\Produto\Filtro as FiltroForm,
     Wms\Module\Web\Grid\Produto\DadoLogistico as DadoLogisticoGrid,
     Wms\Domain\Entity\Produto as ProdutoEntity;
+use Wms\Module\Armazenagem\Printer\EtiquetaEndereco;
 
 /**
  * Description of Web_ProdutoController
@@ -83,6 +84,10 @@ class Web_ProdutoController extends Crud {
             case 4:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
                 break;
+            case 14:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(115, 55));
+                break;
+
         }
         $gerarEtiqueta->init(null, array( 'produtos' => $array, 'grade' => $grade), $modelo,\Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO,true);
     }
@@ -543,6 +548,9 @@ class Web_ProdutoController extends Crud {
                     break;
                 case 6:
                     $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 60));
+                    break;
+                case 14:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(115, 55));
                     break;
             }
 

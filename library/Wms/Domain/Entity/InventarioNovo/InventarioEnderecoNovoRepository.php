@@ -10,6 +10,7 @@ namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 class InventarioEnderecoNovoRepository extends EntityRepository
 {
@@ -34,6 +35,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
 
     public function getArrEnderecos($idInventario, $sequencia)
     {
+        $tipoPicking = Endereco::PICKING;
+        $tipoPickingDinamico = Endereco::PICKING_DINAMICO;
         $sql = "SELECT DISTINCT
                     DE.DSC_DEPOSITO_ENDERECO,
                     DE.COD_DEPOSITO_ENDERECO,
@@ -45,7 +48,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                     ICE.IND_CONTAGEM_DIVERGENCIA,
                     ICE.NUM_CONTAGEM,
                     ICE.COD_INVENTARIO_ENDERECO,
-                    EV.END_VAZIO
+                    EV.END_VAZIO,
+                    CASE WHEN DE.COD_CARACTERISTICA_ENDERECO IN ($tipoPicking, $tipoPickingDinamico) THEN 'S' ELSE 'N' END IS_PICKING
                 FROM INVENTARIO_CONT_END ICE
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
                 INNER JOIN DEPOSITO_ENDERECO DE on IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
@@ -53,7 +57,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                     SELECT 'N' END_VAZIO, ICE3.COD_INVENTARIO_ENDERECO
                     FROM INVENTARIO_ENDERECO_NOVO IEN3
                     INNER JOIN INVENTARIO_CONT_END ICE3 on IEN3.COD_INVENTARIO_ENDERECO = ICE3.COD_INVENTARIO_ENDERECO
-                    INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE3.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+                    INNER JOIN INVENTARIO_CONT_END_OS ICEO ON ICEO.COD_INV_CONT_END = ICE3.COD_INV_CONT_END
+                    INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
                     WHERE IEN3.COD_INVENTARIO = $idInventario AND IEN3.IND_ATIVO = 'S' AND ICEP.QTD_CONTADA > 0
                           AND NOT EXISTS(
                             SELECT 'x' FROM INVENTARIO_END_PROD IEP
@@ -83,6 +88,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                 "indDivrg" => ($item["IND_CONTAGEM_DIVERGENCIA"] == "S"),
                 "sequencia" => $sequencia,
                 "contagem" => $item["NUM_CONTAGEM"],
+                "isPicking" => ($item["IS_PICKING"] === 'S'),
             ];
         }
         return $result;
@@ -111,7 +117,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
         $dql = $this->_em->createQueryBuilder();
         $dql->select("p.id codProduto, p.grade, p.descricao, v.id idVol, v.descricao dscVol, NVL(e.codigoBarras, v.codigoBarras) codBarras, icep.qtdContada, icep.lote")
             ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
-            ->innerJoin("icep.inventarioContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
+            ->innerJoin("icep.invContEndOs", "iceo")
+            ->innerJoin("iceo.invContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("icep.produto", "p")
             ->leftJoin("icep.produtoEmbalagem", "e")
@@ -126,7 +133,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->andWhere("NOT EXISTS(
                     SELECT 'x'
                     FROM wms:InventarioNovo\InventarioContEndProd icep2
-                    INNER JOIN icep2.inventarioContEnd ice2 WITH ice2.sequencia = $sequencia
+                    INNER JOIN icep2.invContEndOs iceo2
+                    INNER JOIN iceo2.invContEnd ice2 WITH ice2.sequencia = $sequencia
                     INNER JOIN ice2.inventarioEndereco ie3 WITH ie3.ativo = 'S'
                     WHERE ie = ie3 and icep2.codProduto = icep.codProduto and icep2.grade = icep.grade 
                          and NVL(icep2.lote,0) = NVL(icep.lote,0) and NVL(icep2.produtoVolume,0) = NVL(icep.produtoVolume,0) 

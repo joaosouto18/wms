@@ -121,7 +121,7 @@ class EstoqueErpRepository extends EntityRepository
                                              ICE.DSC_GRADE
                                         FROM INVENTARIO_ENDERECO IE
                                    LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
-                                       WHERE COD_INVENTARIO = $params[inventario] AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
+                                       WHERE COD_INVENTARIO IN ($params[inventario]) AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
                                        GROUP BY ICE.COD_PRODUTO,
                                          ICE.DSC_GRADE) I
                              ON (I.COD_PRODUTO = ERP.COD_PRODUTO AND I.DSC_GRADE = ERP.DSC_GRADE)
@@ -133,8 +133,17 @@ class EstoqueErpRepository extends EntityRepository
                                         FROM INVENTARIO_NOVO INVN
                                        INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON IEN.COD_INVENTARIO = INVN.COD_INVENTARIO
                                        INNER JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
-                                       INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
-                                       WHERE INVN.COD_INVENTARIO = $params[inventario]) I
+                                       INNER JOIN INVENTARIO_CONT_END_OS ICEO ON ICEO.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+                                       INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
+                                       WHERE INVN.COD_INVENTARIO IN ($params[inventario])
+                                       UNION  
+                                      SELECT DISTINCT 
+                                             IEP.COD_PRODUTO, 
+                                             IEP.DSC_GRADE
+                                        FROM INVENTARIO_ENDERECO_NOVO IEN
+                                        LEFT JOIN INVENTARIO_END_PROD  IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
+                                       WHERE IEN.COD_INVENTARIO IN ($params[inventario])
+                                       ) I
                              ON (I.COD_PRODUTO = ERP.COD_PRODUTO AND I.DSC_GRADE = ERP.DSC_GRADE)
                              OR (I.COD_PRODUTO = WMS.COD_PRODUTO AND I.DSC_GRADE = WMS.DSC_GRADE)";
             }

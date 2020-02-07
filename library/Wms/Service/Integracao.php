@@ -203,18 +203,14 @@ class Integracao {
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
                 case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO:
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA:
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS:
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO:
-                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
-                    return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
                     return $this->verificaCargasFaturadas($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_PEDIDO_VENDA:
                     return $this->processaPedidoAcumulado($this->_dados);
+                default:
+                    return true;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
@@ -638,11 +634,10 @@ class Integracao {
 
         $itens = array();
         $notasFiscais = array();
-        $idProdutos = array();
 
 
         foreach ($dados as $key => $notaFiscal) {
-
+            $notaFiscal = array_change_key_case($notaFiscal,CASE_UPPER);
             $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
             if (strlen($cpf_cnpj) == 11) {
                 $tipoPessoa = 'F';
@@ -664,13 +659,12 @@ class Integracao {
                 }
             }
 
-            /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
-            $idProdutos[] = $notaFiscal['COD_PRODUTO'];
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
                 'grade' => $notaFiscal['DSC_GRADE'],
                 'quantidade' => $notaFiscal['QTD_ITEM'],
-                'peso' => $notaFiscal['QTD_ITEM']
+                'peso' => $notaFiscal['QTD_ITEM'],
+                'lote' => $notaFiscal['DSC_LOTE']
             );
 
             $numNfAtual = $notaFiscal['NUM_NOTA_FISCAL'];
@@ -713,28 +707,12 @@ class Integracao {
             }
         }
 
-        /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
-        $acaoIntegracaoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
-        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
-        $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
-        $acaoEn = null;
-        if (isset($idIntegracao) and !is_null($idIntegracao->getValor()))
-            $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
-
-        $produtos = implode(',', $idProdutos);
-        if ($produtos == "")
-            $produtos = "0";
-        $options[] = $produtos;
-//        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-//        $em->flush();
-
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
         } else if ($this->getTipoExecucao() == "R") {
             foreach ($notasFiscais as $nf) {
                 $resumo[] = array(
-                    'check' => '<input class="check" name="check[]" value="' . $nf['id'] . '" type="checkbox" checked />',
+                    'check' => '<input class="check" name="check[]" value="' . trim($nf['numNota']) .'*-*'. trim($nf['serie']) .'*-*'. trim($nf['codFornecedor']) . '" type="checkbox" checked />',
                     'Numero NF' => $nf['numNota'],
                     'Serie' => $nf['serie'],
                     'Dt. Emissão' => $nf['dtEmissao'],
@@ -826,7 +804,7 @@ class Integracao {
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE'])) ? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL'])) ? (int) $linha['DIAS_VIDA_UTIL'] : null;
-                $refFornecedor = (isset($linha['REF_FORNECEDOR'])) ? (int) $linha['REF_FORNECEDOR'] : '';
+                $refFornecedor = (isset($linha['REF_FORNECEDOR']) && !is_null($linha['REF_FORNECEDOR'])) ? $linha['REF_FORNECEDOR'] : null;
 
                 $codClasseProduto = $codClasseNivel1;
                 if (empty($codClasseNivel1) AND ! empty($codClasseNivel2)) {
@@ -970,6 +948,8 @@ class Integracao {
                     $nf->setQtdItem(str_replace(",", ".", $row['QTD_ITEM']));
                     $nf->setVlrTotal(str_replace(",", ".", $row['VALOR_TOTAL']));
                     $nf->setDth(new \DateTime());
+                    $nf->setLote($row['DSC_LOTE']);
+
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
@@ -1115,7 +1095,8 @@ class Integracao {
                 3 => $produtoConferido['qtdDivergencia'],
                 4 => $dataValidade,
                 5 => $dataConferencia,
-                6 => $produtoConferido['codigoBarras']
+                6 => $produtoConferido['codigoBarras'],
+                7 => $produtoConferido['lote']
             );
 
             //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES

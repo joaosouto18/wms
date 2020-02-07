@@ -81,11 +81,17 @@ class Imprimir extends Form {
                     ),
                     'class' => 'pequeno',
                 ))
-                ->addElement('select', 'situacao', array(
-                    'mostrarSelecione' => false,
-                    'label' => 'Situação',
-                    'class' => 'medio',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado')),
+                ->addElement('select', 'bloqueada', array(
+                    'multiOptions' => [
+                        'firstOpt' => 'Todos',
+                        'options' => [
+                            'E' => 'Apenas Entrada',
+                            'S' => 'Apenas Saída',
+                            'ES' => 'Ambas bloqueadas',
+                            'N' => 'Ambas Liberadas'
+                        ]
+                    ],
+                    'label' => 'Mov. Bloqueada',
                 ))
                 ->addElement('select', 'ativo', array(
                     'mostrarSelecione' => false,
@@ -94,7 +100,7 @@ class Imprimir extends Form {
                     'multiOptions' => array('S' => 'Ativo', 'N' => 'Inativo'),
                 ))
                 ->addDisplayGroup(array('ruaInicial', 'ruaFinal', 'predioInicial', 'predioFinal', 'nivelInicial', 'nivelFinal', 'aptoInicial', 'aptoFinal'), 'intervalo', array('legend' => 'Intervalo de Endereços'))
-                ->addDisplayGroup(array('opcao', 'lado', 'tipoEndereco', 'situacao', 'ativo', 'buscar'), 'caracteristica', array('legend' => 'Características'));
+                ->addDisplayGroup(array('opcao', 'lado', 'tipoEndereco', 'bloqueada', 'ativo', 'buscar'), 'caracteristica', array('legend' => 'Características'));
     }
 
     /**

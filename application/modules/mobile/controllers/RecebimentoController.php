@@ -57,6 +57,15 @@ class Mobile_RecebimentoController extends Action
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEntity */
+            $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
+
+            if (!$recebimentoEntity)
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEntity->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
+
             $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOS);
 
             if ($result['exception'] != null) {
@@ -93,15 +102,18 @@ class Mobile_RecebimentoController extends Action
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
 
+            if (!$recebimentoEntity)
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEntity->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
+
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
 
             if ($notaFiscalEntity) {
                 $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
                 $this->view->fornecedor     = $notaFiscalEntity->getFornecedor()->getPessoa()->getNome();
             }
-
-            if (!$recebimentoEntity)
-                throw new \Exception('Recebimento não encontrado');
 
             // verifica se tem ordem de servico aberto
             $retorno = $recebimentoRepo->checarOrdemServicoAberta($idRecebimento);
@@ -151,14 +163,17 @@ class Mobile_RecebimentoController extends Action
 
             $form = new ProdutoQuantidadeForm;
 
-            $recebimentoEntity = null;
-
-            $recebimentoEntity = $this->em->getReference('wms:Recebimento', $idRecebimento);
-            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEntity */
+            $recebimentoEntity = $this->em->find('wms:Recebimento', $idRecebimento);
 
             if (!$recebimentoEntity)
-                throw new \Exception('Recebimento não encontrado');
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEntity->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
+
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
 
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
@@ -259,6 +274,15 @@ class Mobile_RecebimentoController extends Action
             if (!$this->getRequest()->isPost())
                 throw new \Exception('Escaneie o volume/embalagem novamente.');
 
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEn */
+            $recebimentoEn = $recebimentoRepo->find($idRecebimento);
+
+            if (!$recebimentoEn)
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEn->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEn->getDscStatus());
+
             if (!isset($qtdUnidFracionavel)) {
                 $qtdUnidFracionavel = 1;
             }
@@ -282,7 +306,7 @@ class Mobile_RecebimentoController extends Action
             $idProduto = $produtoEn->getId();
             $grade = $produtoEn->getGrade();
             $qtds = [];
-            if ($produtoEn->getIndControlaLote() == 'S' && (!isset($params['lotes']) || empty($params['lotes']))) {
+            if ($produtoEn->getIndControlaLote() == 'S' && empty($params['lotes'])) {
                 throw new Exception("Nenhum lote foi definido para esta contagem!");
             } elseif ($produtoEn->getIndControlaLote() == 'N'){
                 $qtds[\Wms\Domain\Entity\Produto\Lote::NCL] = [
@@ -291,12 +315,6 @@ class Mobile_RecebimentoController extends Action
                 ];
             } else {
                 foreach ($params["lotes"] as $i => $lote){
-
-                    /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepo */
-                    $loteRepo = $this->em->getRepository("wms:Produto\Lote");
-                    if (empty($loteRepo->getLoteRecebimento($lote, $idProduto, $grade)))
-                        throw new Exception("O lote $lote não foi encontrado");
-
                     $qtds["$lote--$i"] = [
                         "lote" => $lote,
                         "qtd" => (isset($isEmbFracDefault) && $isEmbFracDefault == 'S') ? (float) $qtdConferida[$i] : (int) $qtdConferida[$i]
@@ -304,6 +322,7 @@ class Mobile_RecebimentoController extends Action
                 }
             }
 
+            $i = 0;
             foreach ($qtds as $index) {
                 $lote = $index["lote"];
                 $qtdConferida = $index["qtd"];
@@ -330,8 +349,7 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $qtdBloqueada = 0;
-                if ($produtoEn->getValidade() == "S") {
-
+                if ($produtoEn->getValidade() == "S" && $i === 0) {
                     if (!isset($params['dataValidade']) || empty($params['dataValidade'])) {
                         $this->_helper->messenger('error', 'Informe uma data de validade correta');
                         $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
@@ -370,7 +388,7 @@ class Mobile_RecebimentoController extends Action
                         }
 
 
-                        $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true);
+                        $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true, null, true);
 
                         foreach ($recebimentoEmbalagemEntities as $recebimentoEmbalagemEntity) {
                             list($diaComp, $mesComp, $anoComp) = explode('/', $recebimentoEmbalagemEntity->getDataValidade()->format('d/m/Y'));
@@ -397,6 +415,7 @@ class Mobile_RecebimentoController extends Action
                 if ($this->_hasParam('idProdutoVolume')) {
                     $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada, null, $lote);
                 }
+                $i++;
             }
 
 

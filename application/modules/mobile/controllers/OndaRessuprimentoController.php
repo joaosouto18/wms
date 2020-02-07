@@ -373,7 +373,13 @@ class Mobile_OndaRessuprimentoController extends Action
             $this->view->qtd            = $qtd;
             $this->view->qtdEmb = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade,$qtd);
 
-            if( isset($_POST['enderecoDestino']) && !empty($_POST['enderecoDestino']) && isset($_POST['nivel']) && !empty($_POST['nivel'])) {
+            if( isset($_POST['enderecoDestino']) && !empty($_POST['enderecoDestino']) || isset($_POST['nivel']) && !empty($_POST['nivel'])) {
+
+                if (empty($_POST['enderecoDestino']))
+                    throw new Exception("Bipe/Digite o endereço de destino");
+
+                if (empty($_POST['nivel']))
+                    throw new Exception("Digite o nível de destino");
 
                 $em = $this->getEntityManager();
                 $codigoBarras = ColetorUtil::retiraDigitoIdentificador($_POST['enderecoDestino']);
@@ -520,6 +526,7 @@ class Mobile_OndaRessuprimentoController extends Action
                 $this->addFlashMessage("success", "Os Finalizada com sucesso");
                 $this->_redirect($urlRedirect);
             }
+
         } catch (\Exception $e) {
             $this->addFlashMessage('error',$e->getMessage());
             $this->getEntityManager()->rollback();

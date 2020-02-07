@@ -5,6 +5,7 @@ namespace Wms\Coletor;
 use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Expedicao as ExpedicaoEntity;
 use Wms\Domain\Entity\ExpedicaoRepository;
+use Wms\Domain\Entity\OrdemServico;
 
 class Expedicao
 {
@@ -40,6 +41,8 @@ class Expedicao
     protected $_message;
 
     protected $_tipoConferencia;
+
+    protected $os;
 
 
     /**
@@ -251,6 +254,22 @@ class Expedicao
     }
 
     /**
+     * @return OrdemServico
+     */
+    public function getOs()
+    {
+        return $this->os;
+    }
+
+    /**
+     * @param OrdemServico $os
+     */
+    public function setOs($os)
+    {
+        $this->os = $os;
+    }
+
+    /**
      * Expedicao constructor.
      * @param $request \Zend_Controller_Request_Abstract
      * @param $em EntityManager
@@ -317,7 +336,7 @@ class Expedicao
         $osEntity = $this->getExpedicaoRepo()->verificaOSUsuario($idExpedicao);
         if ($osEntity != null) {
             if ($osEntity[0]->getBloqueio() != null) {
-
+                $this->setOs($osEntity[0]);
                 $this->setMessage('OS bloqueada');
                 $this->setStatus('error');
                 $this->setRedirect("/mobile/expedicao/liberar-os/idExpedicao/$idExpedicao/placa/$placa");

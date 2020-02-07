@@ -441,7 +441,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                   WHERE MS.COD_EXPEDICAO = $idExpedicao
                     AND MS.COD_MAPA_SEPARACAO NOT IN (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO_QUEBRA WHERE IND_TIPO_QUEBRA = 'RE')
                   GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(MSP.DSC_LOTE, '$naoControlaLote')) MSP ON MSP.COD_PRODUTO = PP.COD_PRODUTO AND MSP.DSC_GRADE = PP.DSC_GRADE AND MSP.DSC_LOTE = PP.DSC_LOTE
-                WHERE QTD_PEDIDO <> NVL(QTD_MAPA, 0)";
+                WHERE NVL(QTD_PEDIDO,0) <> NVL(QTD_MAPA,0)";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -506,4 +506,29 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         return $arr;
     }
 
+    public function getCodBarrasAtivosByMapa($idMapa, $codCliente = null)
+    {
+        $andWhere = "";
+        $sqlAppend = "";
+        if (!empty($codCliente)) {
+            $sqlAppend = "INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                          INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO";
+
+            $andWhere = "AND P.COD_CLIENTE = $codCliente";
+        }
+
+        $sql = "SELECT DISTINCT NVL(PE.COD_BARRAS, PV.COD_BARRAS) COD_BARRAS 
+                FROM MAPA_SEPARACAO_PRODUTO MSP
+                $sqlAppend
+                LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = MSP.COD_PRODUTO AND PE.DSC_GRADE = MSP.DSC_GRADE AND PE.DTH_INATIVACAO IS NULL AND PE.COD_BARRAS IS NOT NULL
+                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME AND PV.DTH_INATIVACAO IS NULL AND PV.COD_BARRAS IS NOT NULL
+                WHERE MSP.COD_MAPA_SEPARACAO = $idMapa $andWhere";
+
+        $result = [];
+        foreach ($this->getEntityManager()->getConnection()->query($sql)->fetchAll() as $r)
+        {
+            $result[] = "'$r[COD_BARRAS]'";
+        }
+        return $result;
+    }
 }

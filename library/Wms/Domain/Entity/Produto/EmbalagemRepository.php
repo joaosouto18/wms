@@ -68,7 +68,6 @@ class EmbalagemRepository extends EntityRepository {
 
         $embalagemEn->setEmbalado($embalado);
         $this->getEntityManager()->persist($embalagemEn);
-        $this->getEntityManager()->flush();
     }
 
     public function setNormaPaletizacaoEmbalagem($codBarras, $numLastro, $numCamadas, $unitizador)
@@ -97,7 +96,6 @@ class EmbalagemRepository extends EntityRepository {
             $normaPaletizacaoEn->setUnitizador($unitizadorEn);
             $this->_em->persist($normaPaletizacaoEn);
         }
-        $this->_em->flush();
     }
 
     public function checkEstoqueReservaById($id) {

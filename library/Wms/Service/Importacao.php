@@ -484,7 +484,7 @@ class Importacao
 
             $pedido['envioParaLoja'] = null;
 
-            $pedido['itinerario'] = $em->getRepository('wms:expedicao\Itinerario')->findOneBy(array('id'=> $pedido['itinerario']));
+            $pedido['itinerario'] = $em->getRepository('wms:Expedicao\Itinerario')->findOneBy(array('id'=> $pedido['itinerario']));
             if (empty($pedido['itinerario']))
                 throw new \Exception("Itinerário de código: $pedido[itinerario] não foi encontrado");
 
@@ -514,7 +514,7 @@ class Importacao
                         $clienteRepo = $arrRepo['clienteRepo'];
 
                         /** @var Cliente $result */
-                        $result = $clienteRepo->findOneBy(array('codPessoa' => $entityPessoa->getId()));
+                        $result = $clienteRepo->findOneBy(array('pessoa' => $entityPessoa->getId()));
 
                         if (empty($result)){
                             $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
@@ -553,7 +553,7 @@ class Importacao
                         $clienteRepo = $arrRepo['clienteRepo'];
 
                         /** @var Cliente $result */
-                        $result = $clienteRepo->findOneBy(array('codPessoa' => $entityPessoa->getId()));
+                        $result = $clienteRepo->findOneBy(array('pessoa' => $entityPessoa->getId()));
 
                         if (empty($result)) {
                             $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
@@ -756,8 +756,10 @@ class Importacao
             $produto->setDescricao($descricao)
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
-                    ->setReferencia($referencia)
                     ->setPossuiPesoVariavel($indPesoVariavel);
+
+            if (!empty($referencia))
+                $produto->setReferencia($referencia);
 
             if (is_null($possuiValidade)) {
                 $flagValidade = $produto->getValidade();

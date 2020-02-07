@@ -30,7 +30,7 @@ class EstoqueRepository extends EntityRepository
      $params['uma'];          - id da U.M.A
      $params['usuario'];      - entidade de usuario - wms:Usuario
      */
-    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
+    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null, $ignorarBloqueio = false)
     {
         $em = $this->getEntityManager();
         $idInventario = null;
@@ -45,6 +45,7 @@ class EstoqueRepository extends EntityRepository
         if (!isset($params['qtd']) or is_null($params['qtd']))
             throw new \Exception("Quantidade não informada");
 
+        /** @var Endereco $enderecoEn */
         $enderecoEn = $params['endereco'];
         $produtoEn = $params['produto'];
         $qtd = $params['qtd'];
@@ -59,6 +60,11 @@ class EstoqueRepository extends EntityRepository
 
         if ($enderecoEn->getAtivo() == 'N') {
             throw new \Exception("Não é permitido fazer movimentações em um endereço inativo - Endereço:" . $enderecoEn->getDescricao());
+        }
+
+        if (!$ignorarBloqueio) {
+            if (($qtd < 0) && $enderecoEn->isBloqueadaSaida()) throw new \Exception("Este endereço '".$enderecoEn->getDescricao()."' está bloqueado para movimentações de saída!");
+            if (($qtd > 0) && $enderecoEn->isBloqueadaEntrada()) throw new \Exception("Este endereço '".$enderecoEn->getDescricao()."' está bloqueado para movimentações de entrada!");
         }
 
         $codProduto = $produtoEn->getId();
@@ -382,8 +388,10 @@ class EstoqueRepository extends EntityRepository
                     TO_DATE(ESTQ.DTH_VALIDADE) as DTH_VALIDADE,
                     CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = $endPicking) THEN 1
                          ELSE 2 END AS PRIORIDADE_PICKING
-                   FROM ( SELECT SUM(QTD) QTD, COD_DEPOSITO_ENDERECO, COD_PRODUTO_VOLUME, COD_PRODUTO, DSC_GRADE, DSC_LOTE, DTH_PRIMEIRA_MOVIMENTACAO, DTH_VALIDADE
-                         FROM ESTOQUE GROUP BY COD_DEPOSITO_ENDERECO, COD_PRODUTO_VOLUME, COD_PRODUTO, DSC_GRADE, DSC_LOTE, DTH_PRIMEIRA_MOVIMENTACAO, DTH_VALIDADE) ESTQ
+                   FROM ( SELECT SUM(QTD) QTD, E.COD_DEPOSITO_ENDERECO, COD_PRODUTO_VOLUME, COD_PRODUTO, DSC_GRADE, DSC_LOTE, DTH_PRIMEIRA_MOVIMENTACAO, DTH_VALIDADE
+                            FROM ESTOQUE E
+                      INNER JOIN DEPOSITO_ENDERECO D on E.COD_DEPOSITO_ENDERECO = D.COD_DEPOSITO_ENDERECO AND D.BLOQUEADA_SAIDA = 0
+                        GROUP BY E.COD_DEPOSITO_ENDERECO, COD_PRODUTO_VOLUME, COD_PRODUTO, DSC_GRADE, DSC_LOTE, DTH_PRIMEIRA_MOVIMENTACAO, DTH_VALIDADE) ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME $subSelect
                                 FROM RESERVA_ESTOQUE RE
                            LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
@@ -986,7 +994,8 @@ class EstoqueRepository extends EntityRepository
                 ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.endereco")
                 ->leftJoin("p.recebimento", "r")
                 ->leftJoin("p.status", "s")
-                ->andWhere("de.situacao <> 'B'")
+                ->andWhere("de.bloqueadaEntrada = 0")
+                ->andWhere("de.bloqueadaSaida = 0")
                 ->distinct(true)
                 ->orderBy("de.descricao");
 

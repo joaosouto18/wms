@@ -119,10 +119,13 @@ class Recebimento
      */
     public static $listaStatus = array(
         self::STATUS_INTEGRADO => 'INTEGRADO',
+        self::STATUS_CRIADO => 'CRIADO',
         self::STATUS_INICIADO => 'INICIADO',
+        self::STATUS_CONFERENCIA_COLETOR => "CONFERENCIA COLETOR",
+        self::STATUS_CONFERENCIA_CEGA => "CONFERENCIA CEGA",
         self::STATUS_FINALIZADO => 'FINALIZADO',
         self::STATUS_CANCELADO => 'CANCELADO',
-        self::STATUS_CRIADO => 'CRIADO',
+        self::STATUS_DESFEITO => 'DESFEITO',
     );
 
     public function __construct()
@@ -196,6 +199,11 @@ class Recebimento
     {
         $this->status = $status;
         return $this;
+    }
+
+    public function getDscStatus()
+    {
+        return self::$listaStatus[$this->status->getId()];
     }
 
     public function getDeposito()
@@ -313,6 +321,18 @@ class Recebimento
     public function getModeloEnderecamento()
     {
         return $this->modeloEnderecamento;
+    }
+
+    /**
+     * @return bool
+     */
+    public function inOperacao()
+    {
+        return in_array($this->status->getId(),[
+            self::STATUS_INICIADO,
+            self::STATUS_CONFERENCIA_COLETOR,
+            self::STATUS_CONFERENCIA_CEGA
+        ]);
     }
 
 }

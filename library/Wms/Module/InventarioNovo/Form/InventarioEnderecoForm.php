@@ -76,12 +76,18 @@ class InventarioEnderecoForm extends SubForm
                     'class' => 'pequeno',
                     'ng-model' => "criterioForm.lado"
                 ))
-                ->addElement('select', 'situacao', array(
-                    'mostrarSelecione' => false,
-                    'class' => 'medio',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => ['B' => 'Bloqueado', 'D' => 'Desbloqueado']),
-                    'label' => 'Situação',
-                    'ng-model' => "criterioForm.situacao"
+                ->addElement('select', 'bloqueada', array(
+                    'multiOptions' => [
+                        'firstOpt' => 'Todos',
+                        'options' => [
+                            'E' => 'Apenas Entrada',
+                            'S' => 'Apenas Saída',
+                            'ES' => 'Ambas bloqueadas',
+                            'N' => 'Ambas Liberadas'
+                        ]
+                    ],
+                    'label' => 'Mov. Bloqueada',
+                    'ng-model' => "criterioForm.bloqueada"
                 ))
                 ->addElement('select', 'status', array(
                     'mostrarSelecione' => false,
@@ -130,7 +136,7 @@ class InventarioEnderecoForm extends SubForm
                     'label' => 'Buscar',
                     'decorators' => array('ViewHelper'),
                     'attribs' => array('id' => 'btn-buscar-endereco'),
-                    'ng-click' => "requestForm('resultForm')"
+                    'ng-click' => "requestForm()"
                 ))
                 ->addElement('button', 'clearForm', array(
                     'class' => 'btn btn-form',
@@ -140,7 +146,7 @@ class InventarioEnderecoForm extends SubForm
                     'ng-click' => "clearForm()"
                 ))
                 ->addDisplayGroup(array('criterio', 'ruaInicial', 'ruaFinal', 'predioInicial', 'predioFinal', 'nivelInicial', 'nivelFinal', 'aptoInicial', 'aptoFinal'), 'endereco', array('legend' => 'Intervalo de Endereços'))
-                ->addDisplayGroup(array('idCarac', 'estrutArmaz', 'tipoEnd', 'lado', 'areaArmaz', 'situacao', 'status', 'ativo', 'btnBuscar', 'clearForm'), 'caracteristica', array('legend' => 'Características'));
+                ->addDisplayGroup(array('idCarac', 'estrutArmaz', 'tipoEnd', 'lado', 'areaArmaz', 'bloqueada', 'status', 'ativo', 'btnBuscar', 'clearForm'), 'caracteristica', array('legend' => 'Características'));
         } catch (\Zend_Form_Exception $e) {
         }
     }

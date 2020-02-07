@@ -1054,9 +1054,11 @@ class MapaSeparacaoRepository extends EntityRepository {
     public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa = null, $ordemServicoId = null, $checkout = false, $lote = Lote::NCL) {
 
         try {
-            $idVolumePatrimonio = null;
-            if ($volumePatrimonioEn != null) {
+
+            if (!empty($volumePatrimonioEn)) {
                 $idVolumePatrimonio = $volumePatrimonioEn->getId();
+            } else {
+                $idVolumePatrimonio = "NULL";
             }
 
             $parametrosConferencia = array(
@@ -1076,44 +1078,73 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $ordemServicoId = $sessao->osID;
             }
 
-            $mapaSeparacaoEmbaladoEn = null;
-            if ($codPessoa != null) {
+            $idMapaSepEmb = "NULL";
+            if (!empty($codPessoa)) {
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-                $mapaSeparacaoEmbalados = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
-                if (empty($mapaSeparacaoEmbalados)) {
+                $sql = "SELECT * FROM MAPA_SEPARACAO_EMB_CLIENTE WHERE COD_MAPA_SEPARACAO = $idMapa AND COD_PESSOA = $codPessoa ORDER BY COD_MAPA_SEPARACAO_EMB_CLIENTE DESC";
+                $mapaSeparacaoEmbalado = $this->_em->getConnection()->query($sql)->fetch();
+                if (empty($mapaSeparacaoEmbalado)) {
                     $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
+                    $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
                 } else {
-                    /** @var MapaSeparacaoEmbalado $firtsItem */
-                    $firtsItem = $mapaSeparacaoEmbalados[0];
-                    if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                    if (in_array($mapaSeparacaoEmbalado['COD_STATUS'], [Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO, Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO])) {
                         $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento, $firtsItem, false);
+                        $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento);
                     } else {
-                        $mapaSeparacaoEmbaladoEn = $firtsItem;
+                        $idMapaSepEmb = $mapaSeparacaoEmbalado['COD_MAPA_SEPARACAO_EMB_CLIENTE'];
                     }
                 }
+            } else {
+                $codPessoa = "NULL";
             }
 
+            $dataConferencia = (new \DateTime())->format("d/m/Y H:i:s");
+
+            $conn = $this->_em->getConnection();
             foreach ($conferencia as $conf) {
-                $novaConferencia = new MapaSeparacaoConferencia();
-                $novaConferencia->setCodMapaSeparacao($conf['codMapaSeparacao']);
-                $novaConferencia->setCodOS($ordemServicoId);
-                $novaConferencia->setCodProduto($conf['codProduto']);
-                $novaConferencia->setDscGrade($conf['dscGrade']);
-                $novaConferencia->setIndConferenciaFechada("N");
-                $novaConferencia->setNumConferencia($conf['numConferencia']);
-                $novaConferencia->setCodProdutoEmbalagem($conf['codProdutoEmbalagem']);
-                $novaConferencia->setCodProdutoVolume($conf['codPrdutoVolume']);
-                $novaConferencia->setQtdEmbalagem($conf['qtdEmbalagem']);
-                $novaConferencia->setQtdConferida($conf['quantidade']);
-                $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
-                $novaConferencia->setMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
-                $novaConferencia->setDataConferencia(new \DateTime());
-                $novaConferencia->setCodPessoa($codPessoa);
-                $novaConferencia->setLote($conf['lote']);
-                $this->getEntityManager()->persist($novaConferencia);
+
+                $idVolume = (!empty($conf['codPrdutoVolume']))? $conf['codPrdutoVolume'] : 'NULL';
+                $idEmbalagem = (!empty($conf['codProdutoEmbalagem']))? $conf['codProdutoEmbalagem'] : 'NULL';
+
+                $sql = "
+                    INSERT INTO MAPA_SEPARACAO_CONFERENCIA 
+                        (
+                         COD_MAPA_SEPARACAO_CONFERENCIA, 
+                         COD_MAPA_SEPARACAO, 
+                         COD_PRODUTO, 
+                         DSC_GRADE, 
+                         COD_PRODUTO_VOLUME, 
+                         COD_PRODUTO_EMBALAGEM, 
+                         QTD_EMBALAGEM, 
+                         QTD_CONFERIDA, 
+                         COD_OS, 
+                         NUM_CONFERENCIA, 
+                         DTH_CONFERENCIA, 
+                         COD_VOLUME_PATRIMONIO, 
+                         COD_MAPA_SEPARACAO_EMBALADO, 
+                         COD_PESSOA, 
+                         DSC_LOTE
+                         ) 
+                     VALUES (
+                             SQ_MAPA_SEPARACAO_CONF_01.nextval,
+                             $conf[codMapaSeparacao],
+                             '$conf[codProduto]',
+                             '$conf[dscGrade]',
+                             $idVolume,
+                             $idEmbalagem,
+                             $conf[qtdEmbalagem],
+                             $conf[quantidade],
+                             $ordemServicoId,
+                             $conf[numConferencia],
+                             TO_DATE('$dataConferencia', 'DD/MM/YYYY HH24:MI:SS'),
+                             $idVolumePatrimonio,
+                             $idMapaSepEmb,
+                             $codPessoa,
+                             '$conf[lote]'
+                             ) 
+                ";
+                $conn->executeQuery($sql);
             }
         } catch (\Exception $e) {
             throw $e;
@@ -1124,7 +1155,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         if($checkout == true){
             return  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
         }
-        
+
         return true;
 
     }
@@ -1297,7 +1328,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             }
 
             $qtdConferidoTotalEmb = $qtdConferidoTotal;
-            if ($qtdConferidoTotal > 0) {
+            if ($checkout && $qtdConferidoTotal > 0) {
                 $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
                 $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
                 $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
@@ -1322,7 +1353,7 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         if (Math::compare($qtdRestante, 0, ">") && !$checkout) {
             $strLote = (!empty($lote)) ? " lote: '$lote'" : "";
-            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto / $dscGrade$strLote excede o solicitado!");
+            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto ($dscProduto) - $dscGrade$strLote excede o solicitado!");
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
@@ -1487,7 +1518,10 @@ class MapaSeparacaoRepository extends EntityRepository {
                     MSP.COD_PRODUTO,
                     MSP.DSC_GRADE,
                     MSP.QTD_SEPARAR as QTD_TOTAL,
-                    CASE WHEN MSP.QTD_SEPARAR = 0 THEN '100%' WHEN SMS.TOTAL_SEPARADO = 0 THEN '0%' ELSE CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' END PERCENTUAL_SEPARACAO,
+                    CASE WHEN MSP.QTD_SEPARAR = 0 THEN '100%' 
+                         WHEN SMS.TOTAL_SEPARADO = 0 THEN '0%' 
+                         WHEN CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) >= 100 THEN '100%'
+                         ELSE CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' END PERCENTUAL_SEPARACAO,
                     MS.COD_EXPEDICAO,
                     CASE WHEN MSP.QTD_SEPARAR = 0 THEN 100 WHEN SMS.TOTAL_SEPARADO = 0 THEN 0 ELSE NVL(CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)),0) END PERCENTUAL
                 
@@ -1512,5 +1546,37 @@ class MapaSeparacaoRepository extends EntityRepository {
                 ORDER BY MS.COD_MAPA_SEPARACAO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getCaixasByExpedicao($idExpedicao)
+    {
+        $sql = "SELECT SUM(RESULTADO.NUMERO_CAIXAS) NUMERO_CAIXAS, C.COD_PESSOA 
+                FROM CLIENTE C
+                INNER JOIN (
+                    SELECT COUNT(*) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
+                        FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
+                        INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        WHERE MS.COD_EXPEDICAO = $idExpedicao
+                        GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
+                    UNION
+                    SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
+                        FROM ETIQUETA_SEPARACAO ES
+                        INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                        INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                        INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                        WHERE E.COD_EXPEDICAO = $idExpedicao
+                         AND ES.COD_STATUS = ". EtiquetaSeparacao::STATUS_CONFERIDO ."
+                        GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO) RESULTADO ON RESULTADO.COD_PESSOA = C.COD_PESSOA
+                GROUP BY C.COD_PESSOA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arrayClientes = array();
+        foreach ($result as $item) {
+            $arrayClientes[$item['COD_PESSOA']] = $item['NUMERO_CAIXAS'];
+        }
+
+        return $arrayClientes;
+
     }
 }

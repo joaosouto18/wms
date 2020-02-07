@@ -45,8 +45,8 @@ class ProdutoSemPicking extends Grid
                 ))
 
                 ->addColumn(array(
-                    'label' => 'Status',
-                    'index' => 'status',
+                    'label' => 'Bloqueada',
+                    'index' => 'bloqueada',
                 ))
                 ->setShowExport(true);
         return $this;

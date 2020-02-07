@@ -11,6 +11,7 @@ namespace Wms\Domain\Entity;
 
 use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\EntityRepository;
 
 class InventarioNovoRepository extends EntityRepository
@@ -158,7 +159,8 @@ class InventarioNovoRepository extends EntityRepository
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                 LEFT JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND ICE.IND_CONTAGEM_DIVERGENCIA = 'S'
                 LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
-                LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+                LEFT JOIN INVENTARIO_CONT_END_OS ICEO ON ICE.COD_INV_CONT_END = ICEO.COD_INV_CONT_END
+                LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 $where
                 GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO, INVN.DSC_INVENTARIO, INVN.IND_CRITERIO";
@@ -175,7 +177,8 @@ class InventarioNovoRepository extends EntityRepository
                 c.descricao as caracEnd,
                 aa.descricao as dscArea,
                 ea.descricao as dscEstrutura,
-                de.rua, de.predio, de.nivel, de.apartamento")
+                de.rua, de.predio, de.nivel, de.apartamento,
+                REPLACE(de.descricao, '.', '') cleanEnd")
             ->from('wms:Deposito\Endereco', 'de')
             ->innerJoin('de.caracteristica', 'c')
             ->innerJoin('de.estruturaArmazenagem', 'ea')
@@ -235,9 +238,35 @@ class InventarioNovoRepository extends EntityRepository
                 $query->andWhere("MOD(de.predio,2) = 1");
         }
 
-        if (!empty($params['situacao']))
-            $query->andWhere("de.situacao = :situacao")
-                ->setParameter('situacao', $params['situacao']);
+        if (!empty($params['bloqueada'])) {
+            $entrada = null;
+            $saida = null;
+            switch ($params['bloqueada']) {
+                case "E":
+                    $entrada = true;
+                    $saida = false;
+                    break;
+                case "S":
+                    $saida = true;
+                    $entrada = false;
+                    break;
+                case "ES":
+                    $entrada = true;
+                    $saida = true;
+                    break;
+                case "N":
+                    $entrada = false;
+                    $saida = false;
+                    break;
+            }
+            if (!is_null($entrada))
+                $query->andWhere("de.bloqueadaEntrada = :bloqE")
+                    ->setParameter('bloqE', (int)$entrada);
+
+            if (!is_null($saida))
+                $query->andWhere("de.bloqueadaSaida = :bloqS")
+                    ->setParameter('bloqS', (int)$saida);
+        }
 
         if (!empty($params['status']))
             $query->andWhere("de.status = :status")
@@ -278,7 +307,8 @@ class InventarioNovoRepository extends EntityRepository
                 p.id as codProduto,
                 p.grade,
                 p.descricao as dscProduto,
-                de.rua, de.predio, de.nivel, de.apartamento")
+                de.rua, de.predio, de.nivel, de.apartamento,
+                REPLACE(de.descricao, '.', '') cleanEnd")
             ->from('wms:Enderecamento\Estoque', 'e')
             ->innerJoin('e.depositoEndereco', 'de')
             ->innerJoin('e.produto', 'p')
@@ -316,7 +346,121 @@ class InventarioNovoRepository extends EntityRepository
 
         $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
 
-        return $query->getQuery()->getResult();
+        $arr = $query->getQuery()->getResult();
+
+        if (!empty($params['incluirPicking'])) {
+            $query = $this->_em->createQueryBuilder()
+                ->select("
+                    de.id,
+                    de.descricao as dscEndereco, 
+                    c.descricao as caracEnd,
+                    p.id as codProduto,
+                    p.grade,
+                    p.descricao as dscProduto,
+                    de.rua, de.predio, de.nivel, de.apartamento,
+                    REPLACE(de.descricao, '.', '') cleanEnd")
+                ->from("wms:Produto", 'p')
+                ->innerJoin('p.classe', 'cl')
+                ->innerJoin('p.fabricante', 'f')
+                ->innerJoin('p.linhaSeparacao', 'ls')
+                ->leftJoin('p.embalagens', 'pe')
+                ->leftJoin('p.volumes', 'pv')
+                ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco')
+                ->innerJoin('de.caracteristica', 'c');
+
+            $query->distinct(true);
+
+            if (!empty($params['fabricante']))
+                $query->andWhere("f.id = ?6")
+                    ->setParameter(6, $params['fabricante']);
+
+            if (!empty($params['descricao']))
+                $query->andWhere("p.descricao like ?7")
+                    ->setParameter(7, "%$params[descricao]%");
+
+            if (!empty($params['codProduto']))
+                $query->andWhere("p.id = ?8")
+                    ->setParameter(8, $params['codProduto']);
+
+            if (!empty($params['grade']))
+                $query->andWhere("p.grade = ?9")
+                    ->setParameter(9, $params['grade']);
+
+            if (!empty($params['classe']))
+                $query->andWhere("cl.id = ?10")
+                    ->setParameter(10, $params['classe']);
+
+            if (!empty($params['linhaSep']))
+                $query->andWhere("ls.id = ?11")
+                    ->setParameter(11, $params['linhaSep']);
+
+            $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
+
+            $arr = array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR);
+        }
+
+        return $arr;
+    }
+
+    public function getPreSelectedCriarNovoInventario($itens)
+    {
+        $query1 = $this->_em->createQueryBuilder()
+            ->select("
+                de.id,
+                de.descricao as dscEndereco, 
+                c.descricao as caracEnd,
+                p.id as codProduto,
+                p.grade,
+                p.descricao as dscProduto,
+                de.rua, de.predio, de.nivel, de.apartamento,
+                REPLACE(de.descricao, '.', '') cleanEnd")
+            ->from('wms:Enderecamento\Estoque', 'e')
+            ->innerJoin('e.depositoEndereco', 'de')
+            ->innerJoin('e.produto', 'p')
+            ->innerJoin('p.classe', 'cl')
+            ->innerJoin('p.fabricante', 'f')
+            ->innerJoin('de.caracteristica', 'c')
+            ->innerJoin('p.linhaSeparacao', 'ls')
+        ;
+
+        $query1->distinct(true);
+
+        foreach($itens as $iten) {
+            $query1->orWhere("p.id = '$iten[codProduto]' AND p.grade = '$iten[grade]'");
+        }
+
+        $query1->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
+
+        $query2 = $this->_em->createQueryBuilder()
+            ->select("
+                de.id,
+                de.descricao as dscEndereco, 
+                c.descricao as caracEnd,
+                p.id as codProduto,
+                p.grade,
+                p.descricao as dscProduto,
+                de.rua, de.predio, de.nivel, de.apartamento,
+                CONCAT(CONCAT(CONCAT(de.rua, de.predio), de.nivel), de.apartamento) endConcated")
+            ->from("wms:Produto", 'p')
+            ->innerJoin('p.classe', 'cl')
+            ->innerJoin('p.fabricante', 'f')
+            ->innerJoin('p.linhaSeparacao', 'ls')
+            ->leftJoin('p.embalagens', 'pe')
+            ->leftJoin('p.volumes', 'pv')
+            ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco')
+            ->innerJoin('de.caracteristica', 'c');
+
+        $query2->distinct(true);
+
+        foreach($itens as $iten) {
+            $query2->orWhere("p.id = '$iten[codProduto]' AND p.grade = '$iten[grade]'");
+        }
+
+        $query2->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
+
+        $arr = array_unique(array_merge($query1->getQuery()->getResult(), $query2->getQuery()->getResult()), SORT_REGULAR);
+
+        return $arr;
     }
 
     public function findImpedimentosLiberacao($id)
@@ -368,7 +512,11 @@ class InventarioNovoRepository extends EntityRepository
                             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN2 ON INVN.COD_INVENTARIO = IEN2.COD_INVENTARIO  AND IEN2.IND_ATIVO = 'S'
                             LEFT JOIN INVENTARIO_END_PROD IEP2 ON IEN2.COD_INVENTARIO_ENDERECO = IEP2.COD_INVENTARIO_ENDERECO AND IEP2.IND_ATIVO = 'S'
                             WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido)
-                  ) INVATV ON INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO OR (INVATV.COD_PRODUTO = IEP.COD_PRODUTO AND INVATV.DSC_GRADE = IEP.DSC_GRADE)
+                  ) INVATV ON CASE WHEN INV.IND_CRITERIO = 'E' THEN
+                                CASE WHEN INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO THEN 1 ELSE 0 END
+                              ELSE
+                                CASE WHEN INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO AND INVATV.COD_PRODUTO = IEP.COD_PRODUTO AND INVATV.DSC_GRADE = IEP.DSC_GRADE THEN 1 ELSE 0 END
+                              END = 1
                 WHERE IEN.COD_INVENTARIO = $id AND 
                       CASE WHEN ( IEP.COD_PRODUTO IS NULL) OR (
                           (IEP.COD_PRODUTO = REP.COD_PRODUTO AND IEP.DSC_GRADE = REP.DSC_GRADE) 
@@ -441,7 +589,8 @@ class InventarioNovoRepository extends EntityRepository
                     FROM INVENTARIO_NOVO INV
                    INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
                    INNER JOIN INVENTARIO_CONT_END ICE on IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
-                   INNER JOIN INVENTARIO_CONT_END_PROD ICEP on ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END 
+                   INNER JOIN INVENTARIO_CONT_END_OS ICEO on ICE.COD_INV_CONT_END = ICEO.COD_INV_CONT_END
+                   INNER JOIN INVENTARIO_CONT_END_PROD ICEP on ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS 
                    WHERE INV.COD_INVENTARIO $condition
                      AND ICEP.IND_DIVERGENTE = 'N'
                      AND NOT EXISTS(
@@ -494,7 +643,7 @@ class InventarioNovoRepository extends EntityRepository
          LEFT JOIN INVENTARIO_CONT_END_OS ICEO ON ICE.COD_INV_CONT_END = ICEO.COD_INV_CONT_END
          LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = ICEO.COD_OS
          LEFT JOIN PESSOA PES ON PES.COD_PESSOA = OS.COD_PESSOA
-         LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+         LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
          LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
          LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ICEP.COD_PRODUTO_VOLUME
          LEFT JOIN PRODUTO_EMBALAGEM PE ON ICEP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
@@ -521,7 +670,7 @@ class InventarioNovoRepository extends EntityRepository
 
         $sql = "SELECT DISTINCT
                     INVN.COD_INVENTARIO \"INVENTÁRIO\",
-                    INVN.DSC_INVENTARIO \"DESCRIÇÃO\",
+                    NVL(INVN.DSC_INVENTARIO, '') \"DESCRIÇÃO\",
                     DE.DSC_DEPOSITO_ENDERECO \"ENDEREÇO\",
                     CASE WHEN INVN.IND_CRITERIO = 'P' THEN 'PRODUTO' ELSE 'ENDEREÇO' END \"INVENTÁRIO POR\",
                     NVL(IEP.COD_PRODUTO, '-') \"CÓDIGO\",
@@ -573,5 +722,56 @@ class InventarioNovoRepository extends EntityRepository
             ->where("ien.inventario = $idInventario and ien.ativo = 'S' and iep.ativo = 'S'");
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function getListDivergencias($idInventario)
+    {
+        $statusEndereco = InventarioEnderecoNovo::STATUS_FINALIZADO;
+        $criterioInventario = InventarioNovo::CRITERIO_PRODUTO;
+        $naoControlaLote = Lote::NCL;
+
+        $sql = "SELECT
+                    DE.DSC_DEPOSITO_ENDERECO,
+                    ICE.NUM_CONTAGEM,
+                    ICEP.COD_PRODUTO,
+                    P.DSC_PRODUTO,
+                    ICEP.DSC_GRADE,
+                    SUM(NVL(E.QTD,0)) QTD_ESTQ,
+                    SUM(ICEP.QTD_CONTADA * ICEP.QTD_EMBALAGEM) QTD_CONF,
+                    TO_CHAR(E.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE_ESTQ,
+                    TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE_CONF,
+                    NVL(ICEP.DSC_LOTE, '') LOTE_CONF,
+                    NVL(E.DSC_LOTE, '') LOTE_ESTQ
+                FROM INVENTARIO_CONT_END_PROD ICEP
+                     INNER JOIN PRODUTO P ON P.COD_PRODUTO = ICEP.COD_PRODUTO AND P.DSC_GRADE = ICEP.DSC_GRADE
+                     INNER JOIN INVENTARIO_CONT_END_OS ICEO ON ICEP.COD_INV_CONT_END_OS = ICEO.COD_INV_CONT_END_OS
+                     INNER JOIN INVENTARIO_CONT_END ICE ON ICEO.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+                     INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND ICE.NUM_SEQUENCIA = (IEN.NUM_CONTAGEM - 1)
+                     INNER JOIN INVENTARIO_NOVO INV on INV.COD_INVENTARIO = IEN.COD_INVENTARIO
+                     INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO
+                      LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO AND IEP.COD_PRODUTO = ICEP.COD_PRODUTO AND IEP.DSC_GRADE = ICEP.DSC_GRADE
+                      LEFT JOIN ESTOQUE E
+                             ON E.COD_PRODUTO = ICEP.COD_PRODUTO
+                            AND E.DSC_GRADE = ICEP.DSC_GRADE
+                            AND E.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO
+                            AND NVL(ICEP.COD_PRODUTO_VOLUME, 0) = NVL(E.COD_PRODUTO_VOLUME, 0)
+                            AND NVL(ICEP.DSC_LOTE, '$naoControlaLote') = NVL(E.DSC_LOTE, '$naoControlaLote')
+                WHERE IEN.IND_ATIVO = 'S'
+                  AND CASE WHEN (INV.IND_CRITERIO = '$criterioInventario') THEN IEP.IND_ATIVO ELSE 'S' END = 'S'
+                  AND IEN.COD_STATUS != $statusEndereco
+                  AND ICEP.IND_DIVERGENTE = 'S'
+                  AND INV.COD_INVENTARIO = $idInventario
+                GROUP BY DE.DSC_DEPOSITO_ENDERECO,
+                         ICE.NUM_CONTAGEM,
+                         ICEP.COD_PRODUTO,
+                         P.DSC_PRODUTO,
+                         ICEP.DSC_GRADE,
+                         ICEP.DTH_VALIDADE,
+                         TO_CHAR(E.DTH_VALIDADE, 'DD/MM/YYYY'),
+                         TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY'),
+                         NVL(ICEP.DSC_LOTE, ''),
+                         NVL(E.DSC_LOTE, '')";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }

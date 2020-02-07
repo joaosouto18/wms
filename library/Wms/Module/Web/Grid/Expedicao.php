@@ -29,6 +29,9 @@ class Expedicao extends Grid
         $sessao = new \Zend_Session_Namespace('deposito');
         $params['centrais'] = $sessao->centraisPermitidas;
 
+        $deposito = $this->getEntityManager()->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
+
         $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
         $this->setAttrib('title','Expedição');
@@ -276,7 +279,7 @@ class Expedicao extends Grid
                 'modelName' => 'expedicao',
                 'controllerName' => 'relatorio_produtos-expedicao',
                 'actionName' => 'index',
-                'params' => array('central' => 1),
+                'params' => array('central' => $central),
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))

@@ -72,7 +72,8 @@ class InventarioContEndRepository extends EntityRepository
         $sql = "SELECT 
                      dth_validade
                 FROM inventario_cont_end_prod icep
-                  INNER JOIN inventario_cont_end ice ON ice.cod_inv_cont_end = icep.cod_inv_cont_end
+                  INNER JOIN INVENTARIO_CONT_END_OS ICEO ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
+                  INNER JOIN inventario_cont_end ice ON ice.cod_inv_cont_end = iceo.cod_inv_cont_end
                 WHERE ice.cod_inv_cont_end = $idContEnd 
                     AND icep.cod_produto = $produto
                     AND icep.dsc_grade = $grade

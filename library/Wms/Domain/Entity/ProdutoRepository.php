@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco,
     Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Enderecamento\Modelo;
 use Wms\Math;
 
 /**
@@ -413,13 +414,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         //valida o endereco informado
                         if (!empty($endereco)) {
                             $endereco = EnderecoUtil::separar($endereco);
+                            /** @var Endereco $enderecoEntity */
                             $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
                             if (!$enderecoEntity) {
                                 throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
                             }
 
-                            $embalagemEntity->setEndereco($enderecoEntity);
+                            if ($enderecoEntity->liberadoPraSerPicking()) {
+                                $embalagemEntity->setEndereco($enderecoEntity);
+                            }
+
                         }
 
                         if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
@@ -484,7 +489,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                                 throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
                             }
 
-                            $embalagemEntity->setEndereco($enderecoEntity);
+                            if ($enderecoEntity->liberadoPraSerPicking()) {
+                                $embalagemEntity->setEndereco($enderecoEntity);
+                            }
                         }
 
                         // verifica se o codigo de barras é automatico
@@ -886,8 +893,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
             switch ($acao) {
                 case 'incluir':
-                    if($normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['acao'] == 'incluir' xor
-                        $dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
+                    if($dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
                         $dadoLogisticoRepo->save($itemDadoLogistico);
                     }
                     break;
@@ -1721,7 +1727,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     public function getEmbalagemByCodBarras($codigoBarras) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('  p.id idProduto, p.descricao, p.grade,
+                ->select("p.id idProduto, p.descricao, p.grade,
                         pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
@@ -1729,11 +1735,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         p.indControlaLote, 
                         p.indFracionavel, 
                         p.validade controlaValidade,
-                        NVL(pv.normaPaletizacao, 0) norma'
+                        NVL(pv.normaPaletizacao, 0) norma,
+                        NVL(de.descricao, 'N/D')  picking"
                 )
                 ->from('wms:Produto', 'p')
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
                 ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
+                ->leftJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = pv.endereco OR de = pe.endereco')
                 ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
                 ->setParameters(array('codigoBarras' => $codigoBarras));
 
@@ -1752,12 +1760,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
                        DE.IND_ATIVO  as \"ativo\",
-                       DE.IND_SITUACAO  as \"status\"
+                       CASE 
+                       WHEN DE.BLOQUEADA_ENTRADA = 1 and DE.BLOQUEADA_SAIDA = 1 THEN 'Entrada/Saída' 
+                       WHEN DE.BLOQUEADA_ENTRADA = 1 and DE.BLOQUEADA_SAIDA = 0 THEN 'Entrada' 
+                       WHEN DE.BLOQUEADA_ENTRADA = 0 and DE.BLOQUEADA_SAIDA = 1 THEN 'Saída' 
+                       ELSE 'Nada' END as \"bloqueada\"
                 FROM DEPOSITO_ENDERECO DE
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 WHERE (PV.COD_DEPOSITO_ENDERECO IS NULL AND PE.COD_DEPOSITO_ENDERECO IS NULL)
-                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO = 'D' $cond
+                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.BLOQUEADA_SAIDADE = 0 AND DE.BLOQUEADA_ENTRADA = 0 $cond
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1855,11 +1867,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
+    /**
+     * @param $produtoEn Produto
+     * @param $modeloEnderecamentoEn Modelo
+     * @return Endereco|null
+     */
     public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
         $enderecoReferencia = null;
 
         //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
         $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+
+
+        if ($enderecoReferencia != null) if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
 
         //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
         if ($enderecoReferencia == null) {
@@ -1885,6 +1905,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if ($enderecoReferencia == null) {
             $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
         }
+
+        if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
 
         return $enderecoReferencia;
     }
@@ -2023,8 +2045,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $sql .= " AND PROD.DSC_PRODUTO LIKE UPPER('%" . $params['descricao'] . "%')";
         }
 
-        if (isset($params['dataInicial']) && !empty($params['dataInicial'])) {
-            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('" . $params['dataInicial'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        if (isset($params['dataInicial1']) && !empty($params['dataInicial1'])) {
+            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('" . $params['dataInicial1'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['dataInicial2']) && !empty($params['dataInicial2'])) {
+            $sql .= " AND TO_DATE(E.DTH_INICIO) <= TO_DATE('" . $params['dataInicial2'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['dataFinal1']) && !empty($params['dataFinal1'])) {
+            $sql .= " AND TO_DATE(E.DTH_FINALIZACAO) >= TO_DATE('" . $params['dataFinal1'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['dataFinal2']) && !empty($params['dataFinal2'])) {
+            $sql .= " AND TO_DATE(E.DTH_FINALIZACAO) <= TO_DATE('" . $params['dataFinal2'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        if (isset($params['status']) && (!empty($params['status']))) {
+            $sql .= " AND E.COD_STATUS = " . $params['status'] . "";
         }
 
         $sql .= " ORDER BY E.DTH_INICIO DESC, PP.COD_PRODUTO";

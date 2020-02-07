@@ -214,7 +214,8 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $idProduto = ProdutoUtil::formatar($idProduto);
 
-        $grade = (empty($grade) || $grade === "?") ? "UNICA" : trim($grade);
+        $grade = trim($grade);
+        $grade = (empty($grade) || $grade === "?") ? "UNICA" : $grade;
         $idFabricante = trim ($idFabricante);
         $tipo = trim ($tipo);
         $idClasse = trim($idClasse);

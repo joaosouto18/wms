@@ -152,7 +152,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEntity */
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
+
+            $sessao = new \Zend_Session_Namespace('deposito');
+            $idDeposito = $sessao->idDepositoLogado;
+
+            if ($recebimentoEntity->getDeposito()->getId() != $idDeposito) throw new Exception("Esse recebimento $idRecebimento não pertence à esse depósito");
 
             //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
@@ -177,11 +183,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             }
 
             $form->setDefaultsFromEntity($recebimentoEntity);
+            $this->view->form = $form;
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
+            $this->redirect('index');
         }
-
-        $this->view->form = $form;
     }
 
     /**
@@ -711,6 +717,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                                     ->setNotaFiscal($notaFiscalEntity);
 
                             $this->em->persist($recebimentoConferenciaEntity);
+
+                            $notaFiscalEntity->setDivergencia('S');
+                            $this->em->persist($notaFiscalEntity);
                         }
 
                         $ordemServicoEntity->setDataFinal(new \DateTime());

@@ -88,6 +88,11 @@ class NotaFiscalEntrada
     protected $dth;
 
     /**
+     * @Column(name="DSC_LOTE", type="string", nullable=true)
+     */
+    protected $lote;
+
+    /**
      * @param mixed $codFornecedor
      */
     public function setCodFornecedor($codFornecedor)
@@ -309,6 +314,22 @@ class NotaFiscalEntrada
     public function getCodProduto()
     {
         return $this->codProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param mixed $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 

@@ -67,7 +67,6 @@ class EnderecoRepository extends EntityRepository {
     public function save(EnderecoEntity $enderecoEntity = null, array $values) {
         extract($values['identificacao']);
         $em = $this->getEntityManager();
-        $view = new \Zend_View;
 
         $paramsUrl = $values['identificacao'];
         $paramsUrl['controller'] = 'endereco';
@@ -83,9 +82,20 @@ class EnderecoRepository extends EntityRepository {
         //caso edicao
         
         if (!empty($id)) {
+            /** @var Endereco $enderecoEntity */
             $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $id);
 
-            $enderecoEntity->setSituacao($situacao);
+            $bloquearSaida = in_array('S', $bloqueada);
+            $bloquearEntrada = in_array('E', $bloqueada);
+
+            if ($bloquearSaida || $bloquearEntrada) {
+                $dscEndereco = $enderecoEntity->getDescricao();
+                if (!empty(self::validaEnderecosPicking([$id]))) throw new \Exception("Esse endereço $dscEndereco está vinculado como picking em algum produto, por esse motivo não pode ser bloqueado!");
+                if (!empty(self::validaEnderecosComReservas([$id]))) throw new \Exception("Esse endereço $dscEndereco tem reservas pendentes, por esse motivo não pode ser bloqueado!");
+            }
+
+            $enderecoEntity->setBloqueadaSaida($bloquearSaida);
+            $enderecoEntity->setBloqueadaEntrada($bloquearEntrada);
             $enderecoEntity->setDeposito($deposito);
             $enderecoEntity->setCaracteristica($caracteristica);
             $enderecoEntity->setEstruturaArmazenagem($estruturaArmazenagem);
@@ -119,9 +129,10 @@ class EnderecoRepository extends EntityRepository {
                             ));
 
                             //cria um objeto caso n encontre->get
-                            if ($enderecoEntity == null)
+                            if ($enderecoEntity == null) {
                                 $enderecoEntity = new EnderecoEntity;
-                            else {
+                                $enderecoEntity->setDisponivel("S");
+                            } else {
                                 //enderecosExistentes
                                 if (!in_array($enderecoEntity->getId(), $enderecosSobrepor))
                                     continue;
@@ -139,7 +150,8 @@ class EnderecoRepository extends EntityRepository {
                                     ->setPredio($auxPredio)
                                     ->setNivel($auxNivel)
                                     ->setApartamento($auxApto)
-                                    ->setSituacao($situacao)
+                                    ->setBloqueadaSaida(in_array('S', $bloqueada))
+                                    ->setBloqueadaEntrada(in_array('E', $bloqueada))
                                     ->setDeposito($deposito)
                                     ->setCaracteristica($caracteristica)
                                     ->setEstruturaArmazenagem($estruturaArmazenagem)
@@ -436,8 +448,6 @@ class EnderecoRepository extends EntityRepository {
                 $query = $query . " AND MOD(DE.NUM_PREDIO,2) = 1";
         }
 
-        if (!empty($situacao))
-            $query = $query . " AND DE.IND_SITUACAO = $situacao";
         if (!empty($status))
             $query = $query . " AND DE.IND_STATUS = $status";
         if (!empty($idCaracteristica))
@@ -908,10 +918,34 @@ class EnderecoRepository extends EntityRepository {
             $query = $query . " AND DEP.NUM_APARTAMENTO <= " . $params['aptoFinal'];
         }
 
+        if (!empty($params['bloqueada'])) {
+            $entrada = null;
+            $saida = null;
+            switch ($params['bloqueada']) {
+                case "E":
+                    $entrada = true;
+                    $saida = false;
+                    break;
+                case "S":
+                    $saida = true;
+                    $entrada = false;
+                    break;
+                case "ES":
+                    $entrada = true;
+                    $saida = true;
+                    break;
+                case "N":
+                    $entrada = false;
+                    $saida = false;
+                    break;
+            }
+            if (!is_null($entrada))
+                $query = $query . " AND DEP.BLOQUEADA_ENTRADA = " . (int)$entrada;
 
-        if (!empty($params['situacao']) && $params['situacao'] != '') {
-            $query = $query . " AND DEP.IND_SITUACAO = '" . $params['situacao'] . "'";
+            if (!is_null($saida))
+                $query = $query . " AND DEP.BLOQUEADA_SAIDA = " . (int)$saida;
         }
+
         if (!empty($params['status']) && $params['status'] != '') {
             $query = $query . " AND DEP.IND_STATUS = '" . $params['status'] . "'";
         }
@@ -1141,5 +1175,45 @@ class EnderecoRepository extends EntityRepository {
         }
 
         return true;
+    }
+
+    public function validaEnderecosComReservas(array $arrIds)
+    {
+        $strIds = implode(", ", $arrIds);
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO 
+                FROM DEPOSITO_ENDERECO DE 
+                INNER JOIN RESERVA_ESTOQUE RE on DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO AND RE.IND_ATENDIDA = 'N'
+                WHERE DE.COD_DEPOSITO_ENDERECO IN ($strIds)";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function validaEnderecosPicking(array $arrIds)
+    {
+        $strIds = implode(", ", $arrIds);
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO 
+                FROM PRODUTO P 
+                LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO and P.DSC_GRADE = PE.DSC_GRADE AND PE.COD_DEPOSITO_ENDERECO IS NOT NULL
+                LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO and P.DSC_GRADE = PV.DSC_GRADE AND PV.COD_DEPOSITO_ENDERECO IS NOT NULL
+                INNER JOIN DEPOSITO_ENDERECO DE ON PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO OR PV.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE DE.COD_DEPOSITO_ENDERECO IN ($strIds)";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function getProdutosPicking($idEndereco)
+    {
+        $sql = "SELECT DISTINCT 
+                    P.COD_PRODUTO,
+                    P.DSC_GRADE,
+                    P.DSC_PRODUTO,
+                    NVL(0, PV.COD_NORMA_PALETIZACAO) AS ID_NORMA
+                FROM DEPOSITO_ENDERECO DE
+                LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND PE.DTH_INATIVACAO IS NULL
+                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND PV.DTH_INATIVACAO IS NULL
+                INNER JOIN PRODUTO P ON P.COD_PRODUTO = NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) AND P.DSC_GRADE = NVL(PE.DSC_GRADE, PV.DSC_GRADE)
+                WHERE DE.COD_DEPOSITO_ENDERECO = $idEndereco AND NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) IS NOT NULL";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }

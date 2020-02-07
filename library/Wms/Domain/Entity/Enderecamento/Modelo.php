@@ -3,6 +3,8 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 
+use Wms\Domain\Entity\Deposito\Endereco;
+
 /**
  * Modelo
  *
@@ -87,7 +89,7 @@ class Modelo
     }
 
     /**
-     * @return mixed
+     * @return Endereco
      */
     public function getCodReferencia()
     {

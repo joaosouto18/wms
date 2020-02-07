@@ -18,9 +18,13 @@ class Coletor
 
         $parametroRepository = $em->getRepository('wms:Sistema\Parametro');
         $parametroEntity = $parametroRepository->findOneBy(array('constante' => 'DESCONSIDERA_ZERO_ESQUERDA'));
-        
+
         if(substr($codigoBarras, 0, 4) == '(01)') {
-            return substr($codigoBarras, 4, 18);
+            $codigoBarras = substr($codigoBarras, 4, 18);
+            if ($parametroEntity->getValor() == 'S') {
+                $codigoBarras = ltrim($codigoBarras, '0');
+            }
+            return $codigoBarras;
         }
 
         $codigoBarras = str_replace('(','',$codigoBarras);
@@ -65,7 +69,11 @@ class Coletor
 
         // Se o código começa com "8006", o sistema considera o código da posição 5 até 22.
         if(substr($codigoBarras, 0, 2) === '01') {
-            return substr($codigoBarras, 3, 13);
+            $codigoBarras = substr($codigoBarras, 3, 13);
+            if ($parametroEntity->getValor() == 'S') {
+                $codigoBarras = ltrim($codigoBarras, '0');
+            }
+            return $codigoBarras;
         }
 
         //if(substr($codigoBarras, 0, 2) == '01' || substr($codigoBarras, 0, 2) == '02') {
@@ -77,9 +85,7 @@ class Coletor
         }
 
         if ($parametroEntity->getValor() == 'S') {
-            if ($codigoBarras[0] == '0') {
-                return substr($codigoBarras, 1);
-            }
+            return ltrim($codigoBarras, '0');
         }
 
         // retorna o codigo completo caso nenhuma situacao anterior adequar

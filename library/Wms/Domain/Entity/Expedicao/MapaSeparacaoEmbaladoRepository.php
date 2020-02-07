@@ -14,30 +14,35 @@ use Wms\Domain\Entity\UsuarioRepository;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa, $codPessoa, $os, $mapaSeparacaoEmbalado = null, $flush = true)
+    public function save($idMapa, $codPessoa, $os)
     {
-        $pessoaEn = $this->getEntityManager()->getReference('wms:Pessoa',$codPessoa);
-        $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
-        $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO);
-        $sequencia = 1;
-        if (!empty($mapaSeparacaoEmbalado)) {
-            $sequencia = $mapaSeparacaoEmbalado->getSequencia() + 1;
-        }
+        $conn = $this->_em->getConnection();
+        $idEmbalado = $conn->query("SELECT SQ_MAPA_SEPARACAO_EMBALADO_01.nextval ID_EMBALADO FROM DUAL")->fetch()['ID_EMBALADO'];
+        $sequencia = $conn->query("SELECT (NVL(MAX(NUM_SEQUENCIA), 0) + 1) AS SEQ 
+                                   FROM MAPA_SEPARACAO_EMB_CLIENTE 
+                                   WHERE COD_MAPA_SEPARACAO = $idMapa AND COD_PESSOA = $codPessoa")->fetch()['SEQ'];
 
-        $mapaSeparacaoEmbalado = new MapaSeparacaoEmbalado();
-        $mapaSeparacaoEmbalado->generateId($this->_em);
-        $mapaSeparacaoEmbalado->setMapaSeparacao($mapaSeparacaoEn);
-        $mapaSeparacaoEmbalado->setPessoa($pessoaEn);
-        $mapaSeparacaoEmbalado->setSequencia($sequencia);
-        $mapaSeparacaoEmbalado->setStatus($siglaEn);
-        $mapaSeparacaoEmbalado->setOs($os);
-        $mapaSeparacaoEmbalado->setUltimoVolume('N');
-        $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
-        if ($flush == true) {
-            $this->getEntityManager()->flush();
-        }
+        $sql = "INSERT INTO MAPA_SEPARACAO_EMB_CLIENTE 
+                   (COD_MAPA_SEPARACAO_EMB_CLIENTE, 
+                    COD_PESSOA, 
+                    COD_MAPA_SEPARACAO, 
+                    COD_STATUS, 
+                    NUM_SEQUENCIA, 
+                    IND_ULTIMO_VOLUME, 
+                    COD_OS)
+                VALUES (
+                        $idEmbalado,
+                        $codPessoa,
+                        $idMapa,
+                        ".MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO.",
+                        $sequencia,
+                        'N',
+                        $os
+                )";
 
-        return $mapaSeparacaoEmbalado;
+        $conn->executeQuery($sql);
+
+        return $idEmbalado;
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
@@ -154,6 +159,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
+            case 6:
+                //LAYOUT PLANETA
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
@@ -219,7 +228,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, 
                       SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO,
                       MSE.POS_VOLUME, E.COUNT_VOLUMES, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
-                      NVL(R.NUM_SEQ, 0) SEQ_ROTA, NVL(PR.NUM_SEQ, 0) SEQ_PRACA
+                      NVL(R.NUM_SEQ, 0) SEQ_ROTA, NVL(PR.NUM_SEQ, 0) SEQ_PRACA,
+                      NVL(R.NOME_ROTA, '') NOME_ROTA, NVL(PR.NOME_PRACA, '') NOME_PRACA,
+                      TO_CHAR(OS.DTH_FINAL_ATIVIDADE, 'DD/MM/YYYY HH24:MI:SS') DTH_FECHAMENTO,
+                      OP.NOM_PESSOA AS CONFERENTE, B.DSC_BOX
                  FROM MAPA_SEPARACAO MS
            INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
            INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -227,15 +239,19 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
            INNER JOIN PEDIDO PED ON PED.COD_CARGA = C.COD_CARGA
            INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA AND P.COD_PESSOA = PED.COD_PESSOA
            INNER JOIN CLIENTE CL ON CL.COD_PESSOA = PED.COD_PESSOA
-           INNER JOIN ROTA R ON R.COD_ROTA = CL.COD_ROTA
-           INNER JOIN PRACA PR ON CL.COD_PRACA = PR.COD_PRACA
+           INNER JOIN ORDEM_SERVICO OS ON OS.COD_OS = MSE.COD_OS
+           INNER JOIN PESSOA OP ON OP.COD_PESSOA = OS.COD_PESSOA
+            LEFT JOIN ROTA R ON R.COD_ROTA = CL.COD_ROTA
+            LEFT JOIN PRACA PR ON CL.COD_PRACA = PR.COD_PRACA
+            LEFT JOIN BOX B ON B.COD_BOX = E.COD_BOX
             LEFT JOIN PEDIDO_ENDERECO PE ON PE.COD_PEDIDO = PED.COD_PEDIDO
             LEFT JOIN SIGLA ON SIGLA.COD_SIGLA = PE.COD_UF
             LEFT JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
             LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
                 WHERE $where
              GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
-                      PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES
+                      PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
+                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX
              ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -283,19 +299,16 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (empty($pessoa)) throw new \Exception("Nenhum usuário encontrado com esse CPF: $cpfEmbalador");
 
         $idPessoa = $pessoa[0]['COD_PESSOA'];
-        /** @var OrdemServico[] $arrOs */
-        $arrOs = $this->_em->getRepository("wms:OrdemServico")->findBy([
-            "pessoa" => $idPessoa,
-            "atividade" => Atividade::EMBALAGEM_EXPEDICAO,
-            "idExpedicao" => $idExpedicao], ['dataFinal'=> 'DESC']);
+        $sql = "SELECT * FROM ORDEM_SERVICO WHERE COD_PESSOA = $idPessoa AND COD_ATIVIDADE = " .Atividade::EMBALAGEM_EXPEDICAO." AND COD_EXPEDICAO = $idExpedicao AND DTH_FINAL_ATIVIDADE IS NULL";
+
+        $arrOs = $this->_em->getConnection()->query($sql)->fetch();
 
         if (!empty($arrOs)) {
-            $lastOsFinalizacao = $arrOs[0]->getDataFinal();
-            if (empty($lastOsFinalizacao)) return $arrOs[0];
+            return $arrOs['COD_OS'];
         }
 
         if ($cine) {
-            return self::addNewOsEmbalagem($idPessoa, $idExpedicao);
+            return self::addNewOsEmbalagemHardCode($idPessoa, $idExpedicao);
         }
 
         throw new \Exception("Nenhuma Ordem de Serviço aberta para embalamento de checkout foi encontrada para essa pessoa nessa expedição");
@@ -320,6 +333,36 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         ], false);
 
         return $newOsEn;
+    }
+
+    public function addNewOsEmbalagemHardCode($idPessoa, $idExpedicao)
+    {
+
+        $dthOs = (new \DateTime())->format("d/m/Y H:i:s");
+        $conn = $this->_em->getConnection();
+        $idOs = $conn->query("SELECT SQ_ORDEM_SERVICO_01.nextval ID_OS FROM DUAL")->fetch()[0]['ID_OS'];
+
+        $sql = "INSERT INTO ORDEM_SERVICO 
+                    (
+                     COD_OS, 
+                     DTH_INICIO_ATIVIDADE, 
+                     COD_ATIVIDADE, 
+                     DSC_OBSERVACAO,
+                     COD_PESSOA, 
+                     COD_FORMA_CONFERENCIA,
+                     COD_EXPEDICAO
+                     ) VALUES (
+                       $idOs,
+                       TO_DATE('$dthOs', 'DD/MM/YYYY HH24:MI:SS'),
+                       ".Atividade::EMBALAGEM_EXPEDICAO.",
+                       'Embalamento no Checkout',
+                       $idPessoa,
+                       '".OrdemServico::MANUAL."',
+                       $idExpedicao
+                     )";
+        $conn->executeQuery($sql);
+
+        return $idOs;
     }
 }
 

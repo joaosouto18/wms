@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Deposito;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Exception;
 
 /**
  * Endereco
@@ -57,9 +58,18 @@ class Endereco
     protected $apartamento;
 
     /**
-     * @Column(name="IND_SITUACAO", type="string", length=1, nullable=false)
+     * @var bool
+     *
+     * @Column(name="BLOQUEADA_ENTRADA", type="boolean", nullable=false)
      */
-    protected $situacao;
+    protected $bloqueadaEntrada;
+
+    /**
+     * @var bool
+     *
+     * @Column(name="BLOQUEADA_SAIDA", type="boolean", nullable=false)
+     */
+    protected $bloqueadaSaida;
 
     /**
      * @Column(name="IND_STATUS", type="string", length=1, nullable=false)
@@ -269,14 +279,39 @@ class Endereco
         return $this;
     }
 
-    public function getSituacao()
+    /**
+     * @return bool
+     */
+    public function isBloqueadaEntrada()
     {
-        return $this->situacao;
+        return $this->bloqueadaEntrada;
     }
 
-    public function setSituacao($situacao)
+    /**
+     * @param bool $bloqueadaEntrada
+     * @return $this
+     */
+    public function setBloqueadaEntrada($bloqueadaEntrada)
     {
-        $this->situacao = $situacao;
+        $this->bloqueadaEntrada = ($bloqueadaEntrada) ? 1 : 0;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBloqueadaSaida()
+    {
+        return $this->bloqueadaSaida;
+    }
+
+    /**
+     * @param bool $bloqueadaSaida
+     * @return $this
+     */
+    public function setBloqueadaSaida($bloqueadaSaida)
+    {
+        $this->bloqueadaSaida = ($bloqueadaSaida) ? 1 : 0;
         return $this;
     }
 
@@ -300,6 +335,26 @@ class Endereco
     {
         $this->caracteristica = $caracteristica;
         return $this;
+    }
+
+    public function isPicking()
+    {
+        return ($this->idCaracteristica === self::PICKING);
+    }
+
+    public function isPulmao()
+    {
+        return ($this->idCaracteristica === self::PULMAO);
+    }
+
+    public function isPickingDimanico()
+    {
+        return ($this->idCaracteristica === self::PICKING_DINAMICO);
+    }
+
+    public function isCrossDocking()
+    {
+        return ($this->idCaracteristica === self::CROSS_DOCKING);
     }
 
     public function getIdEstruturaArmazenagem()
@@ -447,4 +502,18 @@ class Endereco
         $this->inventarioBloqueado = $inventarioBloqueado;
     }
 
+
+    public function liberadoPraSerPicking($returnStrException = false)
+    {
+        if (self::isBloqueadaEntrada() || self::isBloqueadaSaida()) {
+            $str[] = (self::isBloqueadaEntrada()) ? "Entrada" : "";
+            $str[] = (self::isBloqueadaSaida()) ? "Saída" : "";
+            $msg = "O endereço ".self::getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str);
+            if ($returnStrException) {
+                return $msg;
+            }
+            throw new Exception('error', $msg);
+        }
+        return true;
+    }
 }

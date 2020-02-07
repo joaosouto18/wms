@@ -116,7 +116,7 @@ class Web_FornecedorController extends \Wms\Controller\Action
                 ->select('f.id, p.nome')
                 ->from('wms:Pessoa\Papel\Fornecedor', 'f')
                 ->innerJoin('f.pessoa', 'p')
-                ->where("p.nome LIKE '{$term}%'");
+                ->where("p.nome LIKE UPPER('%{$term}%')");
 
         $fornecedores = $dql->getQuery()->execute();
 

@@ -48,7 +48,7 @@
 
     .div-loader {
         float:left;
-        z-index: 9000;
+        z-index: 99999;
         padding-top: 30px;
         position: absolute;
         background: #FFFFFF;
@@ -74,10 +74,61 @@
         background-image: linear-gradient(to bottom, #781f08, #9e100b);
         text-decoration: none;
     }
+
+    .btn-toggle {
+        -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+        -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+        box-shadow:inset 0px 1px 0px 0px #ffffff;
+        background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffffff), color-stop(1, #f6f6f6));
+        background:-moz-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-webkit-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-o-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-ms-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0);
+        background-color:#ffffff;
+        -webkit-border-radius:6px;
+        -moz-border-radius:6px;
+        border-radius:6px;
+        border:1px solid #dcdcdc;
+        display:inline-block;
+        cursor:pointer;
+        color:#666666;
+        font-size:15px;
+        font-weight:bold;
+        padding:1px 24px 1px 16px;
+        text-decoration:none;
+        text-shadow:0px 1px 0px #ffffff;
+        width: auto;
+    }
+    .btn-toggle:hover {
+        background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f6f6f6), color-stop(1, #ffffff));
+        background:-moz-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-webkit-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-o-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-ms-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f6f6f6', endColorstr='#ffffff',GradientType=0);
+        background-color:#f6f6f6;
+    }
+    .btn-toggle:active {
+        position:relative;
+        top:1px;
+    }
+
+    #arrow-info {
+        -moz-transition: transform 350ms;
+        -webkit-transition: transform 350ms;
+        transition: transform 350ms;
+    }
+
+    .flip {
+        transform: rotate(-180deg);
+    }
+
 </style>
 
-<div id="dummyy"></div>
-<span id="dummy"></span>
+<div id="dummy"></div>
 <bgsound id="bgSoundId" loop="0" volume="100" />
 
 <div id="loader" class="div-loader">
@@ -85,18 +136,24 @@
     <img src="/img/ajax-bar-loader.gif" alt="loading">
 </div>
 
-<div id="messenger"></div>
-
-<div style="display: none" id="divBtnBack">
+<div style="display: none; margin-bottom: 5px" id="divBtnBack">
     <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
 </div>
 
-<div id="headers" style="padding-top: 5px">
+<div id="messenger"></div>
+<a href="#messenger" style="display: none" id="anchorMsg"></a>
+
+<div id="headers" style="padding-top: 5px; display: none">
     <div class="lbl-headers" id="lbl-inventario"></div>
     <div class="lbl-headers" id="lbl-contagem"></div>
     <div class="lbl-headers" id="lbl-endereco"></div>
+    <div class="lbl-headers" id="lbl-pickingOf"></div>
     <div class="lbl-headers" id="lbl-produto"></div>
     <div class="lbl-headers" id="lbl-embvol"></div>
+    <div class="lbl-headers" id="lbl-picking"></div>
+</div>
+<div id="btn-row" style="padding-top: 6px; display: none">
+    <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
 </div>
 
 <div id="list-inventarios" style="display: none;">
@@ -112,12 +169,12 @@
 
 <div id="bipagem-endereco" style="display: none">
     <div class="input-area">
-        <div class="field">
-            <form>
+        <form>
+            <div class="field">
                 <label for="cod-barras-end" class="field required"><div class="lbl-headers">Buscar Endereço</div></label>
                 <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
-            </form>
-        </div>
+            </div>
+        </form>
         <button id="btn-consultar-endereco" class="btn gradientBtn btn-spacing">Buscar</button>
     </div>
     <div class="list-area" id="list-enderecos"></div>
@@ -125,12 +182,12 @@
 
 <div id="bipagem-produto" style="display: none">
     <div class="input-area">
-        <div class="field">
-            <form>
+        <form>
+            <div class="field">
                 <label for="cod-barras-prod" class="field required"><div class="lbl-headers">Buscar Produto</div></label>
                 <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class="required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
-            </form>
-        </div>
+            </div>
+        </form>
         <button id="btn-consultar-produto" class="btn gradientBtn btn-spacing">Buscar</button><br>
         <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
@@ -180,11 +237,13 @@
         var enderecos = [];
         var contEndSelecionado = null;
         var produtos = [];
+        var pickingOf = [];
         var elemBipado = {};
         var usaGrade = <?php echo ($this->usaGrade) ? "true" : "false"; ?>;
         var showing = 0;
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
-        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto", "lbl-embvol"];
+        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto, #lbl-embvol, #lbl-picking"];
+        var onErrRedirectTo = {4000: "list-inventarios", 4001: "bipagem-endereco", 4002: "bipagem-produto" };
         var endConfig = <?php echo $this->endConfig; ?>;
         var msgShowed = true;
 
@@ -196,11 +255,17 @@
                     return index;
                 }
             }
+            return -1;
         }
+
         function playSound(soundfile) {
-            var dummyy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
-                '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
-            $('#dummyy').html(dummyy);
+            if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+                document.getElementById("bgSoundId").src = soundfile;
+            } else {
+                var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                    '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+                $('#dummy').html(dummy);
+            }
         }
 
         $(document).ready(function () {
@@ -224,13 +289,10 @@
             }
 
             playSound(songFile);
-            /* $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />'); */
         };
 
         var notificar = function (type, msg, instantShowed) {
             if (type === undefined) type = "success";
-
-            dispareSound(type);
 
             $("#messenger").html(
                 '<ul class="flashMessenger">' +
@@ -241,6 +303,8 @@
                 '        <div style="display: block;" id="msg-text">' + msg + '</div>' +
                 '    </li>' +
                 '</ul>');
+
+            dispareSound(type);
 
             if (type === "error") alert(msg);
             msgShowed = instantShowed;
@@ -294,8 +358,11 @@
 
             if (showing > 1) {
                 $("#divBtnBack").show();
+                if (!$("#toggleInfo").hasClass('hiddingInfo')) $("#headers").show();
+                $("#btn-row").show();
             } else {
                 $("#divBtnBack").hide();
+                $("#btn-row").hide();
             }
 
             $.each(headersArr, function (k,v) {
@@ -305,11 +372,6 @@
                     $("#" + v).show();
             });
 
-            if (showTo === "conferencia")
-                $("#lbl-embvol").show();
-            else
-                $("#lbl-embvol").hide();
-
             if (showTo !== "loader") {
                 if (msgShowed) {
                     $("#messenger").empty();
@@ -317,11 +379,46 @@
                     msgShowed = true;
                 }
             }
+
             $("#"+showTo).show();
+
+            if (showing > 2) {
+                $("#" + showTo + " div.input-area form div:visible:first input:text").val("").focus();
+            }
+            if ($("#messenger > ul > li.warning_message, #messenger > ul >li.error_message").length > 0)
+                $("#anchorMsg")[0].click();
         };
 
         $("#btn-back-action").click(function () {
-            changeViewer(views[(showing - 1)])
+            switch ((showing - 1)) {
+                case 1:
+                    changeViewer("loader");
+                    location.reload();
+                    break;
+                case 2:
+                    getContagens();
+                    break;
+                case 3:
+                    getEnderecos();
+                    break;
+                case 4:
+                    openEndereco();
+                    break;
+            }
+        });
+
+        $("#toggleInfo").click(function () {
+            $(this).blur();
+            if ($(this).hasClass("hiddingInfo")) {
+                $("#headers").show(350);
+                $(this).children("span").text("Ocultar Info");
+            }
+            else {
+                $("#headers").hide(350);
+                $(this).children("span").text("Exibir Info");
+            }
+            $(this).toggleClass("hiddingInfo");
+            $(this).children("img").toggleClass("flip");
         });
 
         var prepareListInventarios = function () {
@@ -444,7 +541,11 @@
                         prepareListEnderecos()
                     } else {
                         notificar("error", result.exception);
-                        getContagens();
+                        if (result.errorCode === 4000) {
+                            getInventarios();
+                        } else {
+                            getContagens();
+                        }
                     }
                 }
             });
@@ -458,7 +559,6 @@
                     list.append('<div class="list-item">' + i + '</div>')
                 }
                 changeViewer("bipagem-endereco");
-                setTimeout(function () {$("#cod-barras-end").focus()},1);
             } else {
                 notificar("warning", "A " + contSelecioando.dsc + " não tem mais endereços! Selecione outra.");
                 getContagens();
@@ -492,7 +592,7 @@
                 notificar("warning", "O código de barras não corresponde à um endereço", true);
             } else if ((enderecos[endFormated] !== undefined)) {
                 contEndSelecionado = enderecos[endFormated];
-                $("#lbl-endereco").text(endFormated);
+                $("#lbl-endereco").text("End. Atual: " + endFormated);
                 openEndereco()
             } else {
                 notificar("warning", "O endereço "+endFormated+" não está nesta contagem", true);
@@ -504,18 +604,40 @@
 
         var openEndereco = function () {
             changeViewer("loader");
+            var paramsUrl = ["id", invSelecioando.id, "sq", contSelecioando.sequencia, "divrg", contSelecioando.divergencia, "end", contEndSelecionado.idEnd, "isPicking", contEndSelecionado.isPicking];
             $.ajax({
-                url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/divrg/" + contSelecioando.divergencia + "/end/" + contEndSelecionado.idEnd,
+                url: "/mobile/inventario-novo/get-info-endereco/" + paramsUrl.join("/")  ,
                 success: function (result) {
                     produtos = [];
+                    pickingOf = [];
                     if (result.status === "ok") {
-                        for (var index in result.response) {
-                            produtos.push(result.response[index]);
+                        for (var index in result.response.listItens) {
+                            produtos.push(result.response.listItens[index]);
+                        }
+                        pickingOf = result.response.pickingOf;
+                        if (contEndSelecionado.isPicking && !isEmpty(pickingOf.itens)) {
+                            var strProd = "Picking de:<br>";
+                            $.each(pickingOf.itens, function(k, v){
+                                strProd = strProd + v.idProduto + " - " + v.dscProduto;
+                                if (usaGrade) {
+                                    strProd = strProd + " - " + v.grade;
+                                }
+                                if (k < (pickingOf.itens.length - 1)) {
+                                    strProd = strProd + "<br>";
+                                }
+                            });
+                            $("#lbl-pickingOf").html(strProd).show();
+                        } else {
+                            $("#lbl-pickingOf").hide();
                         }
                         prepareListProdutos();
                     } else {
                         notificar("error", result.exception);
-                        getEnderecos();
+                        if (result.errorCode === 4000) {
+                            getInventarios();
+                        } else if (result.errorCode === 4001) {
+                            getEnderecos();
+                        }
                     }
                 }
             })
@@ -526,7 +648,7 @@
             list.empty();
             if (produtos.length) {
                 $.each(produtos , function (k,v) {
-                    var dscProd = v.codProduto;
+                    var dscProd = v.idProduto;
                     if (usaGrade) {
                         dscProd += " - " + v.grade;
                     }
@@ -553,13 +675,12 @@
             }
 
             changeViewer("bipagem-produto");
-            $("#cod-barras-prod").focus();
         };
 
         $(".btn-zerarProduto").live("click", function (event) {
             disarmEvent(event);
             var produto = produtos[$(this).data("key")];
-            var descricao = produto.codProduto + " - " + produto.descricao + " " + produto.grade;
+            var descricao = produto.idProduto + " - " + produto.descricao + " " + produto.grade;
             if (!isEmpty(produto.idVol)) {
                 descricao += " - " + produto.dscVol;
             }
@@ -580,10 +701,17 @@
             ).done(function( result ) {
                 if (result.status === "ok") {
                     notificar("success", result.response);
+                    openEndereco();
                 } else {
-                    notificar("error", result.exception)
+                    notificar("error", result.exception);
+                    if (result.errorCode === 4000) {
+                        getInventarios();
+                    } else if (result.errorCode === 4001) {
+                        getEnderecos();
+                    } else {
+                        openEndereco();
+                    }
                 }
-                openEndereco();
             })
         };
 
@@ -591,7 +719,7 @@
             if (event.which === 13 || event.keyCode === 13) {
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
-                    processProduto($(this).val());
+                    getInfoProduto($(this).val());
                     $(this).val("");
                 }
             }
@@ -601,45 +729,38 @@
             var input = $("#cod-barras-prod");
             disarmEvent(event);
             if (!isEmpty(input.val())) {
-                processProduto(input.val());
+                getInfoProduto(input.val());
                 input.val("");
             }
         });
 
-        var processProduto = function (codBarras) {
-            var liberado = true;
-            /*if (invSelecioando.criterio === 'P' && produtos.length) {
-                var encontrou = false;
-                $.each(produtos, function (k,produto) {
-                    if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
-                });
-                if (!encontrou) {
-                    liberado = false;
-                    notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto esperado neste endereço", true)
-                }
-            }*/
-
-            if (!liberado) {
-                return;
-            }
-
-            getInfoProduto(codBarras);
-        };
-
         var getInfoProduto = function (codBarras) {
             changeViewer("loader");
+            var paramsUrl = ["codbarras", encodeURIComponent(codBarras), "id", invSelecioando.id, "end", contEndSelecionado.idEnd];
             $.ajax({
-                url: "/mobile/inventario-novo/get-info-produto/codbarras/" + encodeURIComponent(codBarras) ,
+                url: "/mobile/inventario-novo/get-info-produto/" + paramsUrl.join("/") ,
                 success: function (result) {
                     if (result.status === "ok") {
                         elemBipado = result.response.produto;
                         if (elemBipado.idVolume === null) {
                             elemBipado.idVolume = "";
                         }
+
+                        if (contEndSelecionado.isPicking && myIndexOf(pickingOf.uniKey, elemBipado.idProduto + "--" + elemBipado.grade + "--" + elemBipado.norma) < 0)
+                        {
+                            notificar("warning", "Este produto não está vinculado à esse picking!");
+                        }
+
                         prepareElement();
                     } else {
                         notificar("error", result.exception);
-                        openEndereco();
+                        if (result.errorCode === 4000) {
+                            getInventarios();
+                        } else if (result.errorCode === 4001) {
+                            getEnderecos();
+                        } else {
+                            openEndereco();
+                        }
                     }
                 }
             })
@@ -653,14 +774,12 @@
             ].join(" "));
 
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
-
-            $("#qtd").val("").focus();
-            var focusOn = "qtd";
+            $("#lbl-picking").text( "Picking: " + elemBipado.picking);
+            $("#qtd").val("");
 
             if (controlaLote()) {
                 $("#lote").val("");
                 $("#div-lote").show();
-                focusOn = "lote";
             } else {
                 $("#div-lote").hide();
             }
@@ -668,13 +787,11 @@
             if (controlaValidade()) {
                 $("#validade").val("");
                 $("#div-validade").show();
-                focusOn = "validade";
             } else {
                 $("#div-validade").hide();
             }
 
             changeViewer("conferencia");
-            $("#"+focusOn).focus();
         };
 
         $("#qtd, #validade, #lote").keypress(function( event ) {
@@ -764,10 +881,17 @@
                 if (result.status === "ok") {
                     contEndSelecionado.vazio = false;
                     notificar("success", result.response);
+                    openEndereco();
                 } else {
-                    notificar("error", result.exception)
+                    notificar("error", result.exception);
+                    if (result.errorCode === 4000) {
+                        getInventarios();
+                    } else if (result.errorCode === 4001) {
+                        getEnderecos();
+                    } else {
+                        openEndereco();
+                    }
                 }
-                openEndereco();
             })
         };
 
@@ -789,7 +913,13 @@
                     }
                 } else {
                     notificar("error", result.exception);
-                    openEndereco()
+                    if (result.errorCode === 4000) {
+                        getInventarios();
+                    } else if (result.errorCode === 4001) {
+                        getEnderecos();
+                    } else {
+                        openEndereco();
+                    }
                 }
             })
         });

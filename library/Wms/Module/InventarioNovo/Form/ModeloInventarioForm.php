@@ -20,9 +20,6 @@ class ModeloInventarioForm extends Form
         ))->addElement('checkbox', 'default', array(
             'label' => 'Modelo de inventário padrão',
             'checkedValue' => 'S'
-        ))->addElement('checkbox', 'ativo', array(
-            'label' => 'Modelo de inventário ativo',
-            'checkedValue' => 'S'
         ))->addElement('select', 'controlaValidade', array(
             'label' => 'Controla validade',
             'mostrarSelecione' => false,

@@ -277,19 +277,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
 
         if ($reentrega == true) {
-            $origemEstoque = 'es.pontoTransbordo as codEstoque ,';
+            $origemEstoque = 'es.pontoTransbordo as codEstoque';
         } else {
-            $origemEstoque = 'es.codEstoque as codEstoque ,';
+            $origemEstoque = 'es.codEstoque as codEstoque';
         }
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('etq.id, p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
-                    es.grade, es.lote, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, ' . $origemEstoque . ' es.codExpedicao,
+            ->select("etq.id, p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
+                    es.grade, es.lote, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, $origemEstoque,  es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae, es.posVolume, es.posEntrega, es.totalEntrega,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica,
-                    cl.id as codCliente
-                ')
+                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox
+                ")
             ->addSelect("
                         (
                             SELECT COUNT(et.id)
@@ -314,8 +314,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
+            ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
+            ->leftJoin("e.box", "b")
             ->innerJoin('p.pessoa', 'cl')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
+            ->leftJoin("cl.rota", "r")
+            ->leftJoin("cl.praca", "pr")
             ->leftJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
             ->leftjoin('etq.codDepositoEndereco', 'de');
@@ -383,10 +387,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
-                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, etq.qtdProduto')
+                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, 
+                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
+            ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
+            ->leftJoin("e.box", "b")
             ->leftJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','etq.id = es.codBarras')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
+            ->innerJoin('p.pessoa', 'cl')
+            ->leftJoin("cl.rota", "r")
+            ->leftJoin("cl.praca", "pr")
             ->andWhere('etq.id >= '.$codigoInicial)
             ->andWhere('etq.id <= '.$codigoFinal)
             ->andWhere('etq.reimpressao IS NULL')
@@ -406,7 +416,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getEtiquetaByExpedicaoAndId($idEtiqueta)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
+            ->select(" es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
                     emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega,
@@ -415,7 +425,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                     CASE WHEN emb.CBInterno    IS NULL THEN vol.CBInterno ELSE emb.CBInterno END as CBInterno,
                     CASE WHEN emb.codigoBarras IS NULL THEN vol.codigoBarras ELSE emb2.codigoBarras END as codBarrasProduto
-                ')
+                ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'es.codStatus = s.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
@@ -461,7 +471,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
-					de.descricao endereco, de.idCaracteristica
+					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca
                 ')
             ->addSelect("
                         (
@@ -489,6 +499,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
+            ->innerJoin('p.pessoa', 'cl')
+            ->leftJoin("cl.rota", "r")
+            ->leftJoin("cl.praca", "pr")
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
             ->leftJoin('etq.codDepositoEndereco', 'de')
             ->where('es.codBarras = :id')
@@ -1302,18 +1315,22 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 throw new WMS_Exception($msg);
                             }
 
-                            if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
-                                if ($embalagemAtual->getEmbalado() == "S") {
-                                    $embalado = true;
+                            if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
+                                if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
+                                    if ($embalagemAtual->getEmbalado() == "S") {
+                                        $embalado = true;
+                                    } else {
+                                        $embalado = false;
+                                    }
                                 } else {
-                                    $embalado = false;
+                                    if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
+                                        $embalado = true;
+                                    } else {
+                                        $embalado = false;
+                                    }
                                 }
                             } else {
-                                if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
-                                    $embalado = true;
-                                } else {
-                                    $embalado = false;
-                                }
+                                $embalado = false;
                             }
 
                             if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
@@ -2017,6 +2034,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $qtdTemp = 0;
                             }
 
+                            $newArrPedProd = [];
+                            $qtdAbater = Math::multiplicar($qtdEmbs, $embalagemAtual->getQuantidade());
+                            while ($qtdAbater > 0) {
+                                foreach ($produto['arrPedProd'] as $idPedProd => $pedProd) {
+                                    if (Math::compare($pedProd['qtd'], $qtdAbater, "<=")) {
+                                        if (!isset($newArrPedProd[$idPedProd])) {
+                                            $newArrPedProd[$idPedProd] = $pedProd;
+                                        } else {
+                                            $newArrPedProd[$idPedProd]['qtd'] = Math::adicionar($newArrPedProd[$idPedProd]['qtd'], $pedProd['qtd']);
+                                        }
+                                        unset($produto['arrPedProd'][$idPedProd]);
+                                        $qtdAbater = Math::subtrair($qtdAbater, $pedProd['qtd']);
+                                    } else {
+                                        if (!isset($newArrPedProd[$idPedProd])) {
+                                            $newArrPedProd[$idPedProd] = $pedProd;
+                                            $newArrPedProd[$idPedProd]['qtd'] = $qtdAbater;
+                                        } else {
+                                            $newArrPedProd[$idPedProd]['qtd'] = Math::adicionar($newArrPedProd[$idPedProd]['qtd'], $qtdAbater);
+                                        }
+                                        $produto['arrPedProd'][$idPedProd]['qtd'] = Math::subtrair($pedProd['qtd'], $qtdAbater);
+                                        $qtdAbater = 0;
+                                    }
+
+                                    if (empty($qtdAbater)) break;
+                                }
+                            }
+
                             $enderecoId = (!empty($produto['enderecoEn'])) ? $produto['enderecoEn']->getId() : null;
                             $newArray[$strQuebrasConcat][$produtoGradeLote]['expedicaoEn'] = $produto['expedicaoEn'];
                             $newArray[$strQuebrasConcat][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
@@ -2024,7 +2068,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 'lote' => $produto['lote'],
                                 'consolidado' => "N",
                                 'cubagem' => null,
-                                'arrPedProd' => $produto['arrPedProd'],
+                                'arrPedProd' => $newArrPedProd,
                                 'embalagemEn' => $embalagemAtual,
                                 'produtoEn' => $produto['produtoEn'],
                                 'pedidoEn' => null,

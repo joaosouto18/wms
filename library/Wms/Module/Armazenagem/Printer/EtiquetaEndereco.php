@@ -165,6 +165,10 @@ class EtiquetaEndereco extends Pdf
                     if($key > 0) $this->AddPage();
                     $this->layoutModelo14($produtos,$codBarras);
                     break;
+                case 16:
+                    if($key > 0) $this->AddPage();
+                        $this->layoutModelo16($codBarras);
+                    break;
                 default:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras, false);
                     if (count($produtos) <= 0){
@@ -183,9 +187,22 @@ class EtiquetaEndereco extends Pdf
     }
 
     public function layoutModelo4($codBarras){
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
+        $enderecoEntity = $enderecoRepo->findOneBy(array('descricao' => $codBarras));
+
+        $rua = $enderecoEntity->getRua();
+        $predio = $enderecoEntity->getPredio();
+        $nivel = $enderecoEntity->getNivel();
+        $apto = $enderecoEntity->getApartamento();
+
+
         $this->SetFont('Arial', 'B', 12);
         $this->Cell(5,13,"",0,0);
-        $this->Cell(26,13,utf8_decode("RUA"),0,0);
+        $this->Cell(23,13,utf8_decode("RUA"),0,0);
         $this->Cell(32,13,utf8_decode("PREDIO"),0,0);
         $this->Cell(24,13,utf8_decode("NIVEL"),0,0);
         $this->Cell(23,13,utf8_decode("APTO"),0,1);
@@ -195,10 +212,12 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(0,0," ",0,1);
 
         $this->SetFont('Arial', 'B', 50);
-        //$this->Cell(5,8,"",0,0);
-        $this->Cell(95,8,$codBarras,0,0);
+        $this->Cell(26,8,"$rua",0,0);
+        $this->Cell(32,8,"$predio",0,0);
+        $this->Cell(24,8,"$nivel",0,0);
+        $this->Cell(23,8,"$apto",0,0);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 28 , 100);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","","$rua.$predio.$nivel.$apto")) , 5, 28 , 100);
     }
 
     public function layoutModelo13($codBarras){
@@ -425,8 +444,7 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(5,3,"",0,1);
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
-        $this->SetX(5);
-        $this->SetY(60);
+        $this->SetXY(5,1);
         $wRua = 19;
         $wPredio = 22;
         $wNivel = 18;
@@ -437,6 +455,7 @@ class EtiquetaEndereco extends Pdf
         else
             $tamanhoCodigo = 15;
 
+        $this->InFooter = true;
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
         $this->MultiCell(0,6, reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,'C');
         $this->Cell(17,13,"",0,0);
@@ -454,6 +473,7 @@ class EtiquetaEndereco extends Pdf
         $this->Cell($wTotal,8,$codBarras,0,1);
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3 , 90);
+        $this->InFooter = false;
     }
 
     public function layoutModelo7($produto, $codBarras)
@@ -584,7 +604,7 @@ class EtiquetaEndereco extends Pdf
         }
         /*
         $this->Cell(1,6.5,"Exemplo de produto 02",0,1);
-        this->Cell(1,6.5,"Exemplo de produto 01",0,1);$
+        $this->Cell(1,6.5,"Exemplo de produto 01",0,1);$
         $this->Cell(1,6.5,"Exemplo de produto 03",0,1);
         $this->Cell(1,6.5,"Exemplo de produto 04",0,1);
         */
@@ -752,4 +772,38 @@ class EtiquetaEndereco extends Pdf
 
     }
 
+    //MODELO MOTO ARTE
+    public function layoutModelo16 ($codBarras)
+    {
+        $this->Cell(5,3,"",0,1);
+        $arrEndereco = Endereco::separar($codBarras);
+        $codBarras = implode('.',$arrEndereco);
+        $this->SetMargins(10,10);
+        $this->SetXY(8,1);
+        $wRua = 16;
+        $wPredio = 22;
+        $wNivel = 20;
+        $wApto = 25;
+        $wTotal = $wRua + $wPredio + $wNivel + $wApto;
+
+        $this->InFooter = true;
+        $this->Cell(17,13,"",0,0);
+        $this->SetFont('Arial', 'B', 12);
+        $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
+        $this->Cell($wPredio,13,utf8_decode("PREDIO"),0,0);
+        $this->Cell($wNivel,13,utf8_decode("NIVEL"),0,0);
+        $this->Cell($wApto,13,utf8_decode("APTO"),0,1);
+        $this->SetFont('Arial', 'B', 18);
+        $this->Cell(0,0," ",0,1);
+        $this->SetX(17);
+        $count = strlen(str_replace('.','',$codBarras));
+        $fX = ($wTotal / $count) * 4.12;
+        $this->SetFont('Arial', 'B', $fX);
+        $this->SetXY(24,15);
+        $this->Cell($wTotal,8,$codBarras,0,1);
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 23, $this->GetY()+3 , 90);
+        $this->Image(APPLICATION_PATH . '/../data/seta2.png', 6, $this->GetY(), 13,20);
+        $this->InFooter = false;
+    }
 }

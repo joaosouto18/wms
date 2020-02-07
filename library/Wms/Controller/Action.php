@@ -182,4 +182,15 @@ class Action extends \Core\Controller\Action
             return $parametro->getValor();
         }
     }
+
+    protected function getOldBrowserVersion () {
+
+        $config = \Zend_Registry::get('config');
+        $isOldBrowserVersion = null;
+        $browserTag = $isOldBrowserVersion = $config->browser;
+        if ($browserTag != null) $isOldBrowserVersion = $config->browser->isOldBrowserVersion;
+        if ($isOldBrowserVersion == null) $isOldBrowserVersion = 'S';
+
+        return "'$isOldBrowserVersion'";
+    }
 }

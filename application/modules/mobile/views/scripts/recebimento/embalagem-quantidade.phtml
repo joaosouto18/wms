@@ -134,11 +134,11 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
 
         $(document).ready(function () {
             if (controlaValidade) {
-                $("#dataValidade").focus()
+                $("#dataValidade").focus().select()
             } else if (pesoVariavel) {
-                $("#numPeso").focus()
+                $("#numPeso").focus().select()
             } else {
-                $("#qtdConferida-0").focus()
+                $("#qtdConferida-0").focus().select()
             }
         });
 
@@ -155,19 +155,19 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                             $("#qtdConferida-" + $(this).parent().parent().data("id")).removeAttr("style");
                         } else {
                             alert("O Lote do último campo não foi informado");
-                            $(this).focus();
+                            $(this).focus().select();
                         }
                     } else {
-                        $(".lote-input").last().focus();
+                        $(".lote-input").last().focus().select();
                     }
                 } else if ($(this).hasClass("qtd-input")) {
                     if (controlaLote) {
-                        $("#lote-" + $(this).parent().parent().data("id")).focus();
+                        $("#lote-" + $(this).parent().parent().data("id")).focus().select();
                     } else if (checkInputs(false) ) {
                         $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                     }
                 } else if ($(this).hasClass("validade-input")) {
-                    $("#qtdConferida-0").focus();
+                    $("#qtdConferida-0").focus().select();
                 } else if (checkInputs(true) ) {
                     $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                 }
@@ -230,7 +230,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     playSound("/alarme.mp3");
                     alert("A data de validade não foi especificada");
                 }
-                inputVal.focus();
+                inputVal.focus().select();
                 return false;
             }
 
@@ -248,14 +248,14 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                         if (isEmpty(inputQtd.val())) {
                             playSound("/alarme.mp3");
                             msg = "A quantidade na linha " + (k + 1) + " não pode ser 0 ou nula";
-                            inputQtd.focus();
+                            inputQtd.focus().select();
                             result = false;
                             break;
                         }
                         if ((k < (rows.length - 1) || (k === 0 && rows.length === 1))&& isEmpty(inputLote.val())) {
                             playSound("/alarme.mp3");
                             msg = "O lote na linha " + (k + 1) + " não pode ficar em branco";
-                            inputLote.focus();
+                            inputLote.focus().select();
                             result = false;
                             break;
                         }
@@ -269,7 +269,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 if (isEmpty(inputQtd.val())) {
                     playSound("/alarme.mp3");
                     msg = "A quantidade não pode ser 0 ou nula";
-                    inputQtd.focus();
+                    inputQtd.focus().select();
                     result = false;
                 }
             }
@@ -302,7 +302,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     if (checkValidade()) {
                         var quantidade = document.getElementById('qtdConferida-0');
                         if (quantidade) {
-                            quantidade.focus();
+                            quantidade.focus().select();
                             if (event.preventDefault) {
                                 event.preventDefault();
                             } else {

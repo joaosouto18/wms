@@ -27,7 +27,7 @@ class Recebimento extends Form
                 ))
                 ->addElement('select', 'idBox', array(
                     'label' => 'Box',
-                    'multiOptions' => $repoBox->getIdValue(),
+                    'multiOptions' => $repoBox->getIdValue(array('idDeposito' => $sessao->idDepositoLogado)),
                     'required' => true,
                     'style' => 'width:200px',
                     'decorators' => array('ViewHelper'),

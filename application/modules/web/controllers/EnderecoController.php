@@ -41,7 +41,11 @@ class Web_EnderecoController extends Crud
                 if (!empty($finalApartamento))
                     $WhereAptoF = "e.apartamento <= :finalApartamento";
                 $source = $this->em->createQueryBuilder()
-                    ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
+                    ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado
+                                    , CASE WHEN e.bloqueadaEntrada = 1 and e.bloqueadaSaida = 1 THEN 'Entrada/Saída' 
+                                           WHEN e.bloqueadaEntrada = 1 and e.bloqueadaSaida = 0 THEN 'Entrada' 
+                                           WHEN e.bloqueadaEntrada = 0 and e.bloqueadaSaida = 1 THEN 'Saída' 
+                                           ELSE 'Nada' END bloqueada")
                     ->from('wms:Deposito\Endereco', 'e')
                     ->innerJoin('e.caracteristica', 'c')
                     ->innerJoin('e.areaArmazenagem', 'a')
@@ -77,9 +81,16 @@ class Web_EnderecoController extends Crud
                     if ($lado == "I")
                         $source->andWhere("MOD(e.predio,2) = 1");
                 }
-                if (!empty($situacao))
-                    $source->andWhere("e.situacao = :situacao")
-                        ->setParameter('situacao', $situacao);
+
+                if ($bloqueadaEntrada === "0")
+                    $source->andWhere("e.bloqueadaEntrada = 0");
+                if ($bloqueadaEntrada === "1")
+                    $source->andWhere("e.bloqueadaEntrada = 1");
+                if ($bloqueadaSaida === "0")
+                    $source->andWhere("e.bloqueadaSaida = 0");
+                if ($bloqueadaSaida === "1")
+                    $source->andWhere("e.bloqueadaSaida = 1");
+
                 if (!empty($status))
                     $source->andWhere("e.status = :status")
                         ->setParameter('status', $status);
@@ -102,8 +113,10 @@ class Web_EnderecoController extends Crud
                 $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
                 $grid->addMassAction('edit', 'Editar');
                 $grid->addMassAction('mass-delete', 'Remover');
-                $grid->addMassAction('bloquear', 'Bloquear');
-                $grid->addMassAction('desbloquear', 'Desbloquear');
+                $grid->addMassAction('bloquear?destino=E', 'Bloquear Entrada');
+                $grid->addMassAction('desbloquear?destino=E', 'Desbloquear Entrada');
+                $grid->addMassAction('bloquear?destino=S', 'Bloquear Saída');
+                $grid->addMassAction('desbloquear?destino=S', 'Desbloquear Saída');
                 $grid->addMassAction('ativar', 'Ativar');
                 $grid->addMassAction('desativar', 'Desativar');
                 $grid->addColumn(array(
@@ -132,19 +145,13 @@ class Web_EnderecoController extends Crud
                         'render' => 'OcupadoOrDisponivel'
                     ))
                     ->addColumn(array(
-                        'label' => 'Situação',
-                        'index' => 'situacao',
-                        'render' => 'BloqueadoOrDesbloqueado'
+                        'label' => 'Bloqueado p/',
+                        'index' => 'bloqueada'
                     ))
                     ->addColumn(array(
                         'label' => 'Disponibilidade',
                         'index' => 'ativo',
                         'render' => 'AtivoOrInativo'
-                    ))
-                    ->addcolumn(array(
-                        'label' => 'En Bloqueado',
-                        'index' => 'inventarioBloqueado',
-                        'render' => 'SimOrNao'
                     ))
                     ->addAction(array(
                         'label' => 'Editar',
@@ -152,19 +159,39 @@ class Web_EnderecoController extends Crud
                         'pkIndex' => 'id',
                     ))
                     ->addAction(array(
-                        'label' => 'Bloquear',
+                        'label' => 'Bloquear Entrada',
                         'actionName' => 'bloquear',
                         'pkIndex' => 'id',
+                        'params' => ['destino' => 'E'],
                         'condition' => function ($row) {
-                            return $row['situacao'] == 'D';
+                            return (empty($row['bloqueadaEntrada']) && !in_array($row['idCaracteristica'],[Endereco::PICKING, Endereco::PICKING_DINAMICO]));
                         }
                     ))
                     ->addAction(array(
-                        'label' => 'Desbloquear',
+                        'label' => 'Desbloquear Entrada',
                         'actionName' => 'desbloquear',
                         'pkIndex' => 'id',
+                        'params' => ['destino' => 'E'],
                         'condition' => function ($row) {
-                            return $row['situacao'] == 'B';
+                            return !empty($row['bloqueadaEntrada']);
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Bloquear Saída',
+                        'actionName' => 'bloquear',
+                        'pkIndex' => 'id',
+                        'params' => ['destino' => 'S'],
+                        'condition' => function ($row) {
+                            return (empty($row['bloqueadaSaida']) && !in_array($row['idCaracteristica'],[Endereco::PICKING, Endereco::PICKING_DINAMICO]));
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Desbloquear Saída',
+                        'actionName' => 'desbloquear',
+                        'pkIndex' => 'id',
+                        'params' => ['destino' => 'S'],
+                        'condition' => function ($row) {
+                            return !empty($row['bloqueadaSaida']);
                         }
                     ))
                     ->addAction(array(
@@ -342,15 +369,37 @@ class Web_EnderecoController extends Crud
     public function bloquearAction()
     {
         $massId = $this->_getParam('mass-id');
+        if (empty($massId)){
+            $id = $this->_getParam('id');
+            if (!empty($id)) $massId[] = $id;
+        }
+        $destino = $this->_getParam('destino');
         try {
+            $this->em->beginTransaction();
+
+            $check = $this->repository->validaEnderecosComReservas($massId);
+            if (!empty($check)) {
+                $str = implode(", ", $check);
+                throw new Exception("Endereços com reservas pendentes não podem ser bloqueados: $str");
+            }
+
+            $check = $this->repository->validaEnderecosPicking($massId);
+            if (!empty($check)) {
+                $str = implode(", ", $check);
+                throw new Exception("Endereços do tipo Picking ou Picking Dinâmico não podem ser bloqueados: $str");
+            }
             foreach ($massId as $id) {
+                /** @var Endereco $entity */
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
-                $entity->setSituacao('B');
+
+                if ($destino == 'E') $entity->setBloqueadaEntrada(true);
+                if ($destino == 'S') $entity->setBloqueadaSaida(true);
                 $this->em->persist($entity);
             }
             $this->em->flush();
-
+            $this->em->commit();
         } catch (\Exception $e) {
+            $this->em->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
         $this->redirect('index');
@@ -362,10 +411,17 @@ class Web_EnderecoController extends Crud
     public function desbloquearAction()
     {
         $massId = $this->_getParam('mass-id');
+        if (empty($massId)){
+            $id = $this->_getParam('id');
+            if (!empty($id)) $massId[] = $id;
+        }
+        $destino = $this->_getParam('destino');
         try {
             foreach ($massId as $id) {
+                /** @var Endereco $entity */
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
-                $entity->setSituacao('D');
+                if ($destino == 'E') $entity->setBloqueadaEntrada(false);
+                if ($destino == 'S') $entity->setBloqueadaSaida(false);
                 $this->em->persist($entity);
             }
             $this->em->flush();
@@ -535,7 +591,10 @@ class Web_EnderecoController extends Crud
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
         } else{
-            if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::PICKING || $depositoEnderecoEn->getCaracteristica()->getId() == Endereco::PICKING_DINAMICO) {
+            $test = $depositoEnderecoEn->liberadoPraSerPicking(true);
+            if (is_string($test)) {
+                $arrayMensagens = array('status' => 'error', "msg" => $test);
+            } else if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::PICKING || $depositoEnderecoEn->getCaracteristica()->getId() == Endereco::PICKING_DINAMICO) {
                 if ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
                     $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
                     if (!empty($produto) && ($codProduto != $produto[0]['codProduto'] || $grade != $produto[0]['grade'])) {
@@ -581,13 +640,13 @@ class Web_EnderecoController extends Crud
 
         if ($modelo == 14) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(115, 55));
+        } else if ($modelo == 16) {
+            $etiqueta = new EtiquetaEndereco("L", 'mm', array(120, 60));
         } else if (($modelo == 4) || ($modelo == 6) || $modelo == 13 || $modelo == 15) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
-        } else
-            if ($modelo == 13) {
-                $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 27));
-            }
-        else{
+        } else if ($modelo == 13) {
+            $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 27));
+        } else{
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         }
         $etiqueta->imprimir($enderecos, $modelo);
