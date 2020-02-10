@@ -441,7 +441,14 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                   WHERE MS.COD_EXPEDICAO = $idExpedicao
                     AND MS.COD_MAPA_SEPARACAO NOT IN (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO_QUEBRA WHERE IND_TIPO_QUEBRA = 'RE')
                   GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(MSP.DSC_LOTE, '$naoControlaLote')) MSP ON MSP.COD_PRODUTO = PP.COD_PRODUTO AND MSP.DSC_GRADE = PP.DSC_GRADE AND MSP.DSC_LOTE = PP.DSC_LOTE
-                WHERE NVL(QTD_PEDIDO,0) <> NVL(QTD_MAPA,0)";
+                LEFT JOIN (
+                        SELECT SUM(NVL(ES.QTD_EMBALAGEM, 1 ) * ES.QTD_PRODUTO) QTD_ETIQUETA,  ES.COD_PRODUTO, ES.DSC_GRADE, NVL(ES.DSC_LOTE, '$naoControlaLote') DSC_LOTE FROM ETIQUETA_SEPARACAO ES
+                        INNER JOIN ETIQUETA_MAE EM on ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
+                        INNER JOIN EXPEDICAO E on EM.COD_EXPEDICAO = E.COD_EXPEDICAO
+                        WHERE E.COD_EXPEDICAO = $idExpedicao
+                        GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE, NVL(ES.DSC_LOTE, '$naoControlaLote')
+                    ) ETS ON ETS.COD_PRODUTO = PP.COD_PRODUTO AND ETS.DSC_GRADE = PP.DSC_GRADE AND ETS.DSC_LOTE = PP.DSC_LOTE
+                WHERE NVL(QTD_PEDIDO,0) <> (NVL(QTD_MAPA,0) + NVL(QTD_ETIQUETA,0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

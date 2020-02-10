@@ -1906,7 +1906,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
         }
 
-        if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
+        if (!empty($enderecoReferencia) && $enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
 
         return $enderecoReferencia;
     }

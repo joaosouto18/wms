@@ -1618,8 +1618,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (count($resultadoConsistencia) > 0) {
                     $produto = $resultadoConsistencia[0]['COD_PRODUTO'];
                     $qtdMapa = $resultadoConsistencia[0]['QTD_MAPA'];
+                    $qtdEtiqueta = $resultadoConsistencia[0]['QTD_ETIQUETA'];
                     $qtdPedido = $resultadoConsistencia[0]['QTD_PEDIDO'];
-                    $msg = "Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto: $produto  Qtd.Pedido: $qtdPedido Qtd.Gerado: $qtdMapa";
+                    $msg = "Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto: $produto  Qtd.Pedido: $qtdPedido Qtd.Gerado: $qtdMapa (Mapa) + $qtdEtiqueta (Etiquetas)";
                     throw new WMS_Exception($msg);
                 }
 
