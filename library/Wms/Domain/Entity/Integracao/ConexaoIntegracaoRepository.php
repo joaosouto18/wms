@@ -57,9 +57,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             if (!$result) {
                 $error = $conexao->error;
                 throw new \Exception($error);
+            } else if (is_a($result, \mysqli_result::class)) {
+                return $result->fetch_all(MYSQLI_ASSOC);
+            } else {
+                return $result;
             }
-
-            return $result->fetch_all(MYSQLI_ASSOC);
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
         } catch (\Exception $e2) {
