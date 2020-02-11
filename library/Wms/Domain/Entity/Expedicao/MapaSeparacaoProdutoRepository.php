@@ -446,7 +446,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     ON MSP.COD_PRODUTO = PP.COD_PRODUTO 
                    AND MSP.DSC_GRADE = PP.DSC_GRADE 
                    AND MSP.DSC_LOTE = PP.DSC_LOTE
-             LEFT JOIN (SELECT SUM(NVL(ES.QTD_EMBALAGEM, 1 ) * ES.QTD_PRODUTO) / (CASE WHEN (P.COD_TIPO_COMERCIALIZACAO = 1) THEN 1 ELSE P.NUM_VOLUMES  END) QTD_ETIQUETA,  
+             LEFT JOIN (SELECT SUM(NVL(ES.QTD_EMBALAGEM,1)) / (CASE WHEN (P.COD_TIPO_COMERCIALIZACAO = 1) THEN 1 ELSE P.NUM_VOLUMES  END) QTD_ETIQUETA,  
                                ES.COD_PRODUTO, 
                                ES.DSC_GRADE, 
                                NVL(ES.DSC_LOTE, '$naoControlaLote') DSC_LOTE 
