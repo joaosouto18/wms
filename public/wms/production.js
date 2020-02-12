@@ -1937,8 +1937,8 @@ break}},"#produto-numVolumes change":function(){Wms.Controllers.ProdutoVolume.pr
 $(this).find(".codigoBarras"),d=$(this).find(".codigoSequencial").val(),f=$(this).find(".codigoBarrasExibicao");if(d.length==1)d="0"+d;e.val(a+d+c);f.html(a+d+c)})}});
 ;
 steal.end();
-$.Controller.extend("Wms.Controllers.FiltroNotaFiscal",{pluginName:"filtroNotaFiscal"},{"{window} load":function(){this.autocompleteFornecedor();$("#fornecedor").keyup(function(){$("#fornecedor").val()==""&&$("#idFornecedor").val("")})},autocompleteFornecedor:function(){$("#fornecedor").autocomplete({source:function(b,a){$.ajax({global:false,url:"/fornecedor/get-fornecedor-json",dataType:"json",data:b,success:a})},minLength:3,autoFocus:true,select:function(b,a){$("#idFornecedor").val(a.item.id)},
-search:function(){$("#idFornecedor").val("")}})}});
+$.Controller.extend("Wms.Controllers.FiltroNotaFiscal",{pluginName:"filtroNotaFiscal"},{"{window} load":function(){this.autocompleteFornecedor();$("#fornecedor").keyup(function(){$("#fornecedor").val()==""&&$("#idFornecedor").val("")});this.autocompleteFabricante();$("#fabricante").keyup(function(){$("#fabricante").val()==""&&$("#idFabricante").val("")})},autocompleteFornecedor:function(){$("#fornecedor").autocomplete({source:function(b,a){$.ajax({global:false,url:"/fornecedor/get-fornecedor-json",
+dataType:"json",data:b,success:a})},minLength:3,autoFocus:true,select:function(b,a){$("#idFornecedor").val(a.item.id)},search:function(){$("#idFornecedor").val("")}})},autocompleteFabricante:function(){$("#fabricante").autocomplete({source:function(b,a){$.ajax({global:false,url:"/fornecedor/get-fabricante-json",dataType:"json",data:b,success:a})},minLength:3,autoFocus:true,select:function(b,a){$("#idFabricante").val(a.item.id)},search:function(){$("#idFabricante").val("")}})}});
 ;
 steal.end();
 var clickSelection=false;
