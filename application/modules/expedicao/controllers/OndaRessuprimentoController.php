@@ -163,6 +163,9 @@ class Expedicao_OndaRessuprimentoController extends Action
 
             $expedicaoRepo->changeSituacaoExpedicao($expedicoes, 'S');
 
+            ini_set('max_execution_time', 900);
+            ini_set('memory_limit', '-1');
+
             $this->em->beginTransaction();
             $hasTransaction = true;
             if (count($result) > 0) {
@@ -232,9 +235,6 @@ class Expedicao_OndaRessuprimentoController extends Action
                     'link' => $link
                 ];
             }
-
-            ini_set('max_execution_time', 900);
-            ini_set('memory_limit', '-1');
 
             if (count($idsExpedicoes) > 0) {
                 $expedicoes = implode(',', $idsExpedicoes);
