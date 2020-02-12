@@ -48,11 +48,17 @@ class EtiquetaSeparacao extends Pdf
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
                 case 10:
+                    $this->SetY($this->footerPosition + 4);
                     if ($this->etiqueta['dscBox'] != 'N/D') {
-                        $this->SetY($this->footerPosition + 4);
                         $this->SetFont('Arial', 'B', 13);
                         $this->Cell(40, 4, $this->etiqueta['dscBox']);
                     }
+                    // font
+                    $this->SetFont('Arial','B',7);
+                    //Go to 1.5 cm from bottom
+                    $this->Cell(20, 7, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
+                    $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
                 case 12:
                     // font
