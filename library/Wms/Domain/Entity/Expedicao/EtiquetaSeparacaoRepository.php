@@ -288,7 +288,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae, es.posVolume, es.posEntrega, es.totalEntrega,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica,
-                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox
+                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox, uf.referencia siglaEstado
                 ")
             ->addSelect("
                         (
@@ -322,7 +322,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin("cl.praca", "pr")
             ->leftJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
-            ->leftjoin('etq.codDepositoEndereco', 'de');
+            ->leftjoin('etq.codDepositoEndereco', 'de')
+            ->leftJoin('wms:Pessoa\Endereco', 'xxxx', 'WITH', 'xxxx.pessoa = cl.id')
+            ->leftJoin('wms:Util\Sigla', 'uf', 'WITH', 'uf.id = xxxx.uf')
+        ;
+
+
 
         if ($reentrega == true) {
             $dql->innerJoin('etq.reentrega','r')
@@ -1584,7 +1589,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S') {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
-                if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado!");
+                if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
 
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
@@ -1613,8 +1618,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (count($resultadoConsistencia) > 0) {
                     $produto = $resultadoConsistencia[0]['COD_PRODUTO'];
                     $qtdMapa = $resultadoConsistencia[0]['QTD_MAPA'];
+                    $qtdEtiqueta = $resultadoConsistencia[0]['QTD_ETIQUETA'];
                     $qtdPedido = $resultadoConsistencia[0]['QTD_PEDIDO'];
-                    $msg = "Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto: $produto  Qtd.Pedido: $qtdPedido Qtd.Gerado: $qtdMapa";
+                    $msg = "Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto: $produto  Qtd.Pedido: $qtdPedido Qtd.Gerado: $qtdMapa (Mapa) + $qtdEtiqueta (Etiquetas)";
                     throw new WMS_Exception($msg);
                 }
 

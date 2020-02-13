@@ -488,7 +488,7 @@ class Importacao
             if (empty($pedido['itinerario']))
                 throw new \Exception("Itinerário de código: $pedido[itinerario] não foi encontrado");
 
-            $pedido['carga'] = $em->getRepository("wms:expedicao\Carga")->findOneBy(array('codCargaExterno' => (int)$pedido['codCargaExterno']));
+            $pedido['carga'] = $em->getRepository("wms:expedicao\Carga")->findOneBy(array('codCargaExterno' => $pedido['codCargaExterno']));
             if (empty($pedido['carga']))
                 throw new \Exception("Carga: $pedido[codCargaExterno] não foi encontrada");
 

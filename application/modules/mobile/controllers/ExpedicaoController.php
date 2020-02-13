@@ -434,13 +434,16 @@ class Mobile_ExpedicaoController extends Action {
         $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa, $idPessoa);
 
         $returnToCliente = (!empty($qtdPendenteConferencia));
+	    $isBeginTransaction = false;
         try {
+
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
             $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia, $mapaSeparacaoEmbaladoEn) {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
+                if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
 
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
@@ -502,6 +505,7 @@ class Mobile_ExpedicaoController extends Action {
 
             $isLast = false;
             $this->getEntityManager()->beginTransaction();
+            $isBeginTransaction = true;
             if (!empty($mapaSeparacaoEmbaladoEn)) {
                 $mapaSeparacaoConferencias = $mapaSeparacaoConferenciaRepo->findBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
                 if (empty($mapaSeparacaoConferencias) && !$agrupaEtiquetas) {
@@ -522,7 +526,7 @@ class Mobile_ExpedicaoController extends Action {
                 $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega);
 
                 if (!$agrupaEtiquetas && $fechaEmbaladosNoFinal) {
-                    if (empty($nVols)) throw new Exception("O número de volumes à sere criados não foi definido");
+                    if (empty($nVols)) throw new Exception("O número de volumes à serem criados não foi definido");
                     else {
                         if (!empty($qtdPendenteConferencia)) throw new Exception("O modelo de separação exige que confira todos os produtos antes de fechar os volumes");
                         $nVols -= 1; // Decrementa o volume original para criar apenas os demais
@@ -547,7 +551,7 @@ class Mobile_ExpedicaoController extends Action {
 
             $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas), $isLast);
         } catch (Exception $e) {
-            $this->getEntityManager()->rollback();
+            if ($isBeginTransaction) $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
             if (!$returnToCliente) {
                 if ($checkout == 1) {

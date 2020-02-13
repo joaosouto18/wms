@@ -9,92 +9,51 @@ class ProdutosAVencer extends Pdf
     private $pageW = 210;
     private $marginLeft = 7;
     private $prodListY = 20;
-    private $lineH = 7;
+    private $lineH = 8;
     private $body;
     
-    private function startPage($dataReferencia)
+    private function startPage($dataReferencia, $utilizaGrade)
     {
+        $lineH = $this->lineH;
         $this->SetMargins($this->marginLeft,5);
         $this->AddPage();
         $this->SetFont('Arial', 'B', 15);
-        $this->Cell($this->body, 10, utf8_decode("Produtos vencidos ou à vencer até $dataReferencia"),0,0,"C");
+        $this->Cell($this->body, 15, utf8_decode("Produtos vencidos ou à vencer até $dataReferencia"),0,1,"C");
+
+        $this->SetFont('Arial', 'B', 12);
+        $this->SetFillColor(255,255,255);
+        $this->Cell(20, $lineH, utf8_decode("Produto") ,1 ,0 ,'' , true);
+        $this->Cell(50, $lineH, utf8_decode('Descrição') ,1 ,0 ,'' , true);
+        if ($utilizaGrade == 'S')
+            $this->Cell(30, $lineH, utf8_decode("Grade") ,1 ,0 ,'' , true);
+        $this->Cell(35, $lineH, utf8_decode("Linha Separação") ,1 ,0 ,'' , true);
+        $this->Cell(40, $lineH, 'Fabricante' ,1 ,0 ,'' , true);
+        $this->Cell(25, $lineH, utf8_decode('Endereço') ,1 ,0 ,'' , true);
+        $this->Cell(25, $lineH, 'Picking' ,1 ,0 ,'' , true);
+        $this->Cell(30, $lineH, 'Dt. validade' ,1 ,0 ,'' , true);
+        $this->Cell(20, $lineH, 'D. Vencer' ,1 ,0 ,'' , true);
+        $this->Cell(35, $lineH, 'Qtde' ,1 ,1,'', true);
+
     }
 
-    private function addProdutoRow($produto, $i, $produtoEmbalagemRepository)
+    private function addProdutoRow($produto, $i, $utilizaGrade)
     {
         $lineH = $this->lineH;
 
-        // LINHA 1
-
-        $this->SetFont('Arial', 'B', 10);
-        $this->SetY($this->prodListY + ($i * (5 + (3 * $lineH))));
-        $this->SetFillColor(170);
-        $this->Cell(40, $lineH, utf8_decode("Produto: $produto[COD_PRODUTO]") ,1 ,0 ,'' , true);
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(220);
-        $cellWidth = 126;
-        $str = self::SetStringByMaxWidth(utf8_decode("Descrição: $produto[DESCRICAO]"),$cellWidth);
-        $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(190);
-        $this->Cell(30, $lineH, utf8_decode("Grade: $produto[GRADE]") ,1 ,1 ,'' , true);
-
-        // LINHA 2
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(220);
-        $cellWidth = 106;
-        $str = self::SetStringByMaxWidth(utf8_decode("Linha de separação: $produto[LINHA_SEPARACAO]"), $cellWidth);
-        $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(220);
-        $this->Cell(40, $lineH, utf8_decode("Endereço: $produto[ENDERECO]") ,1 ,0 ,'' , true);
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(220);
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(20, $lineH, $produto['COD_PRODUTO'] ,1,0,'' , true);
+        $this->Cell(50, $lineH, substr($produto['DESCRICAO'],0,20) ,1,0,'' , true);
+        if ($utilizaGrade == 'S')
+            $this->Cell(30, $lineH, $produto['GRADE'] ,1,0,'' , true);
+        $this->Cell(35, $lineH, substr($produto['LINHA_SEPARACAO'],0,15),1,0,'' , true);
+        $this->Cell(40, $lineH, substr($produto['FABRICANTE'],0,15),1,0,'' , true);
+        $this->Cell(25, $lineH, $produto['ENDERECO'], 1, 0, '',true);
+        $this->Cell(25, $lineH, $produto['PICKING'],1,0,'', true);
         $strg = (!empty($produto['VALIDADE']))? $produto['VALIDADE'] : 'Sem Registro';
-        $this->Cell(50, $lineH, utf8_decode("Data de validade: $strg") ,1 ,1 ,'' , true);
+        $this->Cell(30, $lineH, $strg,1,0,'', true);
+        $this->Cell(20, $lineH, $produto['DIASVENCER'],1,0,'', true);
+        $this->Cell(35, $lineH, $produto['QTD_MAIOR'],1,1,'', true);
 
-        //LINHA 3
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(220);
-        $cellWidth = 120;
-        $str = self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[FORNECEDOR]"), $cellWidth);
-        $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
-
-//        $qtdEstoque = $produtoEmbalagemRepository->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['GRADE'], $produto['QTD']);
-//        if(!empty($qtdEstoque[0])){
-//            $maiorEmbalagem = $qtdEstoque[0];
-//        }else{
-//            $maiorEmbalagem = ' - ';
-//        }
-//        if(!empty($vetEmbalagens[1])){
-//            $menorEmbalagem = $vetEmbalagens[1];
-//        }else{
-//            $menorEmbalagem = ' - ';
-//        }
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(220);
-        $this->Cell(40, $lineH, utf8_decode('Qtd: ' . $produto['QTD_MAIOR'].'-'.$produto['QTD_MENOR']) ,1 ,0 ,'' , true);
-
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(175);
-
-        $dt = date_create_from_format('d/m/Y', $produto['VALIDADE']) ;
-        $now = date_create_from_format('d/m/Y', date('d/m/Y'));
-        if (!empty($produto['VALIDADE']) && ($dt <= $now)){
-            $status = "VENCIDO";
-        } else if (!empty($produto['VALIDADE']) && ($dt > $now)) {
-            $status = "À VENCER";
-        } else {
-            $status = 'N/D';
-        }
-
-        $this->Cell(36, $lineH, utf8_decode("STATUS: $status") ,1 ,0 ,'C' , true);
     }
 
     public function Footer()
@@ -106,7 +65,7 @@ class ProdutosAVencer extends Pdf
         $this->Cell(20, 15, utf8_decode('Página ').$this->PageNo(), 0, 1, 'R');
     }
 
-    public function generatePDF($produtos, $dataReferencia)
+    public function generatePDF($produtos, $dataReferencia, $utilizaGrade)
     {
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
@@ -116,19 +75,19 @@ class ProdutosAVencer extends Pdf
         $produtoEmbalagemRepository = $em->getRepository('wms:Produto\Embalagem');
         $this->body = $this->pageW - (2 * $this->marginLeft);
 
-        self::startPage($dataReferencia);
+        self::startPage($dataReferencia, $utilizaGrade);
         $i = 0;
 
         foreach($produtos as $produto){
-            if ($i > 9) {
-                self::startPage($dataReferencia);
+            if ($i > 19) {
+                self::startPage($dataReferencia, $utilizaGrade);
                 $i = 0;
             }
-            self::addProdutoRow($produto, $i, $produtoEmbalagemRepository);
+            self::addProdutoRow($produto, $i, $utilizaGrade);
             $i++;
         }
 
-        self::Output('Produtos vencidos ou à vencer até '.$dataReferencia.'.pdf','D');
+        self::Output('Produtos vencidos ou à vencer até '.$dataReferencia.'.pdf','I');
     }
 
 }

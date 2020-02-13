@@ -61,7 +61,6 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             } else {
                 return $result;
             }
-
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
         } catch (\Exception $e2) {
@@ -234,11 +233,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $arr = pg_fetch_all($result);
-            if (!$arr) {
-                pg_close($conexao);
-                throw new \Exception(pg_result_error($arr));
-            }
 
+            if (!$arr)
+                $arr = array();
+
+            pg_close($conexao);
             return $arr;
 
         } catch (\Exception $e) {

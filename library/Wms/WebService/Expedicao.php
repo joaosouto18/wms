@@ -1593,7 +1593,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             if ($parametro->getValor() == 'S') {
                 if ($notaFiscalEn->getStatus()->getId() != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
-                    throw new \Exception('Nota Fiscal de reentrega ' . $numeroNf . " / " . $serieNF . " ainda não foi recebida");
+                    throw new \Exception('NF de reentrega ' . $numeroNf . " / " . $serieNF . " ainda não foi recebida");
                 }
             }
 
