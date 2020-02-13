@@ -200,7 +200,7 @@ class EtiquetaSeparacao extends Pdf
         $boxEntity = null;
         $dscBox = '';
         if (!is_null($idBox)) {
-            $boxEntity = $em->find('wms:Deposito\Box', $idBox);
+            $boxEntity = $em->find('wms:Deposito\Box', trim($idBox));
             $dscBox = $boxEntity->getDescricao();
         }
         $contadorCarga = array();
