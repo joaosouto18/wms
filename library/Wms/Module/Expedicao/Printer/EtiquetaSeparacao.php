@@ -86,7 +86,7 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetX(0);
                     $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
                     $this->SetFont('Arial','B',12);
-                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['contadorCargas'][$this->etiqueta['codCargaExterno']] . '/' . $this->etiqueta['qtdCargaDist'], 0, 1, "L");
+                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['contadorClientes'][$this->etiqueta['codClienteExterno']] . '/' . $this->etiqueta['qtdEtiquetaCliente'], 0, 1, "L");
                     $this->SetFont('Arial','B',8);
                     $this->Cell(20, 4, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
@@ -192,6 +192,7 @@ class EtiquetaSeparacao extends Pdf
         }
         $contadorCarga = array();
         $contadorProduto = array();
+        $contadorCliente = array();
 
         $agroupEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == "S");
 
@@ -249,9 +250,16 @@ class EtiquetaSeparacao extends Pdf
             }
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
+            if (!isset($contadorCliente[$etiqueta['codClienteExterno']])) {
+                $contadorCliente[$etiqueta['codClienteExterno']] = 0;
+            }
+            $contadorCliente[$etiqueta['codClienteExterno']] = $contadorCliente[$etiqueta['codClienteExterno']] + 1;
+
+
             if (!empty($dscBox)) $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
+            $etiqueta['contadorClientes'] = $contadorCliente;
             $this->layoutEtiqueta($etiqueta, $numEtiquetas,false, $modelo,false);
 
 
@@ -375,6 +383,7 @@ class EtiquetaSeparacao extends Pdf
 
         $contadorCarga = array();
         $contadorProduto = array();
+        $contadorCliente = array();
         /** @var Expedicao\EtiquetaSeparacao $etiquetaEntity */
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
@@ -389,6 +398,12 @@ class EtiquetaSeparacao extends Pdf
 
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
+            if (!isset($contadorCliente[$etiqueta['codClienteExterno']])) {
+                $contadorCliente[$etiqueta['codClienteExterno']] = 0;
+            }
+            $contadorCliente[$etiqueta['codClienteExterno']] = $contadorCliente[$etiqueta['codClienteExterno']] + 1;
+
+
             $cargaEntity = $em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $etiqueta['codCargaExterno']));
             $boxEntity = $cargaEntity->getExpedicao()->getBox();
             $dscBox = '';
@@ -397,6 +412,7 @@ class EtiquetaSeparacao extends Pdf
             $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
+            $etiqueta['contadorClientes'] = $contadorCliente;
             $this->posVolume = $etiqueta['posVolume'];
             $this->layoutEtiqueta($etiqueta, $numEtiquetas,true, $modelo,false);
             $etiquetaEntity->setReimpressao($motivo);
