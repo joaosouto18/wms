@@ -203,10 +203,11 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param string $referencia Código de Referencia do produto no fornecedor
      * @param string $possuiPesoVariavel 'N' , 'S'
      * @param volume[] $volumes Volumes
+     * @param string $codBarrasBase Código de Barras base quando o produto for composto
      * @throws Exception
      * @return boolean Se o produto foi inserido com sucesso ou não
      */
-    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia, $possuiPesoVariavel, $volumes) {
+    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia, $possuiPesoVariavel, $volumes, $codBarrasBase) {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
@@ -263,6 +264,9 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setClasse($classe)
                 ->setReferencia($referencia)
                 ->setPossuiPesoVariavel($possuiPesoVariavel);
+
+            if ($codBarrasBase != "")
+                $produto->setCodigoBarrasBase($codBarrasBase);
 
             if ($produtoNovo == true) {
                 $produto

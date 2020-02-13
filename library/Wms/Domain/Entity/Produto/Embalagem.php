@@ -422,7 +422,6 @@ class Embalagem {
     }
 
     /**
-      <<<<<<< HEAD
      * @return datetime
      */
     public function getDataInativacao() {

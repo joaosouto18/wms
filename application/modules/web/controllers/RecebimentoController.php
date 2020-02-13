@@ -450,13 +450,38 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $temTransacao = true;
 
                 $idConferente = $this->getRequest()->getParam('idPessoa');
+
+                $arrMapGrade = json_decode($this->getRequest()->getParam('arrMapGrade'), true);
+                $replaceKey = function ($arr, $arrayMap) {
+                    foreach($arr as $id => $subArr) {
+                        foreach ($subArr as $oldKey => $val) {
+                            $arr[$id][$arrayMap[$oldKey]] = $val;
+                            unset($arr[$id][$oldKey]);
+                        }
+                    }
+                    return $arr;
+                };
+
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
+                $qtdConferidas = $replaceKey($qtdConferidas, $arrMapGrade);
+
                 $qtdUnidFracionavel = $this->getRequest()->getParam('qtdUnidFracionavel');
+                $qtdUnidFracionavel = $replaceKey($qtdUnidFracionavel, $arrMapGrade);
+
                 $embalagem = $this->getRequest()->getParam('embalagem');
+                $embalagem = $replaceKey($embalagem, $arrMapGrade);
+
                 $unMedida = $this->getRequest()->getParam('unMedida');
+                $unMedida = $replaceKey($unMedida, $arrMapGrade);
+
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
+                $dataValidade = $replaceKey($dataValidade, $arrMapGrade);
+
                 $numPeso = $this->getRequest()->getParam('numPeso');
+                $numPeso = $replaceKey($numPeso, $arrMapGrade);
+
                 $normas = $this->getRequest()->getParam('norma');
+                $normas = $replaceKey($normas, $arrMapGrade);
                 // executa os dados da conferencia
 
                 $recebimentoRepo->saveConferenciaCega($idRecebimento,$idOrdemServico,$qtdConferidas,$normas, $qtdUnidFracionavel,$embalagem, $unMedida, $dataValidade, $numPeso);

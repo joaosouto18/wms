@@ -673,6 +673,7 @@ class Integracao {
 
             $FimNotaAtual = false;
             if (isset($dados[$key + 1])) {
+                $dados[$key + 1] = array_change_key_case($dados[$key + 1],CASE_UPPER);
                 $numProxNfNota = $dados[$key + 1]['NUM_NOTA_FISCAL'];
                 $serieProxNfNota = $dados[$key + 1]['COD_SERIE_NOTA_FISCAL'];
                 $codFornecedorProxNf = $dados[$key + 1]['COD_FORNECEDOR'];

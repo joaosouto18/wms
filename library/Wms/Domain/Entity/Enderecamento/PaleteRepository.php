@@ -1158,9 +1158,14 @@ class PaleteRepository extends EntityRepository {
 
         $ok = false;
         $arrPaletesResult = array();
+        $recebimentos = [];
         foreach ($paletes as $paleteId) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $this->find($paleteId);
+
+            $idRecebimento = $paleteEn->getRecebimento()->getId();
+            if (!in_array($idRecebimento, $recebimentos))
+                $recebimentos[] = $idRecebimento;
 
             if ($paleteEn->getCodStatus() == Palete::STATUS_CANCELADO) {
                 $arrPaletesResult[] = $paleteId;
@@ -1195,7 +1200,14 @@ class PaleteRepository extends EntityRepository {
                 }
             }
         }
+
         $this->_em->flush();
+
+        if ($this->getSystemParameterValue('CONTROLE_PROPRIETARIO') == 'S') {
+            foreach ($recebimentos as $id) {
+                $this->_em->getRepository(ReservaEstoqueProprietario::class)->checkLiberacaoReservas($id, true);
+            }
+        }
 
         if (!empty($arrPaletesResult)) {
             if (count($arrPaletesResult) > 1) {

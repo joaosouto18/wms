@@ -1,5 +1,7 @@
 
-<?php echo $this->render('recebimento/cabecalho.phtml'); ?>
+<?php echo $this->render('recebimento/cabecalho.phtml');
+    $arrMap = [];
+?>
 
 <style>
     table.produtos th {
@@ -38,27 +40,34 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->produtos as $produto) { ?>
+                <?php
+                $i = 0;
+                foreach ($this->produtos as $produto) { ?>
+                <?php
+                    $kGrade = "$produto[codigo]_$i";
+                    $arrMap[$kGrade] = $produto['grade'];
+                    $i++;
+                ?>
                     <tr height="35">
                         <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
                         <td><?php echo $produto['grade'] ?></td>
                         <?php if ($this->temLote) { ?>
                             <td>
                                 <?php if ($produto['ind_controla_lote'] == "S") {
-                                    echo $this->formText("lote[{$produto['codigo']}][{$produto['grade']}][0]", null, [
+                                    echo $this->formText("lote[{$produto['codigo']}][{$kGrade}][0]", null, [
                                         'size' => 16,
-                                        'id' => "lote--$produto[codigo]--$produto[grade]--0",
+                                        'id' => "lote--$produto[codigo]--$kGrade--0",
                                         'class' => 'inputLote',
                                         'placeholder' => "Lote..."
                                     ]);
-                                    echo "<span class='addLote' id='addLote--$produto[codigo]--$produto[grade]' style='cursor: pointer ; background: #4cae4c ; padding: 5px'><b>Add</b></span>";
+                                    echo "<span class='addLote' id='addLote--$produto[codigo]--$kGrade' style='cursor: pointer ; background: #4cae4c ; padding: 5px'><b>Add</b></span>";
                                 }
                                 ?>
                             </td>
                         <?php } ?>
                         <td>
                         <?php if (isset($produto['embalagens'])) {
-                                echo "<select class='Embalagem' name='embalagem[$produto[codigo]][$produto[grade]][0]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem--$produto[codigo]--$produto[grade]--0'>";
+                                echo "<select class='Embalagem' name='embalagem[$produto[codigo]][$kGrade][0]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem--$produto[codigo]--$kGrade--0'>";
                                 foreach ($produto['embalagens'] as $embalagem) {
                                     echo "<option value='$embalagem[id]' data-fracionavel-default='$embalagem[isFracDefault]'>$embalagem[dsc]</option>";
                                 }
@@ -71,10 +80,10 @@
                                     }
                                 }
                                 if (isset($medida) && $medida != null) {
-                                    echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}][0]", null, array(
+                                    echo $this->formSelect("unMedida[{$produto['codigo']}][{$kGrade}][0]", null, array(
                                         'validators' => array('numeric'),
                                         'alt' => 'number',
-                                        'id' => "unMedida--$produto[codigo]--$produto[grade]--0",
+                                        'id' => "unMedida--$produto[codigo]--$kGrade--0",
                                         'class' => "unMedida",
                                         'title' => "[{$produto['codigo']}][{$produto['grade']}]",
                                     ), $medida);
@@ -86,10 +95,10 @@
                         </td>
                         <td>
                             <?php
-                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}][0]", 0, [
+                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$kGrade}][0]", 0, [
                                 'size' => 8,
                                 'validators' => array('numeric'),
-                                'id' => "qtdConferida--$produto[codigo]--$produto[grade]--0",
+                                'id' => "qtdConferida--$produto[codigo]--$kGrade--0",
                                 'alt' => 'number',
                                 'class' => "qtdConferida",
                                 'title' => "[{$produto['codigo']}][{$produto['grade']}][]"
@@ -101,15 +110,15 @@
                             <div>
                                 <?php
                                 if ($produto['ind_fracionavel'] == 'S') {
-                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$produto['grade']}][0]", 0, [
+                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$kGrade}][0]", 0, [
                                     'size' => 8,
                                     'validators' => array('numeric'),
-                                    'id' => "qtdUnidFracionavel--$produto[codigo]--$produto[grade]--0",
+                                    'id' => "qtdUnidFracionavel--$produto[codigo]--$kGrade--0",
                                     'alt' => 'centesimal',
                                     'class' => "qtdUnidFracionavel required",
                                     'title' => "Total unid fracionavel [{$produto['codigo']}][{$produto['grade']}][]"
                                 ]); } ?>
-                                <span id="<?php echo "txtUnid*-*$produto[codigo]*-*$produto[grade]*-*0"?>"></span>
+                                <span id="<?php echo "txtUnid*-*$produto[codigo]*-*$kGrade*-*0"?>"></span>
                             </div>
                         </td>
                         <?php } ?>
@@ -118,10 +127,10 @@
                                 <?php
                                 if ($produto['possui_validade']) {
                                 $date = new DateTime('now');
-                                echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}][0]", $date->format('d/m/Y'), array(
+                                echo $this->formText("dataValidade[{$produto['codigo']}][{$kGrade}][0]", $date->format('d/m/Y'), array(
                                     'size' => 11,
                                     'validators' => array('numeric'),
-                                    'id' => "dataValidade--$produto[codigo]--$produto[grade]--0",
+                                    'id' => "dataValidade--$produto[codigo]--$kGrade--0",
                                     'alt' => 'date',
                                     'class' => "date dthValidade",
                                     'title' => "dataValidade[{$produto['codigo']}][{$produto['grade']}]",
@@ -134,10 +143,10 @@
                         <td>
                             <?php
                             if (isset($produto['normas']) && !empty($produto['normas']))
-                                echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}][0]", key($produto['normas']) ,array(
+                                echo $this->formSelect("norma[{$produto['codigo']}][{$kGrade}][0]", key($produto['normas']) ,array(
                                         'required' => true,
                                         'class' => "norma",
-                                        'id' => "norma--$produto[codigo]--$produto[grade]--0",
+                                        'id' => "norma--$produto[codigo]--$kGrade--0",
                                         'title' => "Norma de paletizacao do produto $produto[codigo]-$produto[grade]",
                                         'empty_option' => "Selecione a norma"
                                 ), $produto['normas'])
@@ -145,10 +154,10 @@
                         </td>
                         <td>
                             <?php
-                            echo $this->formText("qtdAvaria[{$produto['codigo']}][{$produto['grade']}][0]", 0, array(
+                            echo $this->formText("qtdAvaria[{$produto['codigo']}][{$kGrade}][0]", 0, array(
                                 'size' => 8,
                                 'validators' => array('numeric'),
-                                'id' => "qtdAvaria--$produto[codigo]--$produto[grade]--0",
+                                'id' => "qtdAvaria--$produto[codigo]--$kGrade--0",
                                 'alt' => 'number',
                                 'class' => "qtdAvaria",
                                 'title' => "[{$produto['codigo']}][{$produto['grade']}]",
@@ -195,6 +204,7 @@
 <script>
 
     var strConcatId = "--";
+    var arrayMapGrade = <?php echo json_encode($arrMap);?>;
 
     <?php if ($this->temLote) { ?>
     var inputNames = ["lote", "embalagem", "unMedida", "qtdConferida", "qtdUnidFracionavel", "dataValidade", "norma", "qtdAvaria"];
@@ -220,7 +230,7 @@
                 $.each(lotesArr[codGrade], function (k, v) {
                     if (v === lote) {
                         loteRepetido = true;
-                        alert("Já existe uma linha com o lote: '" + lote + "' nesse produto " + cod + " - " + grade + "!");
+                        alert("Já existe uma linha com o lote: '" + lote + "' nesse produto " + cod + " - " + arrayMapGrade[grade] + "!");
                         inputLote.val(oldLote);
                     }
                 });
@@ -353,7 +363,7 @@
             var id = spl[1];
             var grade = spl[2];
             var data = input.val();
-            produtos.push({id:id, grade:grade, data:data});
+            produtos.push({id:id, grade:arrayMapGrade[grade], data:data});
         });
         var teste = {data:JSON.stringify(produtos)};
         var itens = '';
@@ -420,4 +430,7 @@
             $("#form-recebimento-conferencia").submit()
         }
     })
+    $("#form-recebimento-conferencia").submit(function () {
+        $(this).append($("<input type='hidden' name='arrMapGrade'>").val(JSON.stringify(arrayMapGrade)));
+    });
 </script>

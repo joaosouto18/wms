@@ -55,11 +55,12 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $result = $conexao->query($query);
 
             if (!$result) {
-                $error = $conexao->error;
-                throw new \Exception($error);
+                throw new \Exception($conexao->error);
+            } else if (is_a($result, \mysqli_result::class)) {
+                return $result->fetch_all(MYSQLI_ASSOC);
+            } else {
+                return $result;
             }
-
-            return $result->fetch_all(MYSQLI_ASSOC);
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
         } catch (\Exception $e2) {
@@ -232,11 +233,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $arr = pg_fetch_all($result);
-            if (!$arr) {
-                pg_close($conexao);
-                throw new \Exception(pg_result_error($arr));
-            }
 
+            if (!$arr)
+                $arr = array();
+
+            pg_close($conexao);
             return $arr;
 
         } catch (\Exception $e) {

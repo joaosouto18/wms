@@ -68,9 +68,9 @@ class Coletor
             return substr($codigoBarras, 5, 18);
         }
         // Se o código começa com "9010", o sistema considera o código da posição 5 até 22.
-        if(substr($codigoBarras, 0, 4) == '9010') {
-            return substr($codigoBarras, 4, 18);
-        }
+//        if(substr($codigoBarras, 0, 4) == '9010') {
+//            return substr($codigoBarras, 4, 18);
+//        }
 
         // Se o código começa com "8006", o sistema considera o código da posição 5 até 22.
 //        if(substr($codigoBarras, 0, 2) == '01' || substr($codigoBarras, 0, 2) == '02') {
