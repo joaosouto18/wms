@@ -47,6 +47,19 @@ class EtiquetaSeparacao extends Pdf
                     $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
+                case 10:
+                    $this->SetY($this->footerPosition + 4);
+                    if ($this->etiqueta['dscBox'] != 'N/D') {
+                        $this->SetFont('Arial', 'B', 13);
+                        $this->Cell(40, 4, $this->etiqueta['dscBox']);
+                    }
+                    // font
+                    $this->SetFont('Arial','B',7);
+                    //Go to 1.5 cm from bottom
+                    $this->Cell(20, 7, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
+                    $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+                    break;
                 case 12:
                     // font
                     $this->SetFont('Arial','B',7);
@@ -79,7 +92,7 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetFont('Arial','B',7);
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
-                case 15:
+                case 16:
                     $this->SetFont('Arial','B',7);
                     //Go to 1.5 cm from bottom
                     $this->SetY($this->footerPosition + 4);
@@ -187,7 +200,7 @@ class EtiquetaSeparacao extends Pdf
         $boxEntity = null;
         $dscBox = '';
         if (!is_null($idBox)) {
-            $boxEntity = $em->find('wms:Deposito\Box', $idBox);
+            $boxEntity = $em->find('wms:Deposito\Box', trim($idBox));
             $dscBox = $boxEntity->getDescricao();
         }
         $contadorCarga = array();
@@ -1106,6 +1119,7 @@ class EtiquetaSeparacao extends Pdf
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
+        $this->etiqueta = $etiqueta;
 
         $this->SetFont('Arial', 'B', 9);
         $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
