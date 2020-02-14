@@ -138,6 +138,7 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         constructor(dataInit, dpa, posZ) {
             super(dataInit, dpa, posZ);
             this.exampleValue = dataInit.exampleValue;
+            this.textDesc = dataInit.descFieldText
         }
     }
 
