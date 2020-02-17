@@ -98,9 +98,12 @@ class PedidoRepository extends EntityRepository
         $query = "SELECT ped
                     FROM wms:Expedicao\Pedido ped
                    INNER JOIN ped.carga c
-                   WHERE c.codExpedicao = $Expedicao
-                     AND ped.pontoTransbordo = $PontoTransbordo";
+                   WHERE c.codExpedicao = $Expedicao";
 
+        if ($PontoTransbordo != null) {
+            $query .= "AND ped.pontoTransbordo = $PontoTransbordo";
+
+        }
         if ($carga != null) {
             $query = $query . " AND c.id = " . $carga;
         }
