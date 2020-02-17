@@ -69,7 +69,7 @@ class GerarEtiqueta extends eFPDF
             /** @var ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
             if (!$importedFile) {
-                $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade, $codProdutoEmbalagem);
+                $produtosEn[] = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade, $codProdutoEmbalagem);
             } else {
                 foreach ($produtos as $produto) {
                     $dados = $produtoRepo->buscarProdutosImprimirCodigoBarras($produto, $grade);
