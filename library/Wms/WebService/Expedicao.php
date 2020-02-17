@@ -344,8 +344,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
-        $cargas = json_decode(json_encode($cargas), True);
-        $cargas = $this->verificaEstruturaCarga($cargas);
+        if ($isIntegracaoSQL === false) {
+            $cargas = json_decode(json_encode($cargas), True);
+            $cargas = $this->verificaEstruturaCarga($cargas);
+        }
         $cargas = $this->trimArray($cargas);
 
         ini_set('max_execution_time', -1);
