@@ -162,6 +162,9 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT MBLED
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
                 break;
+            case 8:
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                 break;
@@ -335,6 +338,20 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         ], false);
 
         return $newOsEn;
+    }
+
+    public function getProdutosByMapaEmbalado($codVolumePatrimonio)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codProduto, p.grade, p.descricao, SUM(msc.qtdEmbalagem * msc.qtdConferida) quantidade')
+            ->from('wms:Expedicao\MapaSeparacaoConferencia','msc')
+            ->innerJoin('msc.mapaSeparacaoEmbalado', 'mse')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = msc.codProduto AND p.grade = msc.dscGrade')
+            ->where("mse.id = $codVolumePatrimonio")
+            ->groupBy('p.id, p.grade, p.descricao');
+
+        return $sql->getQuery()->getResult();
+
     }
 }
 
