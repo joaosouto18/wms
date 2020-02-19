@@ -18,6 +18,14 @@
         }
     }
 
+    function playSoundEB(soundfile) {
+        var audioTag = document.createElement("AUDIO");
+        audioTag.setAttribute("src",soundfile);
+        audioTag.setAttribute("autoplay","true");
+        document.body.appendChild(audioTag);
+        alert("OK");
+    }
+
     function selecionar() {
         $('#qtd').select();
     }
@@ -373,7 +381,7 @@
                                 }
 
                                 try {
-                                    playSound(song);
+                                    playSoundEB(song);
                                 } catch (e) {
                                     alert(message);
                                 }
