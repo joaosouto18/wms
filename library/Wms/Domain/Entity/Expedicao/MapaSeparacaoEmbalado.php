@@ -90,6 +90,11 @@ class MapaSeparacaoEmbalado
     protected $dataConferenciaCheckout;
 
     /**
+     * @Column(name="COD_USUARIO_CONFERENCIA", type="integer", nullable=true)
+     */
+    protected $conferente;
+
+    /**
      * Define o id da embalagem
      * @param $em EntityManager
      * @return MapaSeparacaoEmbalado
@@ -277,4 +282,19 @@ class MapaSeparacaoEmbalado
         $this->dataConferenciaCheckout = $dataConferenciaCheckout;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getConferente()
+    {
+        return $this->conferente;
+    }
+
+    /**
+     * @param mixed $conferente
+     */
+    public function setConferente($conferente)
+    {
+        $this->conferente = $conferente;
+    }
 }

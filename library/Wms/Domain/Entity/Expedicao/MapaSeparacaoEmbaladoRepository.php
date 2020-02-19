@@ -90,13 +90,19 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepository */
                 $andamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepository->save("Volume Embalado $idEmbalado já foi conferido", $idExpedicao);
-
-
                 throw new \Exception("O Volume Embalado $idEmbalado já está conferido!");
 
             }
+
+            $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+
             $mapaSeparacaoEmbaladoEntity->setStatus($siglaEn);
             $mapaSeparacaoEmbaladoEntity->setDataConferenciaCheckout(new \DateTime());
+            $mapaSeparacaoEmbaladoEntity->setConferente((int)$usuarioId);
+
+
+
             $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEntity);
         }
         $this->getEntityManager()->flush();
