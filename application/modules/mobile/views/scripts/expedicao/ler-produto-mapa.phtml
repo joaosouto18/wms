@@ -23,7 +23,6 @@
         audioTag.setAttribute("src",soundfile);
         audioTag.setAttribute("autoplay","true");
         document.body.appendChild(audioTag);
-        alert("OK");
     }
 
     function selecionar() {
@@ -381,7 +380,7 @@
                                 }
 
                                 try {
-                                    playSound(song);
+                                    playSoundEB(song);
                                 } catch (e) {
                                     alert(message);
                                 }
