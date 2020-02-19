@@ -2036,29 +2036,31 @@ class ExpedicaoRepository extends EntityRepository {
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
 
-        $idsIntegracaoCorte = explode(',',$this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'));
+        $ids = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+        if (!empty($ids)) {
+            $idsIntegracaoCorte = explode(',', $ids);
+            foreach ($idsIntegracaoCorte as $id) {
+                $acaoCorteEntity = $acaoIntRepo->find($id);
 
-        foreach ($idsIntegracaoCorte as $id) {
-            $acaoCorteEntity = $acaoIntRepo->find($id);
-
-            $acaoIntRepo->processaAcao($acaoCorteEntity, array(
-                0 => $codPedidoExterno,
-                1 => $codCargaExterno,
-                2 => $quantidade - $quantidadeCortada,
-                3 => $codProduto,
-                4 => $motivo,
-                5 => $codExpedicao,
-                6 => $usuarioEn->getId()
-                ), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
+                $acaoIntRepo->processaAcao($acaoCorteEntity, array(
+                    0 => $codPedidoExterno,
+                    1 => $codCargaExterno,
+                    2 => $quantidade - $quantidadeCortada,
+                    3 => $codProduto,
+                    4 => $motivo,
+                    5 => $codExpedicao,
+                    6 => $usuarioEn->getId()
+                ), 'E', 'P', null, AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
 
 
-            $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
-            if ($andamentoEntity) {
-                return false;
+                $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
+                if ($andamentoEntity) {
+                    return false;
+                }
+
+                $andamentoRepo->save('Corte de ' . $qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
+
             }
-
-            $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
-
         }
 
         return true;
