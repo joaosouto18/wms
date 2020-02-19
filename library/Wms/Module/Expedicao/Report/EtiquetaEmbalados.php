@@ -575,7 +575,8 @@ class EtiquetaEmbalados extends eFPDF
 
             $type     = 'code128';
             $black    = '000000';
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 94, 46 , 0.30, 6);
+            $codBarras =
+            Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>"$volume[COD_MAPA_SEPARACAO_EMB_CLIENTE]" . 0),0.30,6);
         }
     }
 }
