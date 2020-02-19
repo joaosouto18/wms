@@ -86,7 +86,17 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO);
 
         foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
+            if ($mapaSeparacaoEmbaladoEntity->getStatus() == $siglaEn) {
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepository */
+                $andamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+                $andamentoRepository->save("Volume Embalado $idEmbalado já foi conferido", $idExpedicao);
+
+
+                throw new \Exception("O Volume Embalado $idEmbalado já está conferido!");
+
+            }
             $mapaSeparacaoEmbaladoEntity->setStatus($siglaEn);
+            $mapaSeparacaoEmbaladoEntity->setDataConferenciaCheckout(new \DateTime());
             $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEntity);
         }
         $this->getEntityManager()->flush();
