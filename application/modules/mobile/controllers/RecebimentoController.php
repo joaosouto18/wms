@@ -349,58 +349,59 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $qtdBloqueada = 0;
-                if ($produtoEn->getValidade() == "S" && $i === 0) {
-                    if (!isset($params['dataValidade']) || empty($params['dataValidade'])) {
-                        $this->_helper->messenger('error', 'Informe uma data de validade correta');
-                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                    }
-
-                    $shelfLife = $produtoEn->getDiasVidaUtil();
-                    $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
-                    if (is_null($shelfLife) || $shelfLife == '')
-                        throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
-
-                    $data = null;
-                    if (strlen($params['dataValidade']) >= 8) {
-                        list ($dia, $mes, $ano) = explode('/', $params['dataValidade']);
-                        $ano = substr(date("Y"), 0, 2) . $ano;
-                        if (checkdate((int)$mes, (int)$dia, (int)$ano))
-                            $data = $dia . "/" . $mes . "/" . $ano;
-                    }
-
-                    if (empty($data)) {
-                        $this->_helper->messenger('error', 'Informe uma data de validade correta');
-                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                    }
-                    $dateConf = date_create_from_format('Y-m-d', "$ano-$mes-$dia");
-                    $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
-                    $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
-                    $objData = new Zend_Date($data);
-                    if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
-                        if ($dateConf > $PeriodoUtilMax) {
-                            $dataValidadeValida = 'false';
-                            throw new \Exception('Data de validade maior que a definida no cadastro.');
-                        } else if ($dateConf < $PeriodoUtil) {
-                            $qtdBloqueada = $qtdConferida;
-                            $qtdConferida = 0;
-                            $dataValidadeValida = 'false';
-                            $msgErro = 'Produto conferido com validade menor que a permitida. A autorização será obrigatória para finalização do recebimento';
+                if ($produtoEn->getValidade() == "S") {
+                    if ($i === 0) {
+                        if (!isset($params['dataValidade']) || empty($params['dataValidade'])) {
+                            $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                         }
 
+                        $shelfLife = $produtoEn->getDiasVidaUtil();
+                        $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
+                        if (is_null($shelfLife) || $shelfLife == '')
+                            throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
 
-                        $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true, null, true);
+                        $data = null;
+                        if (strlen($params['dataValidade']) >= 8) {
+                            list ($dia, $mes, $ano) = explode('/', $params['dataValidade']);
+                            $ano = substr(date("Y"), 0, 2) . $ano;
+                            if (checkdate((int)$mes, (int)$dia, (int)$ano))
+                                $data = $dia . "/" . $mes . "/" . $ano;
+                        }
 
-                        foreach ($recebimentoEmbalagemEntities as $recebimentoEmbalagemEntity) {
-                            list($diaComp, $mesComp, $anoComp) = explode('/', $recebimentoEmbalagemEntity->getDataValidade()->format('d/m/Y'));
-                            if ($recebimentoEmbalagemEntity->getQtdConferida() > 0 && date_create_from_format('Y-m-d', "$anoComp-$mesComp-$diaComp") == $dateConf) {
-                                $qtdConferida = $qtdBloqueada;
-                                $qtdBloqueada = 0;
-                                $dataValidadeValida = 'true';
-                                break;
+                        if (empty($data)) {
+                            $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                        }
+                        $dateConf = date_create_from_format('Y-m-d', "$ano-$mes-$dia");
+                        $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
+                        $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
+                        $objData = new Zend_Date($data);
+                        if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
+                            if ($dateConf > $PeriodoUtilMax) {
+                                $dataValidadeValida = 'false';
+                                throw new \Exception('Data de validade maior que a definida no cadastro.');
+                            } else if ($dateConf < $PeriodoUtil) {
+                                $qtdBloqueada = $qtdConferida;
+                                $qtdConferida = 0;
+                                $dataValidadeValida = 'false';
+                                $msgErro = 'Produto conferido com validade menor que a permitida. A autorização será obrigatória para finalização do recebimento';
+                            }
+
+                            $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true, null, true);
+
+                            foreach ($recebimentoEmbalagemEntities as $recebimentoEmbalagemEntity) {
+                                list($diaComp, $mesComp, $anoComp) = explode('/', $recebimentoEmbalagemEntity->getDataValidade()->format('d/m/Y'));
+                                if ($recebimentoEmbalagemEntity->getQtdConferida() > 0 && date_create_from_format('Y-m-d', "$anoComp-$mesComp-$diaComp") == $dateConf) {
+                                    $qtdConferida = $qtdBloqueada;
+                                    $qtdBloqueada = 0;
+                                    $dataValidadeValida = 'true';
+                                    break;
+                                }
                             }
                         }
+                        $params['dataValidade'] = $objData->toString('yyyy-MM-dd');
                     }
-                    $params['dataValidade'] = $objData->toString('yyyy-MM-dd');
                 } else {
                     $params['dataValidade'] = null;
                 }

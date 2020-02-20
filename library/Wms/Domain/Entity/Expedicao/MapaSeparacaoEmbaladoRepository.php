@@ -344,7 +344,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         $dthOs = (new \DateTime())->format("d/m/Y H:i:s");
         $conn = $this->_em->getConnection();
-        $idOs = $conn->query("SELECT SQ_ORDEM_SERVICO_01.nextval ID_OS FROM DUAL")->fetch()[0]['ID_OS'];
+        $idOs = $conn->query("SELECT SQ_ORDEM_SERVICO_01.nextval ID_OS FROM DUAL")->fetch()['ID_OS'];
 
         $sql = "INSERT INTO ORDEM_SERVICO 
                     (
