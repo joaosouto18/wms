@@ -969,6 +969,7 @@ class Mobile_EnderecamentoController extends Action
             $this->view->qtdEmbalagem = $qtdEmbalagem;
             $this->view->controlaLote = ($produtoEn->getIndControlaLote() == 'S');
 
+/*
             $idEndereco = $endereco->getId();
 
             $SQL = "SELECT RE.*
@@ -983,6 +984,7 @@ class Mobile_EnderecamentoController extends Action
             if (count($verificaReservaSaida) > 0) {
                 throw new \Exception ("Existe reserva de saída para esse produto neste endereço que ainda não foi atendida!");
             }
+*/
         } catch (Exception $e) {
             $this->addFlashMessage('error',$e->getMessage());
             $this->redirect('movimentacao');
@@ -1175,7 +1177,7 @@ class Mobile_EnderecamentoController extends Action
 
                     $params['qtd'] = $qtd * -1;
                     $params['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoNovoEn->getDescricao();
-                    $estoqueRepo->movimentaEstoque($params);
+                    $estoqueRepo->movimentaEstoque($params, true, true);
                 }
             }
             else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
@@ -1197,21 +1199,6 @@ class Mobile_EnderecamentoController extends Action
 
                     if (empty($endereco))
                         throw new \Exception("Novo Endereço não encontrado!");
-
-                    /*
-                     * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
-                     *
-                    if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                            $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
-                            foreach ($embalagens as $embalagemEn) {
-                                $embalagemEn->setEndereco($endereco);
-                                $this->getEntityManager()->persist($embalagemEn);
-                            }
-                            $this->getEntityManager()->flush();
-                        }
-                    }
-                    */
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -1296,7 +1283,7 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
                     $params['qtd'] = $qtd * -1;
-                    $estoqueRepo->movimentaEstoque($params);
+                    $estoqueRepo->movimentaEstoque($params, true, true);
                 }
 
                 if (isset($volumeEn) && !empty($volumeEn)) {
@@ -1396,7 +1383,7 @@ class Mobile_EnderecamentoController extends Action
                         $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                         $params['endereco'] = $enderecoAntigo;
                         $params['qtd'] = $qtd * -1;
-                        $estoqueRepo->movimentaEstoque($params);
+                        $estoqueRepo->movimentaEstoque($params, true, true);
 
                     }
                 }
