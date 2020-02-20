@@ -159,27 +159,27 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 
             idProduto.focusout(function(){
                 getVolumes(idProduto.val(),grade.val());
+                if (!isEmpty(clicky)) {
+                    var id = clicky.attr('id');
+                    var value = clicky.attr('value');
 
-                var id = clicky.attr('id');
-                var value = clicky.attr('value');
-
-                if (id == 'buscarestoque') {
-                    if ($('#rua').val() != '' || $('#uma').val() != '') {
-                        Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
-                    }
-                    else {
-                        if ($("#idProduto").val() == '') {
-                            alert("Preencha o código do produto");
-                        } else {
+                    if (id == 'buscarestoque') {
+                        if ($('#rua').val() != '' || $('#uma').val() != '') {
                             Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
+                        } else {
+                            if ($("#idProduto").val() == '') {
+                                alert("Preencha o código do produto");
+                            } else {
+                                Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
+                            }
                         }
                     }
+//                  else if ((id =='submit') && (value =='Movimentar')) {
+//                      if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
+//                          alert("Preencha o endereço e a quantidade");
+//                      }
+//                  }
                 }
-//                else if ((id =='submit') && (value =='Movimentar')) {
-//                    if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
-//                        alert("Preencha o endereço e a quantidade");
-//                    }
-//                }
             });
 
 
