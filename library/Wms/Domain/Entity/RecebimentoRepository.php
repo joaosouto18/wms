@@ -663,12 +663,20 @@ class RecebimentoRepository extends EntityRepository
                 $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
 
                 if (!empty($arrConfLotes)) {
+                    if (empty($ordemServicoEn)) {
+                        /** @var OrdemServicoEntity $ordemServicoEn */
+                        $ordemServicoEn = $this->_em->createQueryBuilder()
+                            ->select('os')
+                            ->from(OrdemServicoEntity::class, 'os')
+                            ->where("os.recebimento = $idRecebimento AND os.dataFinal IS NULL")->getQuery()->getResult();
+                    }
                     $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $arrConfLotes, $ordemServicoEn->getPessoa());
                     $em->flush();
                 }
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+                /** @var OrdemServicoRepository $osRepo */
                 $osRepo = $this->getEntityManager()->getRepository("wms:OrdemServico");
 
                 $paletes = $em->getRepository("wms:Enderecamento\Palete")->findBy(array('recebimento' => $recebimentoEntity->getId(), 'codStatus' => PaleteEntity::STATUS_ENDERECADO));
