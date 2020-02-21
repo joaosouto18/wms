@@ -257,7 +257,7 @@ class PaleteRepository extends EntityRepository {
             $groupNorma = " ";
         }
 
-        $SQL = "SELECT SUM(QTD.QTD) as QTD, QTD.COD_NORMA_PALETIZACAO, SUM(QTD.PESO) AS PESO, DSC_LOTE as LOTE
+        $SQL = "SELECT SUM(QTD.QTD) as QTD, QTD.COD_NORMA_PALETIZACAO, SUM(QTD.PESO) AS PESO, NVL(DSC_LOTE, '') as LOTE
                   FROM (SELECT P.UMA, PP.QTD, $norma as COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO, PP.DSC_LOTE
                           FROM PALETE P
                      INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
@@ -268,7 +268,7 @@ class PaleteRepository extends EntityRepository {
                      GROUP BY
                         P.UMA, PP.QTD, PP.DSC_LOTE $groupNorma
                            ) QTD
-                 GROUP BY QTD.COD_NORMA_PALETIZACAO, DSC_LOTE";
+                 GROUP BY QTD.COD_NORMA_PALETIZACAO, NVL(DSC_LOTE, '')";
 
         $result = [];
         foreach ($this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC) as $item) {
@@ -630,10 +630,12 @@ class PaleteRepository extends EntityRepository {
             if (!empty($qtdEnderecada)) {
                 foreach ($qtdEnderecada as $enderecado) {
                     foreach ($qtdRecebida as $key => $recebido) {
+                        //if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO'] && $recebido['LOTE'] === $enderecado['LOTE']) {
                         if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']) {
                             $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
                             $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
                             if ($qtdRecebida[$key]['QTD'] > 0 || $qtdRecebida[$key]['PESO'] > 0) {
+                                //$qtdDisponivelEnderecar["$recebido[COD_NORMA_PALETIZACAO]-*-$recebido[LOTE]"] = [
                                 $qtdDisponivelEnderecar[$recebido['COD_NORMA_PALETIZACAO']] = [
                                     'QTD' => $qtdRecebida[$key]['QTD'],
                                     'PESO' => $qtdRecebida[$key]['PESO'],

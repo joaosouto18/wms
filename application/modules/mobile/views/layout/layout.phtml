@@ -95,7 +95,7 @@ echo $this->doctype();
         // Date      false
         // function  false
 
-        if (val === undefined)
+        if (typeof val === undefined)
             return true;
 
         if (typeof (val) == 'function' || typeof (val) == 'number' || typeof (val) == 'boolean' || Object.prototype.toString.call(val) === '[object Date]')
