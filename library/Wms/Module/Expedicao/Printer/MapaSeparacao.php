@@ -283,8 +283,12 @@ class MapaSeparacao extends eFPDF {
             }
 
             $ultimaLinha = $pedidosEntity->getLinhaEntrega();
-
         }
+        $idCliente = $pedidosEntities[0]->getPessoa()->getId();
+
+        $pessoaEntity = $this->em->getRepository('wms:Pessoa')->find($idCliente);
+        $nomeFantasia = $pessoaEntity->getNome();
+
         $linhaSeparacao = implode(', ',$itinerarios);
 
         $this->SetFont('Arial', 'B', 10);
@@ -296,9 +300,9 @@ class MapaSeparacao extends eFPDF {
         $this->SetFont('Arial', null, 10);
         $this->Cell(4, 4, utf8_decode($this->idExpedicao) . " - $arrDataCargas[txt]: $arrDataCargas[str] - $linhaSeparacao", 0, 1);
         $this->SetFont('Arial', 'B', 10);
-        $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
+        $this->Cell(20, 4, utf8_decode("CLIENTE: "), 0, 0);
         $this->SetFont('Arial', null, 10);
-        $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
+        $this->Cell(20, 4, utf8_decode($nomeFantasia), 0, 1);
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(25, 4, utf8_decode("PLACA/BOX: "), 0, 0);
         $this->SetFont('Arial', null, 10);
@@ -312,9 +316,9 @@ class MapaSeparacao extends eFPDF {
                 $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(22, 5, utf8_decode("Cod.Produto"), 1, 0);
                 $this->Cell(99, 5, utf8_decode("Produto"), 1, 0);
-                $this->Cell(20, 5, utf8_decode("Embalagem"), 1, 0);
                 $this->Cell(15, 5, utf8_decode("Qtd."), 1, 0);
-                $this->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
+                $this->Cell(15, 5, utf8_decode("Caixas"), 1, 0);
+                $this->Cell(20, 5, utf8_decode("Embalagem"), 1, 1);
                 $this->Cell(20, 1, "", 0, 1);
             } else {
                 $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
@@ -369,9 +373,9 @@ class MapaSeparacao extends eFPDF {
                     $this->Cell(24, 6, $dscEndereco, 0, 0);
                     $this->Cell(22, 6, $codProduto, 0, 0);
                     $this->Cell(99, 6, $descricao, 0, 0);
-                    $this->Cell(20, 6, $embalagem, 0, 0);
-                    $this->Cell(15, 6, $quantidade, 0, 0);
-                    $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                    $this->Cell(15, 6, $quantidade, 0, 0, 'C');
+                    $this->Cell(15, 6, $caixas, 0, 0, 'C');
+                    $this->Cell(20, 6, $embalagem, 0, 1, 'C');
                 } else {
                     $this->Cell(24, 6, $dscEndereco, 0, 0);
                     $this->Cell(22, 6, $codProduto, 0, 0);
