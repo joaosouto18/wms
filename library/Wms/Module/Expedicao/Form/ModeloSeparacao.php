@@ -34,6 +34,9 @@ class ModeloSeparacao extends Form
             'label' => 'Agrupar sequenciamento de etiquetas de não embalados e embalados',
             'checkedValue' => 'S',
             'class' => 'condicionalCheckout'
+        ))->addElement('checkbox', 'usaCaixaPadrao', array(
+            'label' => 'Utilizar caixa de embalagem padrão',
+            'checkedValue' => 'S',
         ))->addElement('checkbox', 'criarVolsFinalCheckout', array(
             'label' => 'Fechar e definir quantidade de volumes no final da conferência',
             'checkedValue' => 'S',
@@ -142,6 +145,7 @@ class ModeloSeparacao extends Form
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
             'agrupContEtiquetas',
+            'usaCaixaPadrao',
             'criarVolsFinalCheckout',
             'forcarEmbVenda',
             'quebraUnidFracionavel',

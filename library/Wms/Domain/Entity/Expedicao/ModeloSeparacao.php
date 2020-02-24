@@ -141,6 +141,11 @@ class ModeloSeparacao
     protected $agrupContEtiquetas;
 
     /**
+     * @Column(name="USA_CAIXA_PADRAO", type="string", nullable=true)
+     */
+    protected $usaCaixaPadrao;
+
+    /**
      * @Column(name="CRIAR_VOLS_FINAL_CHECKOUT", type="string", nullable=true)
      */
     protected $criarVolsFinalCheckout;
@@ -499,6 +504,22 @@ class ModeloSeparacao
     public function setAgrupContEtiquetas($agrupContEtiquetas)
     {
         $this->agrupContEtiquetas = $agrupContEtiquetas;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsaCaixaPadrao()
+    {
+        return $this->usaCaixaPadrao;
+    }
+
+    /**
+     * @param mixed $usaCaixaPadrao
+     */
+    public function setUsaCaixaPadrao($usaCaixaPadrao)
+    {
+        $this->usaCaixaPadrao = $usaCaixaPadrao;
     }
 
     /**

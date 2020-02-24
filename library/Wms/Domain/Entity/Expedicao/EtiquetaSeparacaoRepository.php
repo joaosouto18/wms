@@ -1586,7 +1586,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->_em->flush();
 
-            if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S') {
+            if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S' && $modeloSeparacaoEn->getUsaCaixaPadrao()) {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
                 if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");

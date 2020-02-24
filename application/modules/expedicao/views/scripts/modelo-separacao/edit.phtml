@@ -64,8 +64,6 @@
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaQuebraColetor'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaEtiquetaMae'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('usaSequenciaRotaPraca'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('agrupContEtiquetas'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('criarVolsFinalCheckout'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('forcarEmbVenda'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('produtoInventario'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaVolumePatrimonio'); ?><br />
@@ -83,6 +81,12 @@
                         <legend>Quebras</legend>
                         <?php echo $this->form->getSubForm('identificacao')->getElement('quebraEmbalados'); ?>
                     </fieldset>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('agrupContEtiquetas'); ?>
+                    <fieldset id="fieldSetCaixa" class="fieldsets">
+                        <legend>Para criação dos volumes embalados:</legend>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('usaCaixaPadrao'); ?>
+                    </fieldset>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('criarVolsFinalCheckout'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoEmbalado'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultEmbalado'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaEmbalado'); ?>
@@ -137,6 +141,7 @@
     $(function () {
         $(document).ready(function () {
             checkStatusSeparacaoPc();
+            checkAgroupCaixa();
         });
 
         $("#separacaoPc").change(function () {
@@ -148,6 +153,19 @@
                 $("#fieldsetQuebraEmbalados").show();
             } else {
                 $("#fieldsetQuebraEmbalados").hide();
+            }
+        }
+
+        $("#agrupContEtiquetas").change(function () {
+            checkAgroupCaixa();
+        });
+
+        function checkAgroupCaixa() {
+            if ($("#agrupContEtiquetas").attr('checked')) {
+                $("#fieldSetCaixa").show();
+            } else {
+                $("#fieldSetCaixa").hide();
+                $("#usaCaixaPadrao").attr('checked', false);
             }
         }
 

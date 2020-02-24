@@ -18,6 +18,7 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setUsaSequenciaRotaPraca($params['usaSequenciaRotaPraca']);
         $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
         $entity->setAgrupContEtiquetas($params['agrupContEtiquetas']);
+        $entity->setUsaCaixaPadrao($params['usaCaixaPadrao']);
         $entity->setCriarVolsFinalCheckout($params['criarVolsFinalCheckout']);
         $entity->setImprimeEtiquetaVolume($params['imprimeEtiquetaPatrimonio']);
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);

@@ -430,6 +430,7 @@ class Mobile_ExpedicaoController extends Action {
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($idExpedicao);
         $agrupaEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
         $fechaEmbaladosNoFinal = ($modeloSeparacaoEn->getCriarVolsFinalCheckout() == 'S');
+        $usaCaixaPadrao = ($modeloSeparacaoEn->getUsaCaixaPadrao() == 'S');
 
         $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa, $idPessoa);
 
@@ -440,24 +441,33 @@ class Mobile_ExpedicaoController extends Action {
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
-            $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia, $mapaSeparacaoEmbaladoEn) {
-                /** @var CaixaEmbalado $caixaEn */
-                $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
-                if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
+            $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia, $mapaSeparacaoEmbaladoEn, $usaCaixaPadrao) {
 
-                /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
-                $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
-                $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $idPessoa);
-                $countVolsEmbCliente = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
-                $countVolsEmb = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa]));
-
-                if ($countVolsEmbCliente == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
-                    throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
-                } elseif (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
+                if (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Não é possível fechar volume sem produtos conferidos!");
-                } elseif ($countVolsEmbCliente == $preCountVolCliente && empty($qtdPendenteConferencia) && empty($mapaSeparacaoEmbaladoEn)) {
-                    throw new Exception("O último volume já foi fechado e teve sua etiqueta gerada, para reimprimir vá nas opções desta expedição na tela 'Expedição Mercadorias'");
+                }
+
+                $countVolsEmbCliente = 0;
+                $preCountVolCliente = 0;
+                $countVolsEmb = 0;
+
+                if ($usaCaixaPadrao) {
+                    /** @var CaixaEmbalado $caixaEn */
+                    $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
+                    if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
+
+                    /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+                    $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+                    $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
+                    $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $idPessoa);
+                    $countVolsEmbCliente = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
+                    $countVolsEmb = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa]));
+
+                    if ($countVolsEmbCliente == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
+                        throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
+                    } elseif ($countVolsEmbCliente == $preCountVolCliente && empty($qtdPendenteConferencia) && empty($mapaSeparacaoEmbaladoEn)) {
+                        throw new Exception("O último volume já foi fechado e teve sua etiqueta gerada, para reimprimir vá nas opções desta expedição na tela 'Expedição Mercadorias'");
+                    }
                 }
 
                 /** @var Expedicao\VEtiquetaSeparacaoRepository $vEtiquetaSepRepo */
@@ -470,7 +480,9 @@ class Mobile_ExpedicaoController extends Action {
 
                 $countEtiquetas = count($vEtiquetaSepRepo->findBy(['codExpedicao' => $idExpedicao]));
 
-                return [$countVolsEmb + $countEtiquetas, ($countVolsEmbCliente == $preCountVolCliente), $posEntrega, $totalEntrega];
+                $isLast = ($usaCaixaPadrao)? ($countVolsEmbCliente == $preCountVolCliente) : empty($qtdPendenteConferencia);
+
+                return [$countVolsEmb + $countEtiquetas, $isLast, $posEntrega, $totalEntrega];
             };
 
             /**
@@ -498,7 +510,7 @@ class Mobile_ExpedicaoController extends Action {
              */
             $criarEmbaladoFechado = function ($idMapa, $idPessoa, $posVolume = null, $lastEmbalado = null, $posEntrega = null, $totalEntrega = null) use ($mapaSeparacaoEmbaladoRepo, $fechaEmbalado, $idExpedicao, $cpfEmbalador){
                 $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, $osEmbalamento, $lastEmbalado,true);
+                $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, $osEmbalamento, $lastEmbalado, true);
                 $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega);
                 return $mapaSeparacaoEmbaladoEn;
             };
