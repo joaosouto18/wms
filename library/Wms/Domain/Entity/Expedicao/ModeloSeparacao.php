@@ -16,6 +16,9 @@ class ModeloSeparacao
     const QUEBRA_VOLUME_CARGA = "A";
     const QUEBRA_VOLUME_CLIENTE = "C";
 
+    const TIPO_AGROUP_VOLS_CLIENTE = "C";
+    const TIPO_AGROUP_VOLS_EXPEDICAO = "E";
+
     const QUEBRA_PULMAO_DOCA_CLIENTE = "C";
     const QUEBRA_PULMAO_DOCA_PRACA = "P";
     const QUEBRA_PULMAO_DOCA_ROTA = 'RT';
@@ -139,6 +142,11 @@ class ModeloSeparacao
      * @Column(name="AGRUP_CONT_ETIQUETAS", type="string", nullable=true)
      */
     protected $agrupContEtiquetas;
+
+    /**
+     * @Column(name="TIPO_SEQ_VOLS", type="string", nullable=true)
+     */
+    protected $tipoAgroupSeqEtiquetas;
 
     /**
      * @Column(name="USA_CAIXA_PADRAO", type="string", nullable=true)
@@ -504,6 +512,22 @@ class ModeloSeparacao
     public function setAgrupContEtiquetas($agrupContEtiquetas)
     {
         $this->agrupContEtiquetas = $agrupContEtiquetas;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoAgroupSeqEtiquetas()
+    {
+        return $this->tipoAgroupSeqEtiquetas;
+    }
+
+    /**
+     * @param mixed $tipoAgroupSeqEtiquetas
+     */
+    public function setTipoAgroupSeqEtiquetas($tipoAgroupSeqEtiquetas)
+    {
+        $this->tipoAgroupSeqEtiquetas = $tipoAgroupSeqEtiquetas;
     }
 
     /**

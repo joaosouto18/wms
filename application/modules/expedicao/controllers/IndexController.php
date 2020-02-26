@@ -894,15 +894,16 @@ class Expedicao_IndexController extends Action {
             $agrupaVolumes = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
             $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao, $agrupaVolumes);
 
-            if ($agrupaVolumes) {
-                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-                $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+            if ($agrupaVolumes && $modeloSeparacaoEn->getUsaCaixaPadrao() == 'S') {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
 
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
                 $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
+
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+                $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
                 foreach ($clientes as $key => $cliente) {
                     $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $cliente['COD_PESSOA']);
@@ -1066,7 +1067,8 @@ class Expedicao_IndexController extends Action {
             $this->view->confereQtd = $confereQtd;
 
             $this->view->agrupaVolumes = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
-            if ($this->view->agrupaVolumes) {
+            $this->view->usaCaixaPadrao = ($modeloSeparacaoEn->getUsaCaixaPadrao() == 'S');
+            if ($this->view->agrupaVolumes && $this->view->usaCaixaPadrao) {
                 $mapaSepEmbClienteRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
                 $volsCriados = count($mapaSepEmbClienteRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $codPessoa]));
                 /** @var CaixaEmbalado $caixaEn */

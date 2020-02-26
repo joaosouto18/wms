@@ -905,9 +905,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getClientesByConferencia($idMapaSeparacao, $agrupaEmbalado = false) {
+    public function getClientesByConferencia($idMapaSeparacao, $agrupaEmbalado = false, $usaCaixaPadrao = false) {
         $statusEmbalado = MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO;
-        $where = (!$agrupaEmbalado) ? "MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)" : "1 = 1";
+        $where = (!($agrupaEmbalado && $usaCaixaPadrao)) ? "MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)" : "1 = 1";
 
         $sql = "SELECT P.NOM_PESSOA,
                        P.COD_PESSOA,

@@ -431,6 +431,7 @@ class Mobile_ExpedicaoController extends Action {
         $agrupaEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
         $fechaEmbaladosNoFinal = ($modeloSeparacaoEn->getCriarVolsFinalCheckout() == 'S');
         $usaCaixaPadrao = ($modeloSeparacaoEn->getUsaCaixaPadrao() == 'S');
+        $tipoAgrupSeqVols = $modeloSeparacaoEn->getTipoAgroupSeqEtiquetas();
 
         $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa, $idPessoa);
 
@@ -441,15 +442,13 @@ class Mobile_ExpedicaoController extends Action {
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
-            $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia, $mapaSeparacaoEmbaladoEn, $usaCaixaPadrao) {
+            $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia, $mapaSeparacaoEmbaladoEn, $usaCaixaPadrao, $tipoAgrupSeqVols) {
 
                 if (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Não é possível fechar volume sem produtos conferidos!");
                 }
 
-                $countVolsEmbCliente = 0;
                 $preCountVolCliente = 0;
-                $countVolsEmb = 0;
 
                 if ($usaCaixaPadrao) {
                     /** @var CaixaEmbalado $caixaEn */
@@ -460,14 +459,17 @@ class Mobile_ExpedicaoController extends Action {
                     $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
                     $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
                     $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $idPessoa);
-                    $countVolsEmbCliente = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
-                    $countVolsEmb = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa]));
+                }
 
-                    if ($countVolsEmbCliente == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
-                        throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
-                    } elseif ($countVolsEmbCliente == $preCountVolCliente && empty($qtdPendenteConferencia) && empty($mapaSeparacaoEmbaladoEn)) {
-                        throw new Exception("O último volume já foi fechado e teve sua etiqueta gerada, para reimprimir vá nas opções desta expedição na tela 'Expedição Mercadorias'");
-                    }
+                $countVolsEmbCliente = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
+                $countVolsEmb = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa]));
+
+                if ($countVolsEmbCliente == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
+                    throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
+                } elseif ($countVolsEmbCliente == $preCountVolCliente && empty($qtdPendenteConferencia) && empty($mapaSeparacaoEmbaladoEn)) {
+                    throw new Exception("O último volume já foi fechado e teve sua etiqueta gerada, para reimprimir vá nas opções desta expedição na tela 'Expedição Mercadorias'");
+                } elseif ($countVolsEmbCliente == $preCountVolCliente && empty($qtdPendenteConferencia)) {
+                    throw new Exception("Todos os volumes pré calculados para este cliente já foram fechados!");
                 }
 
                 /** @var Expedicao\VEtiquetaSeparacaoRepository $vEtiquetaSepRepo */
@@ -478,11 +480,20 @@ class Mobile_ExpedicaoController extends Action {
                 $posEntrega = $totalEtqtCliente + $countVolsEmbCliente;
                 $totalEntrega = $preCountVolCliente + $totalEtqtCliente;
 
-                $countEtiquetas = count($vEtiquetaSepRepo->findBy(['codExpedicao' => $idExpedicao]));
-
                 $isLast = ($usaCaixaPadrao)? ($countVolsEmbCliente == $preCountVolCliente) : empty($qtdPendenteConferencia);
 
-                return [$countVolsEmb + $countEtiquetas, $isLast, $posEntrega, $totalEntrega];
+                $posVolume = 0;
+
+                switch ($tipoAgrupSeqVols) {
+                    case Expedicao\ModeloSeparacao::TIPO_AGROUP_VOLS_EXPEDICAO:
+                        $posVolume = $countVolsEmb + count($vEtiquetaSepRepo->findBy(['codExpedicao' => $idExpedicao]));
+                        break;
+                    case Expedicao\ModeloSeparacao::TIPO_AGROUP_VOLS_CLIENTE:
+                        $posVolume = $countVolsEmbCliente + $totalEtqtCliente;
+                        break;
+                }
+
+                return [$posVolume, $isLast, $posEntrega, $totalEntrega];
             };
 
             /**

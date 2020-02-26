@@ -17,6 +17,7 @@ BEGIN
 ************************************************************************/
 
     EXECUTE IMMEDIATE 'ALTER TABLE MODELO_SEPARACAO ADD (USA_CAIXA_PADRAO CHAR(1))';
+    EXECUTE IMMEDIATE 'ALTER TABLE MODELO_SEPARACAO ADD (TIPO_SEQ_VOLS CHAR(1))';
 
 /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **

@@ -128,6 +128,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $dados['usaSequenciaRotaPraca'] = $entity->getUsaSequenciaRotaPraca();
                 $dados['utilizaVolumePatrimonio'] = $entity->getUtilizaVolumePatrimonio();
                 $dados['agrupContEtiquetas'] = $entity->getAgrupContEtiquetas();
+                $dados['tipoAgroupSeqEtiquetas'] = $entity->getTipoAgroupSeqEtiquetas();
                 $dados['usaCaixaPadrao'] = $entity->getUsaCaixaPadrao();
                 $dados['criarVolsFinalCheckout'] = $entity->getCriarVolsFinalCheckout();
                 $dados['imprimeEtiquetaPatrimonio'] = $entity->getImprimeEtiquetaVolume();
