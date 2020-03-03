@@ -312,6 +312,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         )
                          AS qtdCargaDist
                         ")
+            ->addSelect("
+                        (
+                            SELECT COUNT(etiqueta.codBarras) 
+                            FROM wms:Expedicao\VEtiquetaSeparacao etiqueta
+                            WHERE etiqueta.codExpedicao = es.codExpedicao
+                            GROUP BY etiqueta.codClienteExterno
+                        ) AS qtdEtiquetaCliente
+                        ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
@@ -499,6 +507,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             WHERE es.codCargaExterno = carga.codCargaExterno
                         )
                          AS qtdCargaDist
+                        ")
+            ->addSelect("
+                        (
+                            SELECT COUNT(etiqueta.codBarras) 
+                            FROM wms:Expedicao\VEtiquetaSeparacao etiqueta
+                            WHERE etiqueta.codExpedicao = es.codExpedicao
+                            GROUP BY etiqueta.codClienteExterno
+                        ) AS qtdEtiquetaCliente
                         ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')

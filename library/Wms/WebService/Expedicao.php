@@ -78,6 +78,8 @@ class pedido {
     /** @var cliente */
     public $cliente;
     /** @var string */
+    public $qtdCaixas;
+    /** @var string */
     public $situacao;
     /** @var string */
     public $corteHabilitadoErp;
@@ -348,8 +350,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
-        $cargas = json_decode(json_encode($cargas), True);
-        $cargas = $this->verificaEstruturaCarga($cargas);
+        if ($isIntegracaoSQL === false) {
+            $cargas = json_decode(json_encode($cargas), True);
+            $cargas = $this->verificaEstruturaCarga($cargas);
+        }
         $cargas = $this->trimArray($cargas);
 
         ini_set('max_execution_time', -1);
@@ -706,6 +710,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
+        $mapaSeparacaoRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $idCargaExterno, 'tipoCarga' => $siglaTipoCarga->getId()));
@@ -713,6 +719,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
         if ($cargaEn == null) {
             throw new \Exception($siglaTipoCarga->getSigla(). " $tipoCarga não encontrado(a)!");
         }
+
+        /* quantidade de caixas/volumes gerados por cliente por expedição */
+        $arrayClientes = $mapaSeparacaoRepository->getCaixasByExpedicao($cargaEn->getExpedicao()->getId());
 
         $carga = new carga();
         $carga->codCarga = $idCargaExterno;
@@ -723,6 +732,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         foreach ($pedidosEn as $pedidoEn) {
+
             $itinerario = new itinerario();
             if ($pedidoEn->getItinerario() == null) {
                 $itinerario->idItinerario = "";
@@ -755,12 +765,20 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             }
 
+            /* setar a quantidade de caixa por cliente para retorno no objeto de pedido */
+            $qtdCaixas = 0;
+            if (isset($arrayClientes[$pedidoEn->getPessoa()->getId()])) {
+                $qtdCaixas = $arrayClientes[$pedidoEn->getPessoa()->getId()];
+                $arrayClientes[$pedidoEn->getPessoa()->getId()] = 0;
+            }
+
             $pedido = new pedido();
             $pedido->codPedido = $pedidoEn->getCodExterno();
             $pedido->produtos = array();
             $pedido->linhaEntrega = $pedidoEn->getLinhaEntrega();
             $pedido->itinerario = $itinerario;
             $pedido->cliente = $cliente;
+            $pedido->qtdCaixas = $qtdCaixas;
             $pedido->conferido = $pedidoRepo->getSituacaoPedido($pedidoEn->getId());
             $pedido->corteHabilitadoErp = $pedidoEn->getCarga()->getExpedicao()->getCorteERPHabilitado();
             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());

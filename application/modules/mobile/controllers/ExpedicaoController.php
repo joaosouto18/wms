@@ -114,6 +114,7 @@ class Mobile_ExpedicaoController extends Action {
                 $this->addFlashMessage('success', "Volume embalado $idEmbalado conferido com sucesso!");
             }
         } catch (\Exception $e) {
+            $this->view->error = true;
             $this->addFlashMessage('error', $e->getMessage());
         }
     }

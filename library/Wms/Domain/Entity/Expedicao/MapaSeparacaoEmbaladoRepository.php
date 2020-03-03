@@ -91,7 +91,23 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO);
 
         foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
+            if ($mapaSeparacaoEmbaladoEntity->getStatus() == $siglaEn) {
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepository */
+                $andamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+                $andamentoRepository->save("Volume Embalado $idEmbalado já foi conferido", $idExpedicao);
+                throw new \Exception("O Volume Embalado $idEmbalado já está conferido!");
+
+            }
+
+            $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+
             $mapaSeparacaoEmbaladoEntity->setStatus($siglaEn);
+            $mapaSeparacaoEmbaladoEntity->setDataConferenciaCheckout(new \DateTime());
+            $mapaSeparacaoEmbaladoEntity->setConferente((int)$usuarioId);
+
+
+
             $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEntity);
         }
         $this->getEntityManager()->flush();
@@ -166,6 +182,9 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             case 7:
                 //LAYOUT MBLED
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
+                break;
+            case 8:
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
@@ -367,6 +386,19 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $conn->executeQuery($sql);
 
         return $idOs;
+    }
+
+    public function getProdutosByMapaEmbalado($codVolumePatrimonio)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codProduto, p.grade, p.descricao, SUM(msc.qtdEmbalagem * msc.qtdConferida) quantidade')
+            ->from('wms:Expedicao\MapaSeparacaoConferencia','msc')
+            ->innerJoin('msc.mapaSeparacaoEmbalado', 'mse')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = msc.codProduto AND p.grade = msc.dscGrade')
+            ->where("mse.id = $codVolumePatrimonio")
+            ->groupBy('p.id, p.grade, p.descricao');
+
+        return $sql->getQuery()->getResult();
     }
 }
 

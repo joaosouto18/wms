@@ -97,7 +97,7 @@ class VolumeRepository extends EntityRepository
             ->select("np.id")
             ->from("wms:Produto\Volume",'v')
             ->innerJoin("v.normaPaletizacao",'np')
-            ->where("v.codProduto = " . $codProduto)
+            ->where("v.codProduto = '$codProduto'")
             ->andWhere("v.grade = '$grade'")
             ->distinct(true);
         $normasId = $dql->getQuery()->getResult();
