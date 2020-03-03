@@ -28,8 +28,12 @@ class FilialRepository extends AtorRepository
         $filial->setIndUtilizaRessuprimento($values['pessoa']['juridica']['indRessuprimento']);
         $filial->setIndRecTransbObg($values['pessoa']['juridica']['indRecTransbObg']);
         $filial->setIsAtivo($values['pessoa']['juridica']['isAtivo']);
+        $filial->setIsPrincipal(false);
         $em->persist($filial);
-        $this->persistirAtor($filial, $values);
+        $filial = $this->persistirAtor($filial, $values);
+
+        if ($values['pessoa']['juridica']['isPrincipal'] == 'S')
+            self::trocarPrincipal($filial->getId());
     }
 
      /**
@@ -56,7 +60,21 @@ class FilialRepository extends AtorRepository
 	// remove
 	$em->remove($proxy);
     }
-    
+
+    public function trocarPrincipal($id)
+    {
+        $anterior = self::getFilialPrincipal();
+        $anterior->setIsPrincipal(false);
+        $this->_em->persist($anterior);
+
+        /** @var FilialEntity $nova */
+        $nova = $this->find($id);
+        $nova->setIsPrincipal(true);
+        $this->_em->persist($nova);
+
+        $this->_em->flush();
+    }
+
     public function getIdValue()
     {
 	$filiais = array();
@@ -109,5 +127,13 @@ class FilialRepository extends AtorRepository
         } catch (NonUniqueResultException $e) {
             throw new \Exception("Existe mais de uma filial vinculada à esse CNPJ: $cnpj");
         }
+    }
+
+    /**
+     * @return FilialEntity
+     */
+    public function getFilialPrincipal()
+    {
+        return $this->findOneBy(['isPrincipal' => "S"]);
     }
 }

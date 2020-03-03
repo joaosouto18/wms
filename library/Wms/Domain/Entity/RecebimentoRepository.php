@@ -13,6 +13,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Domain\Entity\Enderecamento\Palete as PaleteEntity;
 use Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Domain\Entity\Enderecamento\ReservaEstoqueProprietario;
+use Wms\Domain\Entity\Enderecamento\ReservaEstoqueProprietarioRepository;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 use Wms\Math;
 use Wms\Service\Integracao;
@@ -702,11 +704,11 @@ class RecebimentoRepository extends EntityRepository
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                 }
 
-                $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
-                if ($controleProprietario == 'S') {
-                    if (empty($result)) {
-                        $em->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($recebimentoEntity->getId());
-                    }
+                if ($this->getSystemParameterValue('CONTROLE_PROPRIETARIO') == 'S') {
+                    /** @var ReservaEstoqueProprietarioRepository $reservaPropRepo */
+                    $reservaPropRepo = $em->getRepository(ReservaEstoqueProprietario::class);
+                    $reservaPropRepo->criarReservas($recebimentoEntity->getId(), true);
+                    $reservaPropRepo->checkLiberacaoReservas($recebimentoEntity->getId(), true);
                 }
 
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);

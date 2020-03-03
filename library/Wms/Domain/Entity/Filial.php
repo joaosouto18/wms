@@ -71,6 +71,12 @@ class Filial implements AtorInterface
      */
     protected $isAtivo;
 
+    /**
+     * @var string
+     * @Column(name="IND_PRINCIPAL", type="string", length=1, nullable=false)
+     */
+    protected $isPrincipal;
+
     public function __construct()
     {
 	$this->depositos = new \Doctrine\Common\Collections\ArrayCollection();
@@ -191,5 +197,29 @@ class Filial implements AtorInterface
     public function setJuridica($juridica)
     {
         $this->juridica = $juridica;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIsPrincipal()
+    {
+        return $this->isPrincipal;
+    }
+
+    /**
+     * @param string|bool $isPrincipal
+     */
+    public function setIsPrincipal($isPrincipal)
+    {
+        $this->isPrincipal = (is_string($isPrincipal)) ? $isPrincipal : ($isPrincipal)? 'S' : 'N';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPrincipal()
+    {
+        return ($this->isPrincipal === 'S');
     }
 }

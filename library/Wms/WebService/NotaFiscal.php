@@ -263,11 +263,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
-     * @param string $cnpjDestinatario CNPJ da filial
+     * @param string $cnpjDestinatario CNPJ da filial que irá receber a nota
+     * @param string $cnpjProprietario CNPJ da filial dona da nota
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario, $cnpjProprietario)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -282,6 +283,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $cnpjDestinatario = trim ($cnpjDestinatario);
+            $cnpjProprietario = trim ($cnpjProprietario);
             $bonificacao = trim ($bonificacao);
 
             if ($bonificacao == "E") {
@@ -393,7 +395,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$cnpjDestinatario,$tipoNota);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$cnpjDestinatario,$tipoNota, $cnpjProprietario);
             }
 
             $em->flush();
