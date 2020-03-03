@@ -34,6 +34,9 @@ class ModeloSeparacao extends Form
             'label' => 'Agrupar sequenciamento de etiquetas de não embalados e embalados',
             'checkedValue' => 'S',
             'class' => 'condicionalCheckout'
+        ))->addElement('checkbox', 'usaCaixaPadrao', array(
+            'label' => 'Utilizar caixa de embalagem padrão',
+            'checkedValue' => 'S',
         ))->addElement('checkbox', 'criarVolsFinalCheckout', array(
             'label' => 'Fechar e definir quantidade de volumes no final da conferência',
             'checkedValue' => 'S',
@@ -110,6 +113,13 @@ class ModeloSeparacao extends Form
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
+        ))->addElement('select', 'tipoAgroupSeqEtiquetas', array(
+            'label' => 'Nivel de agrupamento para sequenciamento',
+            'mostrarSelecione' => false,
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_AGROUP_VOLS_CLIENTE => 'Cliente',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_AGROUP_VOLS_EXPEDICAO => 'Expedição'
+            )
         ))->addElement('multiCheckbox', 'quebraFracionados', array(
             'class' => 'disableSequenciaPraca',
             'multiOptions' => [
@@ -142,6 +152,8 @@ class ModeloSeparacao extends Form
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
             'agrupContEtiquetas',
+            'tipoAgroupSeqEtiquetas',
+            'usaCaixaPadrao',
             'criarVolsFinalCheckout',
             'forcarEmbVenda',
             'quebraUnidFracionavel',

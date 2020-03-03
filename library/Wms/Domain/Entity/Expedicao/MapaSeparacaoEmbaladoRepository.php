@@ -128,14 +128,6 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        if (!$fechaEmbaladosNoFinal) {
-            $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
-        } else {
-            $etiqueta = $this->getDadosEmbalado(null, $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getExpedicao()->getId(), $mapaSeparacaoEmbaladoEn->getPessoa()->getId());
-        }
-        if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
-            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
-        }
 
         $setLastVol = function () use ($mapaSeparacaoEmbaladoEn){
             $mapaSeparacaoEmbaladoEn->setUltimoVolume('S');
@@ -150,6 +142,15 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             }
         } elseif ($isLast) {
             $setLastVol();
+        }
+
+        if (!$fechaEmbaladosNoFinal) {
+            $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
+        } else {
+            $etiqueta = $this->getDadosEmbalado(null, $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getExpedicao()->getId(), $mapaSeparacaoEmbaladoEn->getPessoa()->getId());
+        }
+        if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
+            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
         $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
@@ -185,6 +186,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 break;
             case 8:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+                break;
+            case 9:
+                //LAYOUT VETSS
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
@@ -254,7 +259,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       NVL(R.NUM_SEQ, 0) SEQ_ROTA, NVL(PR.NUM_SEQ, 0) SEQ_PRACA,
                       NVL(R.NOME_ROTA, '') NOME_ROTA, NVL(PR.NOME_PRACA, '') NOME_PRACA,
                       TO_CHAR(OS.DTH_FINAL_ATIVIDADE, 'DD/MM/YYYY HH24:MI:SS') DTH_FECHAMENTO,
-                      OP.NOM_PESSOA AS CONFERENTE, B.DSC_BOX
+                      OP.NOM_PESSOA AS CONFERENTE, B.DSC_BOX,
+                      MSE.IND_ULTIMO_VOLUME
                  FROM MAPA_SEPARACAO MS
            INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
            INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -274,7 +280,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 WHERE $where
              GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
                       PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, SIGLA.DSC_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
-                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX
+                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX, MSE.IND_ULTIMO_VOLUME
              ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

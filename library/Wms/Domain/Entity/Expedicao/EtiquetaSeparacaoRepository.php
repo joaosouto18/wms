@@ -1602,30 +1602,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->_em->flush();
 
-            if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S') {
+            if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S' && $modeloSeparacaoEn->getUsaCaixaPadrao() == 'S') {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
-                if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
+                if (empty($caixaEn))
+                    throw new \Exception("O modelo de separação está configurado para sequenciamento único dos volumes<br/>com base na caixa de embalagem padrão, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
 
-                /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
-                $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+                if ($modeloSeparacaoEn->getTipoAgroupSeqEtiquetas() === ModeloSeparacao::TIPO_AGROUP_VOLS_EXPEDICAO) {
+                    /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+                    $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
-                $minVolsExp = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
+                    $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
+                    $minVolsExp = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
 
-                $counterExp = 0;
-                foreach ($minVolsExp as $idCliente => $minVol) {
-                    $counterExp += $minVol;
+                    $counterExp = 0;
+                    foreach ($minVolsExp as $idCliente => $minVol) {
+                        $counterExp += $minVol;
+                    }
+
+                    $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
+
+                    $totalEtiquetas = $counterExp + $countEtiquetas;
+
+                    $expedicaoEntity->setCountVolumes($totalEtiquetas);
+
+                    $this->_em->persist($expedicaoEntity);
+                    $this->_em->flush($expedicaoEntity);
                 }
-
-                $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
-
-                $totalEtiquetas = $counterExp + $countEtiquetas;
-
-                $expedicaoEntity->setCountVolumes($totalEtiquetas);
-
-                $this->_em->persist($expedicaoEntity);
-                $this->_em->flush($expedicaoEntity);
             }
 
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');

@@ -324,7 +324,7 @@ if ($this->erro) {
                 }
             });
         }
-        <?php if ($this->agrupaVolumes) : ?>
+        <?php if ($this->agrupaVolumes && $this->usaCaixaPadrao) : ?>
         $.ajax({
             url: '<?php echo $this->url(array('module' => 'expedicao', 'controller' => 'index', 'action' => 'get-count-volumes-consolidado-ajax' )) . "/idMapa/". $this->idMapa . '/cliente/' . $this->idPessoa?>',
             success: function (data) {
@@ -386,7 +386,7 @@ if ($this->erro) {
 
     <?php endif; ?>
 
-    <?php if ($this->agrupaVolumes) : ?>
+    <?php if ($this->agrupaVolumes && $this->usaCaixaPadrao) : ?>
     $('#info').append('<p style="font-size: 12px; margin-top: 10px;"><?php echo "Volume pré calculado (<span id=\"counterVols\">$this->indexVol</span> de $this->MaxVolCliente) " ?></p>');
     <?php endif; ?>
 </script>
