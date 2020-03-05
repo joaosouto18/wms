@@ -922,7 +922,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         );
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
-        $entityExpedicao = $this->findExpedicaoByPlacaExpedicao($repositorios, $carga['placaExpedicao']);
+        $entityExpedicao = $this->findExpedicaoByPlacaExpedicao($repositorios, $carga['placaExpedicao'], $carga['idCarga'],$carga['tipoCarga']);
 
         if (!empty($expedicaoEntity) && is_object($expedicaoEntity)) {
             $hoje = new \DateTime("now");
@@ -935,11 +935,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
 
         if ($entityCarga->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
-            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição finalizada");
+            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . " ja se encontra em uma expedição finalizada");
         }
 
         if ($entityCarga->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_CANCELADO) {
-            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição cancelada");
+            //throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . " ja se encontra em uma expedição cancelada");
+            $statusEntity = $this->_em->getReference('wms:Util\Sigla', Expedicao::STATUS_INTEGRADO);
+            $entityExpedicao->setStatus($statusEntity);
+            $this->_em->persist($entityExpedicao);
         }
 
         $i = 0;
@@ -1398,22 +1401,31 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $entityItinerario;
     }
 
-    protected function findExpedicaoByPlacaExpedicao($repositorios, $placaExpedicao) {
+    protected function findExpedicaoByPlacaExpedicao($repositorios, $placaExpedicao, $carga, $tipoCarga) {
         $ExpedicaoRepo = $repositorios['expedicaoRepo'];
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'AGRUPAR_CARGAS'));
+        $CargaRepo = $repositorios['cargaRepo'];
 
+        $tipoCarga = $this->verificaTipoCarga($tipoCarga);
 
-        if (!empty($parametro) && $parametro->getValor() == 'N') {
-            $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+        $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => trim($carga), 'tipoCarga' => $tipoCarga));
+
+        if ($entityCarga != null) {
+            $entityExpedicao = $entityCarga->getExpedicao();
         } else {
-            $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
-            if ($entityExpedicao == null) {
+            if (!empty($parametro) && $parametro->getValor() == 'N') {
                 $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+            } else {
+                $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
+                if ($entityExpedicao == null) {
+                    $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+                }
             }
-            if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
-                throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
-            }
+        }
+
+        if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
+            throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
         }
 
         return $entityExpedicao;
