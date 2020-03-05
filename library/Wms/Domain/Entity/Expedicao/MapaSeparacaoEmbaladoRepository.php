@@ -123,6 +123,9 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepository */
+        $mapaSeparacaoConferenciaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
         if (!$fechaEmbaladosNoFinal) {
             $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
         } else {
@@ -146,6 +149,11 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         } elseif ($isLast) {
             $setLastVol();
         }
+
+        $produtosByVolume = $this->getQtdProdByVol($mapaSeparacaoEmbaladoEn->getId());
+        $qtdProdutosByVolume = reset($produtosByVolume)['QTD_PRODUTOS'];
+
+
 
         $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
         $xy = explode(",",$this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO'));
@@ -176,7 +184,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 break;
             case 7:
                 //LAYOUT MBLED
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75 + ($qtdProdutosByVolume * 6)));
                 break;
             case 8:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
@@ -367,6 +375,17 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             ->groupBy('p.id, p.grade, p.descricao');
 
         return $sql->getQuery()->getResult();
+
+    }
+
+    private function getQtdProdByVol($codMapaEmbalado)
+    {
+        $sql = "SELECT COUNT(DISTINCT COD_PRODUTO||DSC_GRADE) QTD_PRODUTOS, MSC.COD_MAPA_SEPARACAO_EMBALADO 
+                    FROM MAPA_SEPARACAO_CONFERENCIA MSC
+                WHERE MSC.COD_MAPA_SEPARACAO_EMBALADO = $codMapaEmbalado
+                GROUP BY MSC.COD_MAPA_SEPARACAO_EMBALADO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
     }
 }
