@@ -39,9 +39,9 @@ class Embalados extends Grid
             ))
             ->addAction(array(
                 'label' => 'Produtos Conferidos',
-                'moduleName' => 'arroz',
-                'controllerName' => 'feijao',
-                'actionName' => 'salada',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'os',
+                'actionName' => 'produtos-volumes-embalados',
                 'cssClass' => 'dialogAjax',
                 'pkIndex' => 'COD_MAPA_SEPARACAO_EMB_CLIENTE'
             ))
