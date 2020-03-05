@@ -378,7 +378,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
     }
 
-    private function getQtdProdByVol($codMapaEmbalado)
+    public function getQtdProdByVol($codMapaEmbalado)
     {
         $sql = "SELECT COUNT(DISTINCT COD_PRODUTO||DSC_GRADE) QTD_PRODUTOS, MSC.COD_MAPA_SEPARACAO_EMBALADO 
                     FROM MAPA_SEPARACAO_CONFERENCIA MSC
