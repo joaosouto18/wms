@@ -398,6 +398,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 $reservaEstoqueProduto->setLote($produto['lote']);
             }
             $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));
+            $reservaEstoqueProduto->setQtdOriginal(str_replace(",",".",$produto['qtd']));
             $reservaEstoqueProduto->setReservaEstoque($reservaEstoque);
             $this->getEntityManager()->persist($reservaEstoqueProduto);
         }

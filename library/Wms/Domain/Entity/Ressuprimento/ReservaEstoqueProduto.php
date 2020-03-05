@@ -48,6 +48,12 @@ class ReservaEstoqueProduto
     protected $qtd;
 
     /**
+     * Qtd Reservada (Reserva de estoque original durante a criação das reservas)
+     * @Column(name="QTD_RESERVADA_ORIGINAL", type="decimal", nullable=false)
+     */
+    protected $qtdOriginal;
+
+    /**
      * @Column(name="COD_PRODUTO_EMBALAGEM", type="integer",  nullable=true)
      */
     protected $codProdutoEmbalagem;
@@ -295,4 +301,21 @@ class ReservaEstoqueProduto
     {
         $this->lote = $lote;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdOriginal()
+    {
+        return $this->qtdOriginal;
+    }
+
+    /**
+     * @param mixed $qtdOriginal
+     */
+    public function setQtdOriginal($qtdOriginal)
+    {
+        $this->qtdOriginal = $qtdOriginal;
+    }
+
 }
