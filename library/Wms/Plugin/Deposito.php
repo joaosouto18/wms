@@ -3,6 +3,7 @@
 namespace Wms\Plugin;
 
 use \Core\Controller\PluginAbstract;
+use Wms\Serial;
 
 class Deposito extends PluginAbstract
 {
@@ -44,6 +45,31 @@ class Deposito extends PluginAbstract
         )
     );
 
+    private function VerificaSerial() {
+        $config = \Zend_Registry::get('config');
+
+        $key = null;
+        $systemTag = $config->system;
+        if ($systemTag != null) $key = $config->system->key;
+
+        if ($key == null) {
+            echo "Chave de Ativação não localizada";
+            exit;
+        }
+
+        $serial = new Serial($key);
+
+        if (!$serial->isValid()) {
+            echo "Chave de Ativação Inválida";
+            exit;
+        }
+
+        if ($serial->isExpired() & $serial->expire()) {
+            echo "Chave de Ativação Expirada";
+            exit;
+        }
+    }
+
     /**
      *
      * @param \Zend_Controller_Request_Abstract $request
@@ -51,6 +77,8 @@ class Deposito extends PluginAbstract
      */
     public function preDispatch(\Zend_Controller_Request_Abstract $request)
     {
+        $this->VerificaSerial();
+
         if (!$this->verificaRotas($request))
             return;
 
