@@ -45,6 +45,46 @@ class Deposito extends PluginAbstract
         )
     );
 
+    private function verificaData() {
+        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "data.lk";
+
+        $dataAtual = date("Ymd");
+
+        if (file_exists($file)) {
+            $fp = fopen($file,"r");
+            $conteudo = fread($fp, filesize($file));
+            fclose($fp);
+            try {
+                if (strlen(trim($conteudo)) <> 8)
+                    throw new \Exception("Arquivo data.lk com conteúdo inválido ou corrompido");
+
+                $ultimoDia = substr($conteudo,6,2);
+                $ultimoMes = substr($conteudo, 4,2);
+                $ultimoAno = substr($conteudo,0 ,4);;
+
+                if (!checkdate($ultimoMes, $ultimoDia, $ultimoAno))
+                    throw new \Exception("Arquivo data.lk com conteúdo inválido ou corrompido");
+
+
+                    $diferenca = intval($dataAtual) - intval($conteudo);
+                if ($diferenca <0) {
+                    echo "<div>Data do servidor foi retroagida. Favor efetuar a correção da data para que o sistema possa ser usado normalmente</div>";
+                    echo "<div>Data Atual: " . date("d/m/Y") . " </div>";
+                    echo "<div>Ultima Utilização: " . $ultimoDia . "/".$ultimoMes . "/". $ultimoAno . " </div>";
+                    exit;
+                }
+            } catch (\Exception $e) {
+                echo "<div>Falha capturando a data de ultima utilização do sistema</div>";
+                echo "<div>" . $e->getMessage() . "</div>";
+                exit;
+            }
+        }
+
+        $fp = fopen($file, "w");
+        fwrite($fp, $dataAtual);
+        fclose($fp);
+    }
+
     private function VerificaSerial() {
         $config = \Zend_Registry::get('config');
 
@@ -78,6 +118,7 @@ class Deposito extends PluginAbstract
     public function preDispatch(\Zend_Controller_Request_Abstract $request)
     {
         $this->VerificaSerial();
+        $this->verificaData();
 
         if (!$this->verificaRotas($request))
             return;
