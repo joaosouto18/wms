@@ -42,7 +42,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         $conn->executeQuery($sql);
 
-        return $idEmbalado;
+        return $this->find($idEmbalado);
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
