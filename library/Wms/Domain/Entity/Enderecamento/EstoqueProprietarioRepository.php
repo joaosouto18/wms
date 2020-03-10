@@ -336,52 +336,119 @@ class EstoqueProprietarioRepository extends EntityRepository
                     EP.COD_PESSOA, EP.SALDO_FINAL 
                   ORDER BY 
                     EP.SALDO_FINAL DESC";
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
-        return $result;
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getHistoricoEstoqueProprietario($idProprietario, $codProduto, $grade){
+    public function getProprietarios()
+    {
+        $sql = "SELECT PJ.COD_PESSOA \"id\", E.NOM_EMPRESA \"nomProp\"
+                FROM EMPRESA E
+                INNER JOIN PESSOA_JURIDICA PJ ON PJ.NUM_CNPJ = E.IDENTIFICACAO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getEstoqueProprietarioGerencial($params){
+        $argsEP = [];
+        $argsREP = [];
+        $argsProp = "";
+        if(!empty($params['codProp'])){
+            $argsEP[] = "PJ.COD_PESSOA = $params[codProp]";
+            $argsREP[] = "COD_PROPRIETARIO = $params[codProp]";
+            $argsProp = " WHERE PJ.COD_PESSOA = $params[codProp]";
+        }
+        if(!empty($params['codProduto'])){
+            $argsEP[] .= "EP.COD_PRODUTO = '$params[codProduto]'";
+            $argsREP[] .= "COD_PRODUTO = '$params[codProduto]'";
+        }
+
+        $whereEP = (!empty($argsEP)) ? 'AND '. implode(" AND ", $argsEP): "";
+        $whereREP = (!empty($argsREP)) ? 'AND '. implode(" AND ", $argsREP): "";
+
+        $sql = "SELECT
+                    PROP.NOM_EMPRESA \"nomProp\",
+                    EP.COD_PRODUTO \"codProduto\",
+                    P.DSC_PRODUTO \"dscProduto\",
+                    NVL(EP.SALDO_FINAL, 0) \"qtdEstq\",
+                    NVL(REP.PEND, 0) \"qtdPend\"
+                FROM EMPRESA PROP
+                INNER JOIN PESSOA_JURIDICA PJ ON PROP.IDENTIFICACAO = PJ.NUM_CNPJ
+                LEFT JOIN (
+                    SELECT
+                        EP.COD_ESTOQUE_PROPRIETARIO,
+                        EP.COD_PESSOA,
+                        EP.SALDO_FINAL,
+                        EP.COD_PRODUTO,
+                        EP.DSC_GRADE
+                    FROM ESTOQUE_PROPRIETARIO EP
+                    INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                    INNER JOIN (
+                        SELECT MAX(COD_ESTOQUE_PROPRIETARIO) ID, COD_PRODUTO, DSC_GRADE, COD_PESSOA
+                        FROM ESTOQUE_PROPRIETARIO
+                        GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE) MAX ON MAX.ID = EP.COD_ESTOQUE_PROPRIETARIO
+                    WHERE EP.SALDO_FINAL > 0 $whereEP
+                    ) EP ON PJ.COD_PESSOA = EP.COD_PESSOA
+                LEFT JOIN (
+                    SELECT SUM(QTD) PEND, COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO
+                    FROM RESERVA_ESTOQUE_PROPRIETARIO
+                    WHERE IND_APLICADO = 'N' $whereREP GROUP BY COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO) REP
+                    ON REP.COD_PRODUTO = EP.COD_PRODUTO
+                    AND REP.DSC_GRADE = EP.DSC_GRADE
+                    AND REP.COD_PROPRIETARIO = EP.COD_PESSOA
+                LEFT JOIN PRODUTO P ON (P.COD_PRODUTO = EP.COD_PRODUTO AND P.DSC_GRADE = EP.DSC_GRADE) 
+                                    OR (P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE)
+                $argsProp
+                ORDER BY
+                    PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getHistoricoProprietarioGerencial($params)
+    {
         $args = [];
-        if(!empty($idProprietario)){
-            $args[] = "EP2.COD_PESSOA = $idProprietario";
+        if (!empty($params['codProp'])) {
+            $args[] = "EP.COD_PESSOA = $params[codProp]";
         }
-        if(!empty($codProduto)){
-            $args[] .= "EP2.COD_PRODUTO = $codProduto";
+        if (!empty($params['codProduto'])) {
+            $args[] .= "EP.COD_PRODUTO = '$params[codProduto]'";
         }
-        if(!empty($grade)){
-            $args[] .= "EP2.DSC_GRADE = '$grade'";
+        if (!empty($params['dataInicial'])) {
+            $args[] .= "EP.DTH_OPERACAO >= TO_DATE('$params[dataInicial]', 'DD/MM/YYYY')";
+        }
+        if (!empty($params['dataFinal'])) {
+            $args[] .= "EP.DTH_OPERACAO <= TO_DATE('$params[dataFinal]', 'DD/MM/YYYY')";
         }
 
         $whereSub = (!empty($args)) ? "WHERE " . implode(" AND ", $args): "";
 
-        $sql = "SELECT 
-                  MAX(EP.COD_ESTOQUE_PROPRIETARIO) as COD, 
-                  PJ.NOM_FANTASIA AS PROPRIETARIO,
-                  EP.COD_PRODUTO AS PRODUTO,
-                  EP.DSC_GRADE AS GRADE,
-                  EP.SALDO_FINAL AS SALDO,
-                  NVL(REP.PEND, 0) AS \"RESERVA ENDERE.\"
-                FROM 
-                  ESTOQUE_PROPRIETARIO EP 
-                  INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
-                  LEFT JOIN (
-                      SELECT SUM(QTD) PEND, COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO
-                      FROM RESERVA_ESTOQUE_PROPRIETARIO 
-                      WHERE IND_APLICADO = 'N' GROUP BY COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO) REP 
-                      ON REP.COD_PRODUTO = EP.COD_PRODUTO 
-                     AND REP.DSC_GRADE = EP.DSC_GRADE 
-                     AND REP.COD_PROPRIETARIO = EP.COD_PESSOA
-                WHERE EP.SALDO_FINAL IS NOT NULL AND EP.SALDO_FINAL > 0 AND
-                  EP.COD_ESTOQUE_PROPRIETARIO IN (
-                      SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO EP2
-                      $whereSub
-                      GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE)
-                  GROUP BY 
-                      EP.SALDO_FINAL, EP.COD_PRODUTO, EP.DSC_GRADE, PJ.NOM_FANTASIA, NVL(REP.PEND, 0)
-                  ORDER BY 
-                      PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+        $idOpRec = EstoqueProprietario::RECEBIMENTO;
+        $idOpMov = EstoqueProprietario::MOVIMENTACAO;
+        $idOpExp = EstoqueProprietario::EXPEDICAO;
+        $idOpInv = EstoqueProprietario::INVENTARIO;
+
+        $sql = "SELECT
+                    PROP.NOM_EMPRESA \"nomProp\",
+                    EP.COD_PRODUTO \"codProduto\",
+                    P.DSC_PRODUTO \"dscProduto\",
+                    CASE
+                        WHEN EP.IND_OPERCAO = $idOpRec THEN 'Recebimento'
+                        WHEN EP.IND_OPERCAO = $idOpMov THEN 'Movim. Manual'
+                        WHEN EP.IND_OPERCAO = $idOpExp THEN 'Expedição'
+                        WHEN EP.IND_OPERCAO = $idOpInv THEN 'Inventário'
+                        END \"tipoMov\",
+                    TO_CHAR(EP.DTH_OPERACAO, 'DD/MM/YYYY') \"dthMov\",
+                    EP.QTD \"qtdMov\",
+                    EP.SALDO_FINAL \"qtdEstq\"
+                FROM ESTOQUE_PROPRIETARIO EP
+                INNER JOIN PRODUTO P ON P.COD_PRODUTO = EP.COD_PRODUTO AND P.DSC_GRADE = EP.DSC_GRADE
+                INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                INNER JOIN EMPRESA PROP ON PROP.IDENTIFICACAO = PJ.NUM_CNPJ
+                $whereSub
+                ORDER BY
+                    EP.DTH_OPERACAO DESC";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function inserirFilial($pj, $novoCnpj = null, $empresa = []){

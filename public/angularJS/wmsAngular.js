@@ -1,4 +1,4 @@
-angular.module("wms", ['uiDialogService', 'ui.mask'])
+angular.module("wms", ['ngSanitize', 'uiDialogService', 'ui.mask'])
     .filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {
@@ -18,6 +18,13 @@ angular.module("wms", ['uiDialogService', 'ui.mask'])
             return !(array.indexOf(needle) >= 0);
         }
     };
+}).filter('queryFilter', function($filter){
+    return function (array, needle, strict) {
+        for(let prop in needle) {
+            if (isEmpty(needle[prop])) delete needle[prop];
+        }
+        return $filter('filter')(array, needle, strict);
+    }
 });
 
 function typeSensitiveComparatorFn () {
