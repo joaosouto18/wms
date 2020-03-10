@@ -17,7 +17,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     public function save($idMapa, $codPessoa, $os)
     {
         $conn = $this->_em->getConnection();
-        $idEmbalado = $conn->query("SELECT SQ_MAPA_SEPARACAO_EMBALADO_01.nextval ID_EMBALADO FROM DUAL")->fetch()['ID_EMBALADO'];
+        $idEmbalado = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO . $conn->query("SELECT SQ_MAPA_SEPARACAO_EMBALADO_01.nextval ID_EMBALADO FROM DUAL")->fetch()['ID_EMBALADO'];
         $sequencia = $conn->query("SELECT (NVL(MAX(NUM_SEQUENCIA), 0) + 1) AS SEQ 
                                    FROM MAPA_SEPARACAO_EMB_CLIENTE 
                                    WHERE COD_MAPA_SEPARACAO = $idMapa AND COD_PESSOA = $codPessoa")->fetch()['SEQ'];
