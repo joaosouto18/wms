@@ -1,4 +1,7 @@
 <?php
+
+use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
+use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Module\Web\Page,
@@ -625,6 +628,83 @@ class Expedicao_EtiquetaController  extends Action
         $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $result = $etiquetaSeparacaoRepo->getEtiquetasByFaixa($primeira, $ultima, true);
         $this->_helper->json(array('result'=>count($result)));
+    }
+
+    public function reimprimirEmbaladoUnicoAction()
+    {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+
+        $idExpedicao = $this->_getParam('id');
+        $idMapaEmbalado = $this->_getParam('COD_MAPA_SEPARACAO_EMB_CLIENTE');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+
+        try {
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->find($idMapaEmbalado);
+
+            /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+            $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($idExpedicao);
+            $fechaEmbaladosNoFinal = ($modeloSeparacaoEn->getCriarVolsFinalCheckout() == 'S');
+
+            $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
+            if (empty($etiqueta)) {
+                $this->addFlashMessage('error', 'Não existe volume embalado para ser reimpresso!');
+                $this->_redirect('/expedicao/index');
+            }
+            $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
+            $xy = explode(",",$this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO'));
+
+
+
+            $produtosByVolume = $mapaSeparacaoEmbaladoRepo->getQtdProdByVol($mapaSeparacaoEmbaladoEn->getId());
+            $qtdProdutosByVolume = reset($produtosByVolume)['QTD_PRODUTOS'];
+
+            switch ($modeloEtiqueta) {
+                case 1:
+                    //LAYOUT CASA DO CONFEITEIRO
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
+                    break;
+                case 2:
+                    //LAYOUT WILSO
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                    break;
+                case 3:
+                    //LAYOUT ABRAFER ...
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                    break;
+                case 4:
+                    //LAYOUT HIDRAU
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                    break;
+                case 5:
+                    //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 6:
+                    //LAYOUT PLANETA
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 7:
+                    //LAYOUT MBLED
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75 + ($qtdProdutosByVolume * 6)));
+                    break;
+                case 8:
+                    //LAYOUT PREMIUM
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+                    break;
+                default:
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
+                    break;
+
+            }
+
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal);
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
     public function reimprimirEmbaladosAction()

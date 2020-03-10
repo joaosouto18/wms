@@ -1093,6 +1093,26 @@ class PedidoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getClienteByMapa($codMapaSeparacao)
+    {
+
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('pes.nome, nvl(pj.cnpj, pf.cpf) documento, pe.descricao, pe.bairro, pe.localidade, pe.cep, pe.numero, s.sigla')
+            ->from('wms:Expedicao\MapaSeparacao','ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto','msp','WITH','msp.mapaSeparacao = ms.id')
+            ->innerJoin('wms:Expedicao\PedidoProduto','pp','WITH','msp.pedidoProduto = pp.id')
+            ->innerJoin('wms:Expedicao\Pedido','p','WITH','pp.pedido = p.id')
+            ->leftJoin('wms:Expedicao\PedidoEndereco','pe','WITH','pe.pedido = p.id')
+            ->innerJoin('wms:Pessoa','pes','WITH','pes.id = p.pessoa')
+            ->leftJoin('wms:Pessoa\Fisica','pf', 'WITH', 'pf.id = pes.id')
+            ->leftJoin('wms:Pessoa\Juridica','pj', 'WITH','pj.id = pes.id')
+            ->leftJoin('wms:Util\Sigla','s','WITH','s.id = pe.uf')
+            ->where("ms.id = $codMapaSeparacao");
+
+        return $sql->getQuery()->getResult();
+
+    }
+
     public function getReservasSemPedidosByExpedicao ($idEdpexicao) {
 
         $sql = "SELECT * FROM RESERVA_ESTOQUE_EXPEDICAO 

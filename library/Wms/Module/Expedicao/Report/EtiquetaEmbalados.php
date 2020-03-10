@@ -495,6 +495,29 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 35, 52.5 , 60, 20);
 
+            $y = 52;
+            $this->SetFont('Arial', 'B', 7);
+
+            $volume['produtos'] = $em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->getProdutosByMapaEmbalado($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']);
+
+            foreach ($volume['produtos'] as $produto) {
+
+                $impressao = utf8_decode($produto['codProduto']);
+                $this->SetX(3);
+                $this->SetY($y);
+                $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = utf8_decode(substr($produto['descricao'], 0, 33));
+                $this->SetXY(19,$y);
+                $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = $produto['quantidade'];
+                $this->SetXY(75,$y);
+                $this->Cell(75,$y, $impressao, 0, 'L');
+
+                $y = $y + 3;
+            }
+
         }
     }
 

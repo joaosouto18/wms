@@ -1570,7 +1570,7 @@ class MapaSeparacao extends eFPDF {
 
         $this->em = \Zend_Registry::get('doctrine')->getEntityManager();
         $pedidoRepository = $this->em->getRepository('wms:Expedicao\Pedido');
-        $pessoaEntity = $pedidoRepository->getClienteByExpedicao($this->idExpedicao);
+        $pessoaEntity = $pedidoRepository->getClienteByMapa($mapa->getId());
         $pessoaEntity = reset($pessoaEntity);
 
         $this->AddPage();
