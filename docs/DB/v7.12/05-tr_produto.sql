@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, 'x.xx', 'xx-tr_produto.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.12.0', '05-tr_produto.sql');
 
 alter table tr_produto add REF_FORNECEDOR varchar2(64);
 

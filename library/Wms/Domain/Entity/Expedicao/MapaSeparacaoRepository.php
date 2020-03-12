@@ -1195,7 +1195,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             $whereMSCEmbalado = "
                 WHERE COD_PESSOA = " . $codPessoa;
         } else {
-            $whereOnNaoConsolidado = "AND MSQ.IND_TIPO_QUEBRA <> 'T'";
+            $whereOnNaoConsolidado = "AND (MSQ.IND_TIPO_QUEBRA <> 'T' OR MSQ.IND_TIPO_QUEBRA IS NULL)";
         }
 
         //SE O INDICADOR DE EMBALADO NAO FOR O PRODUTO E SIM A EMBALAGEM FRACIONADA, ENTÂO JA RETORNA ISSO NA QUERY
@@ -1225,7 +1225,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        NVL(PE.IS_EMB_FRACIONAVEL_DEFAULT, 'N') as IS_EMB_FRACIONAVEL_DEFAULT,
                        NVL(PE.IS_EMB_EXPEDICAO_DEFAULT, 'N') as IS_EMB_EXP_DEFAULT
                   FROM MAPA_SEPARACAO MS
-                  INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
+                  LEFT JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
                   INNER JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
                                     SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR, NVL(MSP.DSC_LOTE, '$ncl') DSC_LOTE
                                FROM MAPA_SEPARACAO_PRODUTO MSP
