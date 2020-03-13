@@ -537,7 +537,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->SetFont('Arial', 'B', 15);
     //            $impressao = utf8_decode("EXP: $volume[expedicao] CLI: $volume[quebra]\n");
     //            $volume['quebra'] = "TOMAZ GOMIDE NUNES - PREÇO REVENDA";
-            $impressao = utf8_decode(substr("CLI: $volume[NOM_PESSOA]\n",0,50));
+            $impressao = utf8_decode(substr("$volume[NOM_PESSOA]\n",0,50));
             $this->MultiCell(110, 4.1, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 13);
@@ -565,7 +565,7 @@ class EtiquetaEmbalados extends eFPDF
             //linha vertical entre a descrição do produto e a quantidade
             $this->Line(73,14,73,100);
             //linha vertical entre a quantidade e o numero do pedido
-            $this->Line(82,14,82,100);
+            $this->Line(82,14,82,80);
             //linha horizontal entre o numero do pedido e o cod de barras
             $this->Line(82,30,150,30);
 
@@ -600,7 +600,7 @@ class EtiquetaEmbalados extends eFPDF
             $type     = 'code128';
             $black    = '000000';
             $codBarras =
-            Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>"$volume[COD_MAPA_SEPARACAO_EMB_CLIENTE]" . 0),0.30,6);
+            Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>"$volume[COD_MAPA_SEPARACAO_EMB_CLIENTE]" . 0),0.40,7);
         }
     }
 
