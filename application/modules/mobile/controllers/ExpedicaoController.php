@@ -1521,7 +1521,7 @@ class Mobile_ExpedicaoController extends Action {
     public function lerCodigoBarrasAction() {
         try {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
-            $Expedicao->setLayout();
+//            $Expedicao->setLayout();
 
             $this->view->volume = $this->_getParam('volume', null);
             $this->view->idTipoVolume = $this->_getParam('idTipoVolume', null);

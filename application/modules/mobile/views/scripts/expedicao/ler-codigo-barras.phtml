@@ -178,6 +178,8 @@
         <?php endif; ?>
 
         <input type="submit" name="submit" id="submit" value="Conferir" />
+
+        <a class="finalizar" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'ler-embalados-mapa', 'expedicao' => $this->idExpedicao)); ?>">Alterar para Embalados</a>
     </form>
 
     <?php if (isset($this->placa) && !is_null($this->placa) && ($this->placa != "")) : ?>

@@ -11,7 +11,9 @@
                 <input type="submit" name="submit" id="submit" value="Conferir" class="btn">
             </dl>
         </fieldset>
+        <a class="finalizar" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'ler-codigo-barras', 'idExpedicao' => $this->idExpedicao)); ?>">Alterar para Caixaria</a>
     </dd>
+
     <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao  ?>" >Finalizar</a></td>
 </form>
 <div id="dummy"></div>
