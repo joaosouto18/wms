@@ -1417,9 +1417,17 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (!empty($parametro) && $parametro->getValor() == 'N') {
                 $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
             } else {
-                $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
-                if ($entityExpedicao == null) {
-                    $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+                $parametroExpedicaoIntegrada = $parametroRepo->findOneBy(array('constante' => 'AGRUPAR_QUANDO_INTEGRADO'));
+                if ($parametroExpedicaoIntegrada == 'S') {
+                    $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO)));
+                    if ($entityExpedicao == null) {
+                        $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+                    }
+                } else {
+                    $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
+                    if ($entityExpedicao == null) {
+                        $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+                    }
                 }
             }
         }
