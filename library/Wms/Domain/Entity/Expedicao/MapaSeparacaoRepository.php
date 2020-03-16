@@ -1087,11 +1087,11 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $mapaSeparacaoEmbalado = $this->_em->getConnection()->query($sql)->fetch();
                 if (empty($mapaSeparacaoEmbalado)) {
                     $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                    $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
+                    $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, false);
                 } else {
                     if (in_array($mapaSeparacaoEmbalado['COD_STATUS'], [Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO, Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO])) {
                         $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                        $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento);
+                        $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento, false);
                     } else {
                         $idMapaSepEmb = $mapaSeparacaoEmbalado['COD_MAPA_SEPARACAO_EMB_CLIENTE'];
                     }
