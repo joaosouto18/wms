@@ -1,7 +1,7 @@
 <?php
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Enderecamento\Report\EstoqueReport,
-    Wms\Module\Enderecamento\Report\ProdutosVolumesDivergentes;
+    \Wms\Domain\Entity\Enderecamento\EstoqueProprietario;
 
 class Enderecamento_Relatorio_EstoqueProprietarioController extends Action
 {
@@ -20,5 +20,46 @@ class Enderecamento_Relatorio_EstoqueProprietarioController extends Action
             $this->exportPDF($result, 'EstoqueProprietario', 'Relatório de Estoque Proprietário', 'P');
         }
         $this->view->form = $form;
+    }
+
+    public function getGerencialProprietarioAjaxAction()
+    {
+        $data = $this->getRequest()->getParams();
+        $result = [];
+
+        if ($data['tipoBusca'] === 'H') {
+            $result = $this->em->getRepository(EstoqueProprietario::class)->getHistoricoProprietarioGerencial($data);
+        } elseif ($data['tipoBusca'] === 'E') {
+            $result = $this->em->getRepository(EstoqueProprietario::class)->getEstoqueProprietarioGerencial($data);
+        }
+
+        $this->_helper->json(['results' => $result]);
+    }
+
+    public function getListProprietariosAjaxAction()
+    {
+        $this->_helper->json(['proprietarios' => $this->em->getRepository(EstoqueProprietario::class)->getProprietarios()]);
+    }
+
+    public function exportAjaxAction()
+    {
+        $params = json_decode($this->getRequest()->getRawBody(),true);
+        $title = ($params['tipoBusca'] === 'H') ? "Histórico de Movimentações" : "Estoque Gerencial";
+
+        $headerMap = [
+            'nomProp' => 'Proprietário',
+            'codProduto' => 'Código',
+            'dscProduto' => 'Produto',
+            'tipoMov' => 'Tipo Mov.',
+            'dthMov' => 'Data Mov.',
+            'qtdMov' => 'Qtd Mov.',
+            'qtdEstq' => 'Saldo Final',
+            'qtdPend' => 'Pend. p/ Entrar'
+        ];
+
+        if ($params['destino'] == 'pdf')
+            $this->exportPDF($params['list'], $title, 'Relatório Gerencial de Proprietário', 'L', $headerMap);
+        if ($params['destino'] == 'csv')
+            $this->exportCSV($params['list'], $title, true, $headerMap);
     }
 }
