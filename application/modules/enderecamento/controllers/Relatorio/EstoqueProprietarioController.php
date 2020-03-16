@@ -40,4 +40,26 @@ class Enderecamento_Relatorio_EstoqueProprietarioController extends Action
     {
         $this->_helper->json(['proprietarios' => $this->em->getRepository(EstoqueProprietario::class)->getProprietarios()]);
     }
+
+    public function exportAjaxAction()
+    {
+        $params = json_decode($this->getRequest()->getRawBody(),true);
+        $title = ($params['tipoBusca'] === 'H') ? "Histórico de Movimentações" : "Estoque Gerencial";
+
+        $headerMap = [
+            'nomProp' => 'Proprietário',
+            'codProduto' => 'Código',
+            'dscProduto' => 'Produto',
+            'tipoMov' => 'Tipo Mov.',
+            'dthMov' => 'Data Mov.',
+            'qtdMov' => 'Qtd Mov.',
+            'qtdEstq' => 'Saldo Final',
+            'qtdPend' => 'Pend. p/ Entrar'
+        ];
+
+        if ($params['destino'] == 'pdf')
+            $this->exportPDF($params['list'], $title, 'Relatório Gerencial de Proprietário', 'L', $headerMap);
+        if ($params['destino'] == 'csv')
+            $this->exportCSV($params['list'], $title, true, $headerMap);
+    }
 }

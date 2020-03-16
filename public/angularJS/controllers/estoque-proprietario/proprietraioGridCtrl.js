@@ -32,7 +32,7 @@ angular.module("wms").controller("proprietarioGridCtrl", function ($scope, $http
                 width: '20%',
                 filter: {
                     type: 'text',
-                    size: 31
+                    size: 30
                 }
             },
             codProduto: {
@@ -41,7 +41,7 @@ angular.module("wms").controller("proprietarioGridCtrl", function ($scope, $http
                 width: '12%'  ,
                 filter: {
                     type: 'text',
-                    size: 16
+                    size: 15
                 }
             },
             dscProduto: {
@@ -50,14 +50,18 @@ angular.module("wms").controller("proprietarioGridCtrl", function ($scope, $http
                 width: '44%',
                 filter: {
                     type: 'text',
-                    size: 76
+                    size: 74
                 }
             },
             qtdEstq: {
                 name: 'qtdEstq',
                 label: 'Qtd Estq',
                 width: '12%',
-                filter: false
+                filter: {
+                    type: 'checkbox',
+                    label: 'Apenas c/ Saldo',
+                    function: preFilterNoZeros
+                }
             },
             qtdPend: {
                 name: 'qtdPend',
@@ -248,17 +252,16 @@ angular.module("wms").controller("proprietarioGridCtrl", function ($scope, $http
 
         let params = {
             destino: destino,
-            divergencias: result
+            tipoBusca: $scope.params.tipoBusca,
+            list: result
         };
 
-        let config = { responseType: 'arraybuffer' };
-
-        $http.post(URL_MODULO + '/index/export-divergencias-ajax', params, config)
+        $http.post(URL_MODULO + '/relatorio_estoque-proprietario/export-ajax', params, { responseType: 'arraybuffer' })
             .then(function (response) {
                     try {
+                        let fileName = (params['tipoBusca'] === 'H') ? "Histórico de Movimentações" : "Estoque Gerencial";
                         let blob = new Blob([response.data], { type: 'application/'+destino });
-                        let url = URL.createObjectURL(blob);
-                        window.open(url, '_blank');
+                        extractFile(blob, fileName + '.' + destino)
                     } catch (ex) {
                         console.log(ex);
                     }

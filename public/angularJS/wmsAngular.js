@@ -41,6 +41,20 @@ function typeSensitiveComparatorFn () {
     }
 }
 
+function extractFile(file, fileName) {
+    let link = document.createElement('a');
+    // create a blobURI pointing to our Blob
+    link.href = URL.createObjectURL(file);
+    link.download = fileName;
+    link.style = "display: none";
+    // some browser needs the anchor to be in the doc
+    document.body.append(link);
+    link.click();
+    link.remove();
+    // in case the Blob uses a lot of memory
+    URL.revokeObjectURL(link.href);
+}
+
 function isEmpty( val ) {
 
     // test results
