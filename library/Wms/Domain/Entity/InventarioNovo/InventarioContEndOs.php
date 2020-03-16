@@ -38,6 +38,11 @@ class InventarioContEndOs
      */
     protected $ordemServico;
 
+    /**
+     * @var bool
+     * $Column(name="IND_ATIVO", type=int, size=1)
+     */
+    protected $indAtivo;
 
     /**
      * @return mixed
@@ -85,6 +90,22 @@ class InventarioContEndOs
     public function setOrdemServico($ordemServico)
     {
         $this->ordemServico = $ordemServico;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIndAtivo()
+    {
+        return $this->indAtivo;
+    }
+
+    /**
+     * @param bool $indAtivo
+     */
+    public function setIndAtivo($indAtivo)
+    {
+        $this->indAtivo = $indAtivo;
     }
 
 }

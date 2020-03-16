@@ -1097,9 +1097,7 @@ class InventarioService extends AbstractService
 
             if (!$invEn->isLiberado()) throw new \Exception("Este inventário $id não pode ser interrompido pois está: " . $invEn->getDscStatus());
 
-            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
-            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-            $ordemServicoRepo->excluiOsInventarioCancelado($id);
+            $this->em->getRepository(InventarioNovo\InventarioContEndOsRepository::class)->cancelarContOs($id, true);
 
             $invEn->interromper();
             $this->em->persist($invEn);
@@ -1130,10 +1128,7 @@ class InventarioService extends AbstractService
             if ($invEn->isCancelado()) throw new \Exception("Este inventário $id já está cancelado");
             if ($invEn->isFinalizado()) throw new \Exception("Este inventário $id não pode mais ser cancelado, pois já foi aplicado ao estoque");
 
-            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
-            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-
-            $ordemServicoRepo->excluiOsInventarioCancelado($id);
+            $this->em->getRepository(InventarioNovo\InventarioContEndOsRepository::class)->cancelarContOs($id);
 
             $invEn->cancelar();
             $this->em->persist($invEn);

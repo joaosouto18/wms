@@ -367,7 +367,7 @@ class EstoqueProprietarioRepository extends EntityRepository
 
         $sql = "SELECT
                     PROP.NOM_EMPRESA \"nomProp\",
-                    EP.COD_PRODUTO \"codProduto\",
+                    P.COD_PRODUTO \"codProduto\",
                     P.DSC_PRODUTO \"dscProduto\",
                     NVL(EP.SALDO_FINAL, 0) \"qtdEstq\",
                     NVL(REP.PEND, 0) \"qtdPend\"
@@ -392,9 +392,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                     SELECT SUM(QTD) PEND, COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO
                     FROM RESERVA_ESTOQUE_PROPRIETARIO
                     WHERE IND_APLICADO = 'N' $whereREP GROUP BY COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO) REP
-                    ON REP.COD_PRODUTO = EP.COD_PRODUTO
-                    AND REP.DSC_GRADE = EP.DSC_GRADE
-                    AND REP.COD_PROPRIETARIO = EP.COD_PESSOA
+                    ON REP.COD_PROPRIETARIO = PJ.COD_PESSOA
                 LEFT JOIN PRODUTO P ON (P.COD_PRODUTO = EP.COD_PRODUTO AND P.DSC_GRADE = EP.DSC_GRADE) 
                                     OR (P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE)
                 $argsProp
