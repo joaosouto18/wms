@@ -465,16 +465,16 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = str_replace(array('0','1','2','3','4','5','6','7','8','9','-'),'',substr($volume['DSC_PLACA_CARGA'],0,16))."\n";
             $this->MultiCell(110, 9, $impressao, 0, 'L');
 
-            $this->SetY(17);
+            $this->SetY(14);
             $this->SetFont('Arial', 'B', 13);
             $impressao = utf8_decode($volume['NOM_PESSOA']."\n");
             $this->MultiCell(110, 5, $impressao, 0, 'L');
 
-            $this->SetY(30);
+            $this->SetY(28);
             $impressao = utf8_decode($volume['DSC_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
 
-            $this->SetY(45);
+            $this->SetY(36);
             $impressao = utf8_decode('PEDIDO: '.$volume['COD_CARGA_EXTERNO']) . ' - EXP.:' . $volume['COD_EXPEDICAO'];
             $this->MultiCell(110, 7.5, $impressao, 0, 'L');
 
@@ -512,7 +512,7 @@ class EtiquetaEmbalados extends eFPDF
                 $this->MultiCell(150, $y, $impressao, 0, 'L');
 
                 $impressao = $produto['quantidade'];
-                $this->SetXY(75,$y);
+                $this->SetXY(85,$y);
                 $this->Cell(75,$y, $impressao, 0, 'L');
 
                 $y = $y + 3;
