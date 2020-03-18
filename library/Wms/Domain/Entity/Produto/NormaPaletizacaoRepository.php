@@ -43,10 +43,13 @@ class NormaPaletizacaoRepository extends EntityRepository
         return $normaPaletizacaoEntity;
     }
 
-    public function getNormasByProduto($codProduto, $grade) {
+    public function getNormasByProduto($codProduto, $grade = 'UNICA', $retornaDadosCompletos = false) {
 
         $sql = "SELECT NP.COD_NORMA_PALETIZACAO,
-                       U.DSC_UNITIZADOR
+                       U.DSC_UNITIZADOR,
+                       NP.NUM_LASTRO,
+                       NP.NUM_CAMADAS,
+                       NVL(PE.QTD_EMBALAGEM,1) QTD_EMBALAGEM
                   FROM PRODUTO P
                   LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
@@ -57,6 +60,9 @@ class NormaPaletizacaoRepository extends EntityRepository
                  WHERE P.COD_PRODUTO = '$codProduto' AND P.DSC_GRADE = '$grade' AND NP.COD_NORMA_PALETIZACAO IS NOT NULL";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($retornaDadosCompletos)
+            return $result;
 
         $normas = array();
         foreach ($result as $norma)

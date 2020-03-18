@@ -20,6 +20,8 @@
                             $('#descricao').html(dsc);
                             $('#capacidade').val(data.result.capacidade);
                             $('#isEmbalagem').val(data.result.isEmbalagem);
+                            $('#lastro').val(data.result.lastro);
+                            $('#camada').val(data.result.camada);
 
                             if (data.result['isEmbalagem'] === true) {
                                 $('#embalado').val(data.result.embalado);

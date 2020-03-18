@@ -1547,6 +1547,8 @@ class Mobile_EnderecamentoController extends Action
         $codBarras = ColetorUtil::adequaCodigoBarras($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepository */
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepository */
+        $normaPaletizacaoRepository = $this->getEntityManager()->getRepository('wms:Produto\NormaPaletizacao');
         /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
@@ -1555,12 +1557,16 @@ class Mobile_EnderecamentoController extends Action
             $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
             /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
             $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
+            $codProduto = $volumeEn->getCodProduto();
+        } else {
+            $codProduto = $embalagemEn->getCodProduto();
         }
 
         if (empty($embalagemEn) && empty($volumeEn)) {
             $status = 'error';
             $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
+            $normaPaletizacaoEntity = $normaPaletizacaoRepository->getNormasByProduto($codProduto,'UNICA', true);
             $enderecoEmbalagem = $embalagemEn->getEndereco();
             $status = 'ok';
             $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao().'0' : null;
@@ -1569,6 +1575,8 @@ class Mobile_EnderecamentoController extends Action
             $result['embalado']   = $embalagemEn->getEmbalado();
             $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
             $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
+            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] : 0;
+            $result['camada']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_CAMADAS'] : 0;
         } else {
             $enderecoVolume = $volumeEn->getEndereco();
             $status = 'ok';
