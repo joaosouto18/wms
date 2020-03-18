@@ -123,7 +123,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->innerJoin("icep.produto", "p")
             ->leftJoin("icep.produtoEmbalagem", "e")
             ->leftJoin("icep.produtoVolume", "v")
-            ->where("icep.divergente = 'S'")
+            ->where("icep.divergente = 'S' and iceo.indAtivo = 1")
             ->andWhere("NOT EXISTS(
                     SELECT 'x'
                     FROM wms:InventarioNovo\InventarioEndProd iep
@@ -153,6 +153,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.sequencia = $sequencia")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario and os.dataFinal IS NOT NULL")
+            ->where("iceos.indAtivo = 1")
             ->distinct(true);
 
         return $dql->getQuery()->getResult();

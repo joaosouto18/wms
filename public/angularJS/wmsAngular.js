@@ -1,4 +1,4 @@
-angular.module("wms", ['uiDialogService', 'ui.mask'])
+angular.module("wms", ['ngSanitize', 'uiDialogService', 'ui.mask'])
     .filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {
@@ -18,6 +18,13 @@ angular.module("wms", ['uiDialogService', 'ui.mask'])
             return !(array.indexOf(needle) >= 0);
         }
     };
+}).filter('queryFilter', function($filter){
+    return function (array, needle, strict) {
+        for(let prop in needle) {
+            if (isEmpty(needle[prop])) delete needle[prop];
+        }
+        return $filter('filter')(array, needle, strict);
+    }
 });
 
 function typeSensitiveComparatorFn () {
@@ -32,6 +39,20 @@ function typeSensitiveComparatorFn () {
         // Compare strings alphabetically, taking locale into account
         return v1.value.localeCompare(v2.value);
     }
+}
+
+function extractFile(file, fileName) {
+    let link = document.createElement('a');
+    // create a blobURI pointing to our Blob
+    link.href = URL.createObjectURL(file);
+    link.download = fileName;
+    link.style = "display: none";
+    // some browser needs the anchor to be in the doc
+    document.body.append(link);
+    link.click();
+    link.remove();
+    // in case the Blob uses a lot of memory
+    URL.revokeObjectURL(link.href);
 }
 
 function isEmpty( val ) {

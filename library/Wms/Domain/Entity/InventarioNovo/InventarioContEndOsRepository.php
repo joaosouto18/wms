@@ -9,6 +9,7 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Wms\Domain\Configurator;
 use Wms\Domain\Entity\InventarioNovo;
 
@@ -40,6 +41,7 @@ class InventarioContEndOsRepository extends EntityRepository
      * @param $idContEnd
      * @param $idUsuario
      * @return InventarioContEndOs[]
+     * @throws NonUniqueResultException
      */
     public function getOsContUsuario($idContEnd, $idUsuario)
     {
@@ -48,6 +50,7 @@ class InventarioContEndOsRepository extends EntityRepository
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
             ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario")
             ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.id = $idContEnd")
+            ->where("iceos.indAtivo = 1");
         ;
 
         return $dql->getQuery()->getOneOrNullResult();
@@ -66,7 +69,7 @@ class InventarioContEndOsRepository extends EntityRepository
             ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario")
             ->innerJoin("iceos.invContEnd", "ice")
             ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.id = $idInvEnd")
-            ->where("ien.ativo = 'S'")
+            ->where("ien.ativo = 'S' and iceos.indAtivo = 1")
         ;
 
         return $dql->getQuery()->getResult();
@@ -80,8 +83,23 @@ class InventarioContEndOsRepository extends EntityRepository
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
             ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa != $idUsuario and os.dataFinal IS NULL")
             ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.id = $idCondEnd")
-            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", " ien.ativo = 'S'");
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", " ien.ativo = 'S'")
+            ->where("iceos.indAtivo = 1");
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function cancelarContOs($idInventario, $apenasPendentes = false)
+    {
+
+        $sql = "UPDATE INVENTARIO_CONT_END_OS SET IND_ATIVO = 0 WHERE COD_INV_CONT_END IN (
+                    SELECT COD_INV_CONT_END FROM INVENTARIO_CONT_END WHERE COD_INVENTARIO_ENDERECO IN (
+                        SELECT COD_INVENTARIO_ENDERECO FROM INVENTARIO_ENDERECO_NOVO WHERE COD_INVENTARIO = $idInventario
+                    ))";
+
+        if ($apenasPendentes) {
+            $sql .= " AND COD_OS IN (SELECT COD_OS FROM ORDEM_SERVICO WHERE COD_ATIVIDADE = 14 AND DTH_FINAL_ATIVIDADE IS NULL)";
+        }
+        $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
 }

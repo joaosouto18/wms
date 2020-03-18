@@ -128,7 +128,7 @@ class Action extends \Core\Controller\Action
         return $url;
     }
 
-    public function exportCSV($arrayValues = array(), $fileName = "", $exportHeader = true)
+    public function exportCSV($arrayValues = array(), $fileName = "", $exportHeader = true, $headerMap = [])
     {
         $file = '';
 
@@ -139,7 +139,8 @@ class Action extends \Core\Controller\Action
                    // $header = "Não existem nenhum registro com o filtro informado";
                 $strLine = "";
                 foreach ($header as $key => $line) {
-                    $strLine = $strLine . utf8_decode($key);
+                    $headerText = (isset($headerMap[$key])) ? utf8_decode($headerMap[$key]) : utf8_decode($key);
+                    $strLine = $strLine . $headerText;
                     if($strLine != "") $strLine = $strLine . ";";
                 }
                 $file .= $strLine . PHP_EOL;
@@ -166,10 +167,10 @@ class Action extends \Core\Controller\Action
         exit;
     }
 
-    public function exportPDF($array = array(), $filename, $titulo, $orientacao)
+    public function exportPDF($array = array(), $filename, $titulo, $orientacao, $headerMap = [])
     {
          $pdf = new \Wms\Module\Web\Report\Generico($orientacao);
-         $pdf->init($array, $filename, $titulo);
+         $pdf->init($array, $filename, $titulo, $headerMap);
     }
 
     public function getSystemParameterValue($param) {

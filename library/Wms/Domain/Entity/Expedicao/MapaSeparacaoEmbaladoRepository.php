@@ -14,7 +14,7 @@ use Wms\Domain\Entity\UsuarioRepository;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa, $codPessoa, $os)
+    public function save($idMapa, $codPessoa, $os, $returnEntity = true)
     {
         $conn = $this->_em->getConnection();
         $idEmbalado = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO . $conn->query("SELECT SQ_MAPA_SEPARACAO_EMBALADO_01.nextval ID_EMBALADO FROM DUAL")->fetch()['ID_EMBALADO'];
@@ -42,7 +42,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         $conn->executeQuery($sql);
 
-        return $this->find($idEmbalado);
+        return ($returnEntity) ? $this->find($idEmbalado) : $idEmbalado;
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */

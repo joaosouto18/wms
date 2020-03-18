@@ -97,11 +97,13 @@ class EtiquetaSeparacao extends Pdf
                     //Go to 1.5 cm from bottom
                     $this->SetY($this->footerPosition + 6);
                     $this->SetX(0);
-                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->Cell(20, 3,"", 0, 1, "L");
                     $this->SetFont('Arial','B',12);
                     $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['contadorClientes'][$this->etiqueta['codClienteExterno']] . '/' . $this->etiqueta['qtdEtiquetaCliente'], 0, 1, "L");
-                    $this->SetFont('Arial','B',8);
+                    $this->SetFont('Arial','B',7);
                     $this->Cell(20, 4, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+                    $this->SetFont('Arial','B',7);
+                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
                     break;
                 case 17:
                     // font
@@ -1547,9 +1549,9 @@ class EtiquetaSeparacao extends Pdf
             $this->Line(0,55,100,55);
             $this->SetY(57);
             $this->SetFont('Arial', 'B', 13);
-            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao] - ($etiqueta[quantidade])\n");
+            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao]($etiqueta[quantidade])\n");
             $this->MultiCell(100, 5, $impressao, 0, 'L');
-            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 37.5, 57, 59,17);
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 45.5, 57, 51,17);
         } else {
             $this->SetFont('Arial', 'B', 20);
             $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
