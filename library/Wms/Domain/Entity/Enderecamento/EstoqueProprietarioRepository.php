@@ -369,35 +369,45 @@ class EstoqueProprietarioRepository extends EntityRepository
                     PROP.NOM_EMPRESA \"nomProp\",
                     P.COD_PRODUTO \"codProduto\",
                     P.DSC_PRODUTO \"dscProduto\",
-                    NVL(EP.SALDO_FINAL, 0) \"qtdEstq\",
-                    NVL(REP.PEND, 0) \"qtdPend\"
+                    NVL(RES.SALDO_FINAL, 0) \"qtdEstq\",
+                    NVL(RES.PEND, 0) \"qtdPend\"
                 FROM EMPRESA PROP
                 INNER JOIN PESSOA_JURIDICA PJ ON PROP.IDENTIFICACAO = PJ.NUM_CNPJ
                 LEFT JOIN (
-                    SELECT
-                        EP.COD_ESTOQUE_PROPRIETARIO,
-                        EP.COD_PESSOA,
-                        EP.SALDO_FINAL,
-                        EP.COD_PRODUTO,
-                        EP.DSC_GRADE
+                    SELECT EP.COD_ESTOQUE_PROPRIETARIO,
+                             EP.COD_PESSOA AS COD_PROPRIETARIO,
+                             EP.SALDO_FINAL,
+                             EP.COD_PRODUTO,
+                             EP.DSC_GRADE,
+                             0 AS PEND
                     FROM ESTOQUE_PROPRIETARIO EP
                     INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                     INNER JOIN (
-                        SELECT MAX(COD_ESTOQUE_PROPRIETARIO) ID, COD_PRODUTO, DSC_GRADE, COD_PESSOA
-                        FROM ESTOQUE_PROPRIETARIO
-                        GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE) MAX ON MAX.ID = EP.COD_ESTOQUE_PROPRIETARIO
+                          SELECT MAX(COD_ESTOQUE_PROPRIETARIO) ID, COD_PRODUTO, DSC_GRADE, COD_PESSOA
+                          FROM ESTOQUE_PROPRIETARIO
+                          GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE) MAX ON MAX.ID = EP.COD_ESTOQUE_PROPRIETARIO
                     WHERE EP.SALDO_FINAL > 0 $whereEP
-                    ) EP ON PJ.COD_PESSOA = EP.COD_PESSOA
-                LEFT JOIN (
-                    SELECT SUM(QTD) PEND, COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO
-                    FROM RESERVA_ESTOQUE_PROPRIETARIO
-                    WHERE IND_APLICADO = 'N' $whereREP GROUP BY COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO) REP
-                    ON REP.COD_PROPRIETARIO = PJ.COD_PESSOA
-                LEFT JOIN PRODUTO P ON (P.COD_PRODUTO = EP.COD_PRODUTO AND P.DSC_GRADE = EP.DSC_GRADE) 
-                                    OR (P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE)
+                    UNION
+                    SELECT
+                          0 AS COD_ESTOQUE_PROPRIETARIO,
+                          0 AS SALDO_FINAL,
+                          COD_PROPRIETARIO,
+                          COD_PRODUTO,
+                          DSC_GRADE,
+                          PEND
+                    FROM (SELECT
+                                 COD_PROPRIETARIO,
+                                 COD_PRODUTO,
+                                 DSC_GRADE,
+                                 SUM(QTD) PEND
+                          FROM RESERVA_ESTOQUE_PROPRIETARIO
+                          WHERE IND_APLICADO = 'N' $whereREP
+                          GROUP BY COD_PRODUTO, DSC_GRADE, COD_PROPRIETARIO)
+                    ) RES ON RES.COD_PROPRIETARIO = PJ.COD_PESSOA
+                LEFT JOIN PRODUTO P ON (P.COD_PRODUTO = RES.COD_PRODUTO AND P.DSC_GRADE = RES.DSC_GRADE)
                 $argsProp
                 ORDER BY
-                    PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
+                    PJ.NOM_FANTASIA, P.COD_PRODUTO DESC";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
@@ -412,10 +422,10 @@ class EstoqueProprietarioRepository extends EntityRepository
             $args[] .= "EP.COD_PRODUTO = '$params[codProduto]'";
         }
         if (!empty($params['dataInicial'])) {
-            $args[] .= "EP.DTH_OPERACAO >= TO_DATE('$params[dataInicial]', 'DD/MM/YYYY')";
+            $args[] .= "EP.DTH_OPERACAO >= TO_DATE('$params[dataInicial] 00:00:00', 'DD/MM/YYYY HH24:MI:SS')";
         }
         if (!empty($params['dataFinal'])) {
-            $args[] .= "EP.DTH_OPERACAO <= TO_DATE('$params[dataFinal]', 'DD/MM/YYYY')";
+            $args[] .= "EP.DTH_OPERACAO <= TO_DATE('$params[dataFinal] 23:59:59', 'DD/MM/YYYY HH24:MI:SS')";
         }
 
         $whereSub = (!empty($args)) ? "WHERE " . implode(" AND ", $args): "";
