@@ -130,6 +130,13 @@ class Mobile_ExpedicaoController extends Action {
             $codPessoa = $this->_getParam('cliente', null);
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
+            $sessao->bloquearOs = $this->bloquearOs();
+
+            $config = \Zend_Registry::get('config');
+            if (empty($config->phalconColetorApi->port))
+                throw new Exception("A porta da API Phalcon-Coletor não foi especificada");
+
+            $this->view->phalconApiPort = $config->phalconColetorApi->port;
 
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
@@ -182,6 +189,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
             $this->view->agrupContEtiquetas = $modeloSeparacaoEn->getAgrupContEtiquetas();
             $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
+            $this->view->arrCodBarras = $mapaSepProdRepo->getCodBarrasAtivosByMapa($idMapa);
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -190,6 +198,11 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
             $this->view->dscVolume = $dscVolume;
             $this->view->confereQtd = $confereQtd;
+            $cpf = Zend_Auth::getInstance()->getIdentity()->getPessoa()->getCPF(false);
+            $embracer = (new DateTime)->getTimestamp();
+            $uniqId = strrev("$cpf*%*#)$embracer(");
+            $this->view->identfier = $uniqId;
+            $this->view->osID = $sessao->osID;
         } catch (\Exception $e) {
             if ($confereQtd == true) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);

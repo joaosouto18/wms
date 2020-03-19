@@ -6,6 +6,8 @@
 
 <script>
 
+    var codigosDeBarras = [<?php echo implode(", ", $this->arrCodBarras);?>];
+
     function playSound(soundfile) {
         if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
             document.getElementById("bgSoundId").src = soundfile;
@@ -22,43 +24,45 @@
 
     function exibirQtd(event) {
         if (event.which === 13 || event.keyCode === 13) {
+            var codBarras = $('#codigoBarras');
 
-            var qtd = $("#qtd");
-            var qtdLabel = $("#label-qtd");
-            if (qtd) {
-                qtd.removeClass("hidden");
-                qtdLabel.removeClass("hidden");
-                qtd.focus();
-                if (event.preventDefault) {
-                    event.preventDefault();
-                } else {
-                    event.returnValue = false;
+            if (checkCodBarrasMapa(codBarras, event)) {
+                var qtd = $("#qtd");
+                var qtdLabel = $("#label-qtd");
+                if (qtd) {
+                    qtd.removeClass("hidden");
+                    qtdLabel.removeClass("hidden");
+                    qtd.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
                 }
+
+                dadosProdutos = '';
+                $.ajax({
+                        url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras.val(),
+                    type: 'get',
+                    success: function (data) {
+
+                        var codProduto = data['result']['codProduto'];
+                        var grade = data['result']['grade'];
+                        var descricao = data['result']['descricao'];
+                        var quantidade = data['result']['quantidade'];
+                        var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
+
+                        dadosProdutos =
+                                '<table style="border: solid 2px;" class="info">' +
+                                '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
+                                '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
+                                '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
+                                '</table>'
+                        ;
+                        $('#dados-produtos').html(dadosProdutos);
+                    }
+                });
             }
-
-            var codBarras = $('#codigoBarras').val();
-            dadosProdutos = '';
-            $.ajax({
-                url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras,
-                type: 'get',
-                success: function (data) {
-
-                    var codProduto = data['result']['codProduto'];
-                    var grade = data['result']['grade'];
-                    var descricao = data['result']['descricao'];
-                    var quantidade = data['result']['quantidade'];
-                    var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
-
-                    dadosProdutos =
-                            '<table style="border: solid 2px;"class="info">' +
-                            '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
-                            '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
-                            '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
-                            '</table>'
-                    ;
-                    $('#dados-produtos').html(dadosProdutos);
-                }
-            });
         }
         return true;
     }
@@ -101,7 +105,7 @@
     <tr>
         <td>
             <div id="produtos-conferir" style="margin-bottom: 10px;">
-                <button style="width: 30px;" class="btn gradientBtn"id="next"> > </button>
+                <button style="width: 30px;" class="btn gradientBtn" id="next"> > </button>
                 <div id="carousel"></div>
             </div>
         </td>
@@ -137,12 +141,14 @@
                         <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                         <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
                         <input type="hidden" name="agrupContEtiquetas" id="agrupContEtiquetas" value="<?php echo $this->agrupContEtiquetas ?>" >
+                        <input type="hidden" name="identfier-conf" id="identifier" value="<?php echo $this->identfier ?>" >
+                        <input type="hidden" name="osID" id="osID" value="<?php echo $this->osID ?>" >
                         <table>
                             <tr>
                                 <?php if ($this->confereQtd) : ?>
                                     <td align="center"><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
                                 <?php endif; ?>
-                                <td align="center"><label for="codigoBarras" class="field required">*Código de Barras</label></td>
+                                    <td align="center"><label for="codigoBarras" class="field required">*Código de Barras</label></td>
                                 <?php if (!$this->confereQtd) : ?>
                                     <td align="center"><label for="qtd" id="label-qtd" class="field required hidden">*Qtd</label></td>
                                 <?php endif; ?>
@@ -299,87 +305,103 @@
     
     <?php  } ?>
 
+    function checkCodBarrasMapa(codBarrasInput, event) {
+        if (event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+        if ($.inArray(codBarrasInput.val(), codigosDeBarras) > -1) return true;
+        codBarrasInput.val("").focus();
+        alert("Código de barras inválido para esse mapa");
+        return false;
+    }
+
     function requestAjax(event, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
-        if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
-            $.ajax({
-                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
-                data: $('form').serialize(),
-                async: false,
-                type: 'post',
-                success: function (data) {
-                    if (data.retorno.resposta.length > 0) {
-                        var inptIdVolume = $("#idVolume");
-                        inputCodBarras.val("").focus();
-                        <?php if ($temLote) { ?> lote.val(""); <?php } ?>
-                        var error = "";
-                        var success = "";
-                        var song = "";
-                        var volumePatrimonio = "";
+        if (checkCodBarrasMapa(inputCodBarras, event)) {
+            if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
+                var urlConf = "http://" + window.location.hostname + ":<?php echo $this->phalconApiPort?>/conferencia/executar";
+                try {
+                    $.support.cors = true;
+                    $.ajax({
+                        url: urlConf,
+                        data: $('form').serialize(),
+                        cors: true,
+                        async: false,
+                        type: 'post',
+                        success: function (data) {
+                            if (data.retorno.resposta.length > 0) {
+                                var inptIdVolume = $("#idVolume");
+                                inputCodBarras.val("").focus();
+                                <?php if ($temLote) { ?> lote.val(""); <?php } ?>
+                                var error = "";
+                                var success = "";
+                                var song = "";
+                                var volumePatrimonio = "";
 
-                        if (data.retorno.resposta == 'error') {
-                            error = data.retorno.message;
-                            success = "";
-                            song = "/alarme.mp3";
-                            volumePatrimonio = data.retorno.volumePatrimonio;
-                        } else if (data.retorno.resposta == 'bloqued_os') {
-                            error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
-                            success = "";
-                            song = "/alarme.mp3";
-                            volumePatrimonio = '';
-                            $("#div-principal").html(data.retorno.blockOsForm);
-                        } else {
-                            success = data.retorno.message;
-                            error = "";
-                            song = "/confirm2.mp3";
-                            volumePatrimonio = data.retorno.volumePatrimonio;
+                                if (data.retorno.resposta == 'error') {
+                                    error = data.retorno.message;
+                                    success = "";
+                                    song = "/alarme.mp3";
+                                    volumePatrimonio = data.retorno.volumePatrimonio;
+                                } else if (data.retorno.resposta == 'bloqued_os') {
+                                    error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
+                                    success = "";
+                                    song = "/alarme.mp3";
+                                    volumePatrimonio = '';
+                                    $("#div-principal").html(data.retorno.blockOsForm);
+                                } else {
+                                    success = data.retorno.message;
+                                    error = "";
+                                    song = "/confirm2.mp3";
+                                    volumePatrimonio = data.retorno.volumePatrimonio;
+                                }
+
+                                $("#erro").html(error);
+                                $("#success").html(success);
+
+                                if (!isEmpty(volumePatrimonio)) {
+                                    inptIdVolume.val(volumePatrimonio.idVolume);
+                                    $("#spnDscVolume").text(volumePatrimonio.dscVolume);
+                                    var href = $("#btnFechaVolume").attr("href");
+                                    $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
+                                }
+
+                                if (inptIdVolume.val() !== '') {
+                                    $("#divBtnFechaVolume").show();
+                                }
+
+                                try {
+                                    playSound(song);
+                                } catch (e) {
+                                    alert(message);
+                                }
+                            }
+                            $(".item-lista").remove();
+                        },
+                        error: function (xhr, error, errorThrown) {
+                            //$("#div-principal").append($("<p>").text(dump(xhr)));
+                            alert("deu erro");
                         }
-
-                        $("#erro").html(error);
-                        $("#success").html(success);
-
-                        if (data.retorno.resposta == 'error') {
-                            alert(data.retorno.message);
-                        }
-
-
-                        if (volumePatrimonio !== '') {
-                            inptIdVolume.val(volumePatrimonio.idVolume);
-                            $("#spnDscVolume").text(volumePatrimonio.dscVolume);
-                            var href = $("#btnFechaVolume").attr("href");
-                            $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
-                        }
-
-                        if (inptIdVolume.val() !== '') {
-                            $("#divBtnFechaVolume").show();
-                        }
-
-                        try {
-			  
-                               playSound(song);
-			   
-                        } catch (e) {
-                            alert(message);
-                        }
-
-
-                    }
-                    $(".item-lista").remove();
+                    });
+                } catch (e) {
+                    alert(e.message);
                 }
-            });
-            $('#dados-produtos').html("");
-            var confereQtd = $("#confereQtd").val();
-            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
-                inputQtd.addClass("hidden").val("");
-                $("#label-qtd").addClass("hidden");
+                $('#dados-produtos').html("");
+                var confereQtd = $("#confereQtd").val();
+                if (confereQtd === null || confereQtd === '' || confereQtd === false) {
+                    inputQtd.addClass("hidden").val("");
+                    $("#label-qtd").addClass("hidden");
+                } else {
+                    inputQtd.val(1);
+                }
             } else {
-                inputQtd.val(1);
-            }
-        } else {
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
+                if (event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
             }
         }
         return false;
