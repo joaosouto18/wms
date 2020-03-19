@@ -44,7 +44,7 @@ class Identificacao extends SubForm
                 ))
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
-                    'size' => 45,
+                    'size' => 85,
                     'maxlength' => 1000,
                     'required' => true,
                     'readonly' => 'readonly',
