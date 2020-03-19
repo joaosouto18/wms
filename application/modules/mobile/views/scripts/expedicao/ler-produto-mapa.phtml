@@ -319,15 +319,14 @@
 
     function requestAjax(event, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
-        if (checkCodBarrasMapa(inputCodBarras, event)) {
+        if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
-                var urlConf = "http://" + window.location.hostname + ":<?php echo $this->phalconApiPort?>/conferencia/executar";
+                var urlConf = "http://"+ window.location.hostname +":<?php echo $this->phalconApiPort?>/conferencia/executar";
                 try {
                     $.support.cors = true;
                     $.ajax({
                         url: urlConf,
                         data: $('form').serialize(),
-                        cors: true,
                         async: false,
                         type: 'post',
                         success: function (data) {
@@ -339,6 +338,7 @@
                                 var success = "";
                                 var song = "";
                                 var volumePatrimonio = "";
+
 
                                 if (data.retorno.resposta == 'error') {
                                     error = data.retorno.message;
@@ -380,9 +380,8 @@
                             }
                             $(".item-lista").remove();
                         },
-                        error: function (xhr, error, errorThrown) {
-                            //$("#div-principal").append($("<p>").text(dump(xhr)));
-                            alert("deu erro");
+                        error: function(xhr, error, errorThrown) {
+                            alert("Server Error - Solicite acompanhamento do suporte!");
                         }
                     });
                 } catch (e) {
@@ -403,7 +402,6 @@
                     event.returnValue = false;
                 }
             }
-        }
         return false;
     }
 
