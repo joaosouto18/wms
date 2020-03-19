@@ -338,6 +338,11 @@
                         $("#erro").html(error);
                         $("#success").html(success);
 
+                        if (data.retorno.resposta == 'error') {
+                            alert(data.retorno.message);
+                        }
+
+
                         if (volumePatrimonio !== '') {
                             inptIdVolume.val(volumePatrimonio.idVolume);
                             $("#spnDscVolume").text(volumePatrimonio.dscVolume);
@@ -350,7 +355,9 @@
                         }
 
                         try {
-                            playSound(song);
+			  
+                               playSound(song);
+			   
                         } catch (e) {
                             alert(message);
                         }
