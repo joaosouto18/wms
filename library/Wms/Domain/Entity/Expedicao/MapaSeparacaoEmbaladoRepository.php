@@ -274,7 +274,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       NVL(R.NOME_ROTA, '') NOME_ROTA, NVL(PR.NOME_PRACA, '') NOME_PRACA,
                       TO_CHAR(OS.DTH_FINAL_ATIVIDADE, 'DD/MM/YYYY HH24:MI:SS') DTH_FECHAMENTO,
                       OP.NOM_PESSOA AS CONFERENTE, B.DSC_BOX,
-                      MSE.IND_ULTIMO_VOLUME
+                      MSE.IND_ULTIMO_VOLUME, P.COD_PESSOA
                  FROM MAPA_SEPARACAO MS
            INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
            INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -294,7 +294,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 WHERE $where
              GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
                       PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, SIGLA.DSC_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
-                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX, MSE.IND_ULTIMO_VOLUME
+                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX, MSE.IND_ULTIMO_VOLUME, P.COD_PESSOA
              ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -431,5 +431,17 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
     }
+
+    public function getQtdEtiquetaEmbalados($idExpedicao, $codPessoa)
+    {
+        $sql = "SELECT COUNT(*) NUMERO_CAIXAS
+                    FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
+                    INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao AND MSC.COD_PESSOA = $codPessoa
+                GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
 
