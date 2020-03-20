@@ -179,8 +179,15 @@ class ModeloSeparacaoRepository extends EntityRepository
         return true;
     }
 
+    /**
+     * @param $idExpedicao
+     * @return ModeloSeparacao
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function getModeloSeparacao($idExpedicao)
     {
+        /** @var ModeloSeparacao $modeloSeparacaoEn */
+        $modeloSeparacaoEn = null;
         $expedicaoEntity = $this->getEntityManager()->getReference('wms:Expedicao',$idExpedicao);
         if (!is_null($expedicaoEntity->getModeloSeparacao())) {
             $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();

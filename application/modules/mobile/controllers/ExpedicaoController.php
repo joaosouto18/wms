@@ -159,6 +159,7 @@ class Mobile_ExpedicaoController extends Action {
             }
 
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
@@ -184,7 +185,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
             $this->view->agrupContEtiquetas = $modeloSeparacaoEn->getAgrupContEtiquetas();
             $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
-            $this->view->arrCodBarras = $mapaSepProdRepo->getCodBarrasAtivosByMapa($idMapa);
+            $this->view->arrCodBarras = $mapaSepProdRepo->getCodBarrasAtivosByMapa($idExpedicao, $idMapa, ($modeloSeparacaoEn->getUtilizaQuebraColetor() == 'S' ));
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
