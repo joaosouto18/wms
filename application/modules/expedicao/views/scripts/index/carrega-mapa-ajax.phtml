@@ -20,7 +20,7 @@ if ($this->erro) {
                 <input type="hidden" name="utilizaQuebra" id="utilizaQuebra" value="<?php echo $this->utilizaQuebra ?>" >
                 <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                 <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
-                <input type="hidden" name="criarVolsFinalCheckout" id="tipoQuebraVolume" value="<?php echo $this->criarVolsFinalCheckout ?>" >
+                <input type="hidden" name="criarVolsFinalCheckout" id="criarVolsFinalCheckout" value="<?php echo $this->criarVolsFinalCheckout ?>" >
                 <input type="hidden" name="central" id="central" value="<?php echo $this->central ?>" >
                 <input type="hidden" name="chekcout" id="chekcout" value="chekcout" >
             </div>
@@ -301,14 +301,19 @@ if ($this->erro) {
                             var produto = data.retorno.produto[0];
                             var codGradeLote = produto['codProduto'] + '*+*' + produto['dscGrade'] + '*+*' + produto['lote'];
                             var conferidos = $('#conferidos');
+                            conferidos.find('p').css('background','#f3f3f3');
+                            var conferido = conferidos.find('p[produto="' + codGradeLote +'"]');
 
-                            conferidos.find('p[produto="' + codGradeLote +'"]').show();
-                            conferidos.find('p[produto="' + codGradeLote +'"] #qtd').text(produto['qtdConferidaTotalEmb']);
+                            if (conferido.is(":hidden")) {
+                                conferido.show();
+                            }
+                            conferido.css('background','#fad0d0').find("#qtd").text(produto['qtdConferidaTotalEmb']);
+
+                            $('#conferidos p[produto="' + codGradeLote +'"]').remove();
+                            conferidos.prepend(conferido);
+
                             if (data.retorno.message == 'checkout') {
                                 $('#conferir').find('p[produto="' + codGradeLote +'"]').hide();
-                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#f3f3f3');
-                            }else{
-                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
                             }
                             error = "";
 
