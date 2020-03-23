@@ -46,7 +46,7 @@ class Deposito extends PluginAbstract
     );
 
     private function verificaData() {
-        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "validate" . DIRECTORY_SEPARATOR ."data.lk";
+        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "data.lk";
 
         $dataAtual = date("Ymd");
 

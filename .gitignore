@@ -46,4 +46,4 @@ library/zetacomponents
 library/phpcollection
 public/img/logo_cliente.jpg
 public/enderecos.txt
-application/configs/validate/*.*
+data.lk
