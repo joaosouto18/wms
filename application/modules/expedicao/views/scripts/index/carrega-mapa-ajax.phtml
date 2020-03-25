@@ -307,13 +307,16 @@ if ($this->erro) {
                             if (conferido.is(":hidden")) {
                                 conferido.show();
                             }
-                            conferido.css('background','#fad0d0').find("#qtd").text(produto['qtdConferidaTotalEmb']);
+                            conferido.find("#qtd").text(produto['qtdConferidaTotalEmb']);
 
                             $('#conferidos p[produto="' + codGradeLote +'"]').remove();
                             conferidos.prepend(conferido);
 
                             if (data.retorno.message == 'checkout') {
                                 $('#conferir').find('p[produto="' + codGradeLote +'"]').hide();
+                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#f3f3f3');
+                            }else{
+                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
                             }
                             error = "";
 
