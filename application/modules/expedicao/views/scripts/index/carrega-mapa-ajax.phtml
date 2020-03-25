@@ -301,7 +301,6 @@ if ($this->erro) {
                             var produto = data.retorno.produto[0];
                             var codGradeLote = produto['codProduto'] + '*+*' + produto['dscGrade'] + '*+*' + produto['lote'];
                             var conferidos = $('#conferidos');
-                            conferidos.find('p').css('background','#f3f3f3');
                             var conferido = conferidos.find('p[produto="' + codGradeLote +'"]');
 
                             if (conferido.is(":hidden")) {
