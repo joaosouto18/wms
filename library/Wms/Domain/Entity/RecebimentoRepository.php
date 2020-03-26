@@ -2353,10 +2353,7 @@ class RecebimentoRepository extends EntityRepository
                 $options[] = $nota->getFornecedor()->getIdExterno();
                 $options[] = date_format($nota->getDataEmissao(), $formatoData);
 
-                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                if (!empty($resultAcao)) {
-                    throw new \Exception($resultAcao);
-                }
+                $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
             }
         }
     }
