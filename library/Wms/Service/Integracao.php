@@ -1053,6 +1053,10 @@ class Integracao {
         $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
         $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
+        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepository */
+        $parametroRepository = $this->_em->getRepository('wms:Sistema\Parametro');
+        $valorParametro = $parametroRepository->findOneBy(array('constante' => 'COD_INTEGRACAO_RECEBIMENTO_ERP'))->getValor();
+        $valorParametro = explode(',',$valorParametro);
 
         $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
         $options1 = array(
@@ -1060,8 +1064,9 @@ class Integracao {
         );
         $codRecebimentoErp = $notaFiscalEntity->getCodRecebimentoErp();
 
+        $params = $this->
         //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
-        $acaoEn = $acaoIntRepository->find(10);
+        $acaoEn = $acaoIntRepository->find($valorParametro[0]);
         $conexaoEn = $acaoEn->getConexao();
         $query = $acaoEn->getQuery();
 
@@ -1078,8 +1083,8 @@ class Integracao {
         $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
         $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
 
-        $acaoEn = $acaoIntRepository->find(11);
-        $acaoToInsert = $acaoIntRepository->find(12);
+        $acaoEn = $acaoIntRepository->find($valorParametro[1]);
+        $acaoToInsert = $acaoIntRepository->find($valorParametro[2]);
         foreach ($produtosConferidos as $produtoConferido) {
             $dataValidade = null;
             $dataConferencia = null;
