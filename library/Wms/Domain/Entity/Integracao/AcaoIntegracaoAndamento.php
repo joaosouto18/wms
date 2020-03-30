@@ -2,7 +2,10 @@
 
 namespace Wms\Domain\Entity\Integracao;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Id\SequenceGenerator;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Produto\Embalagem;
 
 /**
  *
@@ -66,6 +69,17 @@ class   AcaoIntegracaoAndamento
      * @Column(name="ERR_NUMBER", type="string", nullable=true)
      */
     protected $errNumber;
+
+    /**
+     * Gera o ID do registro
+     * @param $em EntityManager
+     * @return int
+     *
+     */
+    public static function generateId(EntityManager $em) {
+        $sqcGenerator = new SequenceGenerator("SQ_ACAO_INTEGRACAO_AND_01", 1);
+        return $sqcGenerator->generate($em, new AcaoIntegracaoAndamento());
+    }
 
     /**
      * @param mixed $errNumber
