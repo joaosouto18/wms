@@ -435,6 +435,7 @@ class InventarioService extends AbstractService
 
             return $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs")->save([
                 "invContEnd" => $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $idContEnd),
+                "indAtivo" => true,
                 "ordemServico" => $newOsEn
             ], false);
         } catch (\Exception $e) {
