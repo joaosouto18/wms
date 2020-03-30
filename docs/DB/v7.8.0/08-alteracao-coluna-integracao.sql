@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, 'x.x.x', 'xx-alteracao-coluna-integracao.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, 'x.x.x', '08-alteracao-coluna-integracao.sql');
 
  alter table acao_integracao
 add dsc_query_bkp varchar2(4000);
