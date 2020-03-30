@@ -40,7 +40,7 @@ class InventarioContEndOs
 
     /**
      * @var bool
-     * $Column(name="IND_ATIVO", type=int, size=1)
+     * @Column(name="IND_ATIVO", type=int, size=1)
      */
     protected $indAtivo;
 

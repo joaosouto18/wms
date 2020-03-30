@@ -7,14 +7,14 @@
 DECLARE
     CHECK_RESULT VARCHAR2(100);
 BEGIN
-    SELECT FUNC_CHECK_SCRIPT('xx-correcao-cancelamento-inventario.sql', '02-correcao-estrutura-inventario-novo.sql')
+    SELECT FUNC_CHECK_SCRIPT('06-correcao-cancelamento-inventario.sql', '02-correcao-estrutura-inventario-novo.sql')
     INTO CHECK_RESULT
     FROM DUAL;
     IF (CHECK_RESULT <> 'TRUE') THEN
         DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
     ELSE
         INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT)
-        VALUES (SYSDATE, '7.12', 'xx-correcao-cancelamento-inventario.sql');
+        VALUES (SYSDATE, '7.12', '06-correcao-cancelamento-inventario.sql');
         /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
