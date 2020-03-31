@@ -405,9 +405,6 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->_redirect('/mobile/enderecamento_manual/ler-codigo-barras/id/'.$params['id']);
 
         } catch (\Exception $ex) {
-            $file = fopen(APPLICATION_PATH. "/../log/erro.txt", 'a');
-            fwrite($file, $ex->getTraceAsString());
-            fclose($file);
             $this->addFlashMessage('error',$ex->getMessage());
             $this->getEntityManager()->rollback();
             $this->redirect('ler-codigo-barras','enderecamento_manual','mobile',array('id'=>$params['id']));
