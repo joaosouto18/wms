@@ -1666,13 +1666,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getEmbalagensByCodBarras($codBarras) {
+    public function getEmbalagensByCodBarras($codBarras, $desconsideraInativos = true) {
         $embalagenEn = null;
         $volumeEn = null;
         $produtoEn = null;
-        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras' => $codBarras, 'dataInativacao' => null));
+        $args = ['codigoBarras' => $codBarras];
+        if ($desconsideraInativos)
+            $args = ['dataInativacao' => null];
+
+        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy($args);
         if ($embalagenEn == null) {
-            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras' => $codBarras, 'dataInativacao' => null));
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy($args);
             if ($volumeEn == null) {
                 throw new \Exception("Produto não encontrado para o código de barras $codBarras.");
             } else {

@@ -705,7 +705,7 @@ class Importacao
         }
     }
 
-    public function saveProdutoWs($em,$repositorios,$idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $indPesoVariavel, $embalagens, $referencia, $possuiValidade, $diasVidaUtil) {
+    public function saveProdutoWs($em, $repositorios, $parametro, $idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $indPesoVariavel, $embalagens, $referencia, $possuiValidade, $diasVidaUtil) {
         try {
             $idProduto = trim ($idProduto);
             $descricao = trim ($descricao);
@@ -780,9 +780,6 @@ class Importacao
             $em->persist($produto);
 
             $parametroRepo = $repositorios['parametroRepo'];
-            /** @var Parametro $parametro */
-            $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS_BANCO'));
-            if (empty($parametro)) throw new \Exception("Parametro 'INTEGRACAO_CODIGO_BARRAS_BANCO' não encontrado no banco!");
 
             $parametroPeso = $parametroRepo->findOneBy(array('constante' => 'INTEGRA_PESO'));
             if (empty($parametroPeso)) throw new \Exception("Parametro 'INTEGRA_PESO' não encontrado no banco!");
@@ -957,23 +954,6 @@ class Importacao
         }catch (\Exception $e){
             throw new \Exception($e->getMessage());
         }
-    }
-
-    private function verificaCodigoBarrasDuplicado($em, $codBarras, $idProduto, $grade) {
-        $SQL = "SELECT P.COD_PRODUTO, P.DSC_PRODUTO
-                  FROM PRODUTO P
-                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
-                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
-                 WHERE NVL(PE.COD_BARRAS, PV.COD_BARRAS) = '$codBarras'
-                   AND P.COD_PRODUTO <> '$idProduto'
-                   AND P.DSC_GRADE <> '$grade'";
-
-        $produtos =  $em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        if (count($produtos) >0) {
-            $prod = $produtos[0];
-            throw new \Exception("A Embalagem " . $codBarras ." se encontra em uso no sistema para o produto " . $prod['COD_PRODUTO'] . "/" . $prod['DSC_PRODUTO']);
-        }
-        return true;
     }
 
     /**

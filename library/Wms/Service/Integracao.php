@@ -9,7 +9,10 @@ use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
+use Wms\Domain\Entity\Produto;
+use Wms\Domain\Entity\ProdutoRepository;
 use Wms\Domain\Entity\Ressuprimento\PedidoAcumulado;
+use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Math;
 
 class embalagem {
@@ -875,57 +878,97 @@ class Integracao {
             $this->_em->clear();
 
             ini_set('max_execution_time', '-1');
+
+
+            $parametroRepo = $repositorios['parametroRepo'];
+            /** @var Parametro $parametro */
+            $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS_BANCO'));
+                if (empty($parametro)) throw new \Exception("Parametro 'INTEGRACAO_CODIGO_BARRAS_BANCO' não encontrado no banco!");
+
+            if ($parametro->getValor() == 'S') {
+                self::validaMigracaoCodBarras($arrayProdutos, ($parametroEmbalagemAtiva->getValor() == 'S'));
+            }
+
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
 
-                usort($produto['embalagem'], function ($a,$b){
-                    return $a['qtdEmbalagem'] < $b['qtdEmbalagem'];
-                });
+                if ($parametro->getValor() == 'S') {
+                    usort($produto['embalagem'], function ($a, $b) {
+                        return $a['qtdEmbalagem'] < $b['qtdEmbalagem'];
+                    });
 
-                $pesoUnitário = null;
-                $alturaProduto = null;
-                $larguraProduto = null;
-                $profundidadeUnitario = null;
+                    $pesoUnitario = null;
+                    $profundidadeUnitario = null;
 
-                foreach ($produto['embalagem'] as $embalagem) {
-                    if ($parametroEmbalagemAtiva->getValor() == 'S') {
-                        $embalagem['ativa'] = 'S';
-                    }
-                    if ($embalagem['ativa'] == 'S') {
-
-                        if ($pesoUnitário == null) {
-                            $peso = str_replace(',','.',$embalagem['peso']);
-                            $profundidade = str_replace(',','.',$embalagem['profundidade']);
-                            $fator = str_replace(',','.',$embalagem['qtdEmbalagem']);
-
-                            $pesoUnitário = $peso / $fator;
-                            $profundidadeUnitario = $profundidade / $fator;
-
-                            $alturaProduto = $embalagem['altura'];
-                            $larguraProduto = $embalagem['largura'];
+                    foreach ($produto['embalagem'] as $embalagem) {
+                        if ($parametroEmbalagemAtiva->getValor() == 'S') {
+                            $embalagem['ativa'] = 'S';
                         }
+                        if ($embalagem['ativa'] == 'S') {
+
+                            if ($pesoUnitario == null) {
+                                $peso = str_replace(',', '.', $embalagem['peso']);
+                                $profundidade = str_replace(',', '.', $embalagem['profundidade']);
+                                $fator = str_replace(',', '.', $embalagem['qtdEmbalagem']);
+
+                                $pesoUnitario = $peso / $fator;
+                                $profundidadeUnitario = $profundidade / $fator;
+                            }
 
 
-                        $emb = new embalagem();
-                        $emb->codBarras = $embalagem['codBarras'];
-                        $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
-                        $emb->descricao = $embalagem['dscEmbalagem'];
+                            $emb = new embalagem();
+                            $emb->codBarras = $embalagem['codBarras'];
+                            $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
+                            $emb->descricao = $embalagem['dscEmbalagem'];
 
-                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1),3);
-                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1),3);
-                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1),3);
-                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1),3) ;
+                            $emb->largura = number_format(Math::dividir($embalagem['largura'], 1), 3);
+                            $emb->altura = number_format(Math::dividir($embalagem['altura'], 1), 3);
+                            $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitario, $emb->qtdEmbalagem), 1), 3);
+                            $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem), 1), 3);
 
-                        $embalagensObj[] = $emb;
+                            $embalagensObj[] = $emb;
+                        }
                     }
                 }
-                $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
+                $importacaoService->saveProdutoWs($this->_em, $repositorios, $parametro, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
             }
             $this->_em->flush();
             $this->_em->clear();
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
+        }
+    }
+
+    private function validaMigracaoCodBarras($arrProds, $considerarAtiva = false)
+    {
+        $arrImpedimentos = [];
+        $strConcat = "*#*";
+        /** @var ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->_em->getRepository(Produto::class);
+
+        foreach ($arrProds as $prod) {
+            foreach ($prod['embalagem'] as $emb) {
+
+                $arr = $produtoRepo->getEmbalagensByCodBarras($emb['codigoBarras'], false);
+                /** @var Produto\Embalagem $embalagemEn */
+                $embalagemEn = $arr['embalagem'];
+                /** @var Produto\Volume $volumeEn */
+                $volumeEn = $arr['volume'];
+                /** @var Produto $produtoEn */
+                $produtoEn = $arr['produto'];
+
+                $unikImpedido = "$prod[codProduto]$strConcat$prod[dscGrade]";
+                if (($considerarAtiva || $emb['ativa'] == 'S')
+                    && (!empty($embalagemEn) || !empty($volumeEn))
+                    && ($produtoEn->getId() != $prod['codProduto'] || $produtoEn->getGrade() != $prod['dscGrade'])) {
+
+                    $arrImpedidos[$unikImpedido][$emb['codigoBarras']]['integracao'] = $emb;
+
+                    $unikImpedimento = $produtoEn->getId() . $strConcat . $produtoEn->getGrade();
+                    $arrImpedimentos[$emb['codigoBarras']][$emb['codigoBarras']]['impedimento'] = (!empty($embalagemEn)) ? $embalagemEn : $volumeEn;
+                }
+            }
         }
     }
 

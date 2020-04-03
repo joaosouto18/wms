@@ -216,8 +216,6 @@ class AcaoIntegracaoRepository extends EntityRepository
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
         $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
-        $connection = $this->_em->getConnection();
-
         $idAcao = $acaoEn->getId();
 
         $this->_em->clear();
@@ -370,55 +368,44 @@ class AcaoIntegracaoRepository extends EntityRepository
         try {
 
             $iniciouBeginTransaction = false;
-//            if ($this->_em->isOpen() == false) {
-//                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
-//            }
+            if ($this->_em->isOpen() == false) {
+                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+            }
 
             $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
             if ($iniciouTransacaoAtual == "S") {
-                $sql = "UPDATE ACAO_INTEGRACAO SET IND_EXECUCAO = 'N' WHERE COD_ACAO_INTEGRACAO = " . $acaoEn->getId();
-                $connection->query($sql)->execute();
+                $acaoEn->setIndExecucao("N");
+                $this->_em->persist($acaoEn);
+                $this->_em->flush();
             }
 
-            //$this->_em->beginTransaction();
-            //$iniciouBeginTransaction = true;
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
 
-            if (($tipoExecucao == "E") || ($dados == null) && $acaoEn->getIndUtilizaLog() == 'S') {
+            if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
                  * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
                  * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
                  * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
                  * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
                  */
-
-                $id = AcaoIntegracaoAndamento::generateId($this->_em);
-                $acaoId = $acaoEn->getId();
-                $dthAndamento = (new \DateTime())->format('d/m/Y H:i:s');
-
-                $observacao = (!empty($observacao)) ? "'$observacao'": 'null';
-                $trace = (!empty($trace)) ? "'$trace'": 'null';
-                $query = (!empty($query)) ? "'". str_replace("'", "''", $query) ."'": 'null';
-                $destino = (!empty($destino)) ? "'$destino'": 'null';
-                $errNumber = (!empty($errNumber)) ? "'$errNumber'": 'null';
-
-                $sqlInsertLog = "INSERT INTO ACAO_INTEGRACAO_ANDAMENTO (COD_ACAO_INTEGRACAO_ANDAMENTO, COD_ACAO_INTEGRACAO, DTH_ANDAMENTO, IND_SUCESSO, DSC_OBSERVACAO, TRACE, QUERY, ERR_NUMBER, IND_DESTINO, URL)
-                                VALUES ($id, $acaoId, TO_DATE('$dthAndamento', 'DD/MM/YYYY HH24:MI:SS'), '$sucess', $observacao, $trace, $query, $errNumber, $destino, '$_SERVER[REQUEST_URI]')";
-                $connection->query($sqlInsertLog)->execute();
-//                $andamentoEn = new AcaoIntegracaoAndamento();
-//                $andamentoEn->setAcaoIntegracao($acaoEn);
-//                $andamentoEn->setIndSucesso($sucess);
-//                $andamentoEn->setUrl($_SERVER['REQUEST_URI']);
-//                $andamentoEn->setDestino($destino);
-//                $andamentoEn->setDthAndamento(new \DateTime());
-//                $andamentoEn->setObservacao($observacao);
-//                $andamentoEn->setErrNumber($errNumber);
-//                $andamentoEn->setTrace($trace);
-//                if ($sucess != "S") {
-//                    $andamentoEn->setQuery($query);
-//                }
-//                $this->_em->persist($andamentoEn);
-
+                if ($acaoEn->getIndUtilizaLog() == 'S') {
+                    $url = $_SERVER['REQUEST_URI'];
+                    $andamentoEn = new AcaoIntegracaoAndamento();
+                    $andamentoEn->setAcaoIntegracao($acaoEn);
+                    $andamentoEn->setIndSucesso($sucess);
+                    $andamentoEn->setUrl($url);
+                    $andamentoEn->setDestino($destino);
+                    $andamentoEn->setDthAndamento(new \DateTime());
+                    $andamentoEn->setObservacao($observacao);
+                    $andamentoEn->setErrNumber($errNumber);
+                    $andamentoEn->setTrace($trace);
+                    if ($sucess != "S") {
+                        $andamentoEn->setQuery($query);
+                    }
+                    $this->_em->persist($andamentoEn);
+                }
             }
 
 
@@ -429,17 +416,9 @@ class AcaoIntegracaoRepository extends EntityRepository
                  */
                 if ($sucess=="S") {
                     $maxDate = $integracaoService->getMaxDate();
-                    if (is_a($maxDate, \DateTime::class)) {
-                        $dth = $maxDate->format('Y-m-d H:i:s');
-                    } else {
-                        $dth = $maxDate;
-                    }
-                    if (!empty($dth)) {
-                        $sql = "UPDATE ACAO_INTEGRACAO SET DTH_ULTIMA_EXECUCAO = TO_DATE('$dth', 'YYYY-MM-DD HH24:MI:SS') WHERE COD_ACAO_INTEGRACAO = " . $acaoEn->getId();
-                        $connection->query($sql)->execute();
-
-//                        $acaoEn->setDthUltimaExecucao($maxDate);
-//                        $this->_em->persist($acaoEn);
+                    if (!empty($maxDate)) {
+                        $acaoEn->setDthUltimaExecucao($maxDate);
+                        $this->_em->persist($acaoEn);
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
@@ -480,14 +459,14 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
-//            $this->_em->flush();
-//            $this->_em->commit();
-//            $this->_em->clear();
+            $this->_em->flush();
+            $this->_em->commit();
+            $this->_em->clear();
 
         } catch (\Exception $e) {
-//            if ($iniciouBeginTransaction == true) {
-//                $this->_em->rollback();
-//            }
+            if ($iniciouBeginTransaction == true) {
+                $this->_em->rollback();
+            }
             throw new \Exception($e->getMessage());
 
         }

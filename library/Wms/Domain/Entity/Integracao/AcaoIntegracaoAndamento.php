@@ -71,17 +71,6 @@ class   AcaoIntegracaoAndamento
     protected $errNumber;
 
     /**
-     * Gera o ID do registro
-     * @param $em EntityManager
-     * @return int
-     *
-     */
-    public static function generateId(EntityManager $em) {
-        $sqcGenerator = new SequenceGenerator("SQ_ACAO_INTEGRACAO_AND_01", 1);
-        return $sqcGenerator->generate($em, new AcaoIntegracaoAndamento());
-    }
-
-    /**
      * @param mixed $errNumber
      */
     public function setErrNumber($errNumber)
