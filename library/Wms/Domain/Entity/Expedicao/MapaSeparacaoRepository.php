@@ -23,7 +23,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                        P.NOM_PESSOA,
                        NVL(PV.DSC_VOLUME, PE.DSC_EMBALAGEM || ' (' || MSC.QTD_EMBALAGEM || ')') as EMBALAGEM,
                        MSC.QTD_CONFERIDA,
-                       TO_CHAR(DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') as DTH_CONFERENCIA
+                       TO_CHAR(DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') as DTH_CONFERENCIA,
+                       COD_MAPA_SEPARACAO_EMBALADO
                   FROM MAPA_SEPARACAO_CONFERENCIA MSC
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSC.COD_PRODUTO_VOLUME
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MSC.COD_PRODUTO_EMBALAGEM
@@ -905,9 +906,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getClientesByConferencia($idMapaSeparacao, $agrupaEmbalado = false) {
+    public function getClientesByConferencia($idMapaSeparacao, $agrupaEmbalado = false, $usaCaixaPadrao = false) {
         $statusEmbalado = MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO;
-        $where = (!$agrupaEmbalado) ? "MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)" : "1 = 1";
+        $where = (!($agrupaEmbalado && $usaCaixaPadrao)) ? "MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)" : "1 = 1";
 
         $sql = "SELECT P.NOM_PESSOA,
                        P.COD_PESSOA,
@@ -1086,11 +1087,11 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $mapaSeparacaoEmbalado = $this->_em->getConnection()->query($sql)->fetch();
                 if (empty($mapaSeparacaoEmbalado)) {
                     $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                    $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
+                    $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, false);
                 } else {
                     if (in_array($mapaSeparacaoEmbalado['COD_STATUS'], [Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO, Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO])) {
                         $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
-                        $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento);
+                        $idMapaSepEmb = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento, false);
                     } else {
                         $idMapaSepEmb = $mapaSeparacaoEmbalado['COD_MAPA_SEPARACAO_EMB_CLIENTE'];
                     }
@@ -1194,7 +1195,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             $whereMSCEmbalado = "
                 WHERE COD_PESSOA = " . $codPessoa;
         } else {
-            $whereOnNaoConsolidado = "AND MSQ.IND_TIPO_QUEBRA <> 'T'";
+            $whereOnNaoConsolidado = "AND (MSQ.IND_TIPO_QUEBRA <> 'T' OR MSQ.IND_TIPO_QUEBRA IS NULL)";
         }
 
         //SE O INDICADOR DE EMBALADO NAO FOR O PRODUTO E SIM A EMBALAGEM FRACIONADA, ENTÂO JA RETORNA ISSO NA QUERY
@@ -1224,7 +1225,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        NVL(PE.IS_EMB_FRACIONAVEL_DEFAULT, 'N') as IS_EMB_FRACIONAVEL_DEFAULT,
                        NVL(PE.IS_EMB_EXPEDICAO_DEFAULT, 'N') as IS_EMB_EXP_DEFAULT
                   FROM MAPA_SEPARACAO MS
-                  INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
+                  LEFT JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
                   INNER JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
                                     SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR, NVL(MSP.DSC_LOTE, '$ncl') DSC_LOTE
                                FROM MAPA_SEPARACAO_PRODUTO MSP
@@ -1550,24 +1551,26 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function getCaixasByExpedicao($idExpedicao)
     {
-        $sql = "SELECT SUM(RESULTADO.NUMERO_CAIXAS) NUMERO_CAIXAS, C.COD_PESSOA 
-                FROM CLIENTE C
-                INNER JOIN (
-                    SELECT COUNT(*) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
+        $sql = "SELECT NVL(VOL_EMBALADOS.NUMERO_CAIXAS,0) + NVL(VOL_ETIQUETAS.NUMERO_CAIXAS,0) NUMERO_CAIXAS, NVL(VOL_EMBALADOS.COD_PESSOA,VOL_ETIQUETAS.COD_PESSOA) COD_PESSOA, E.COD_EXPEDICAO
+                    FROM EXPEDICAO E 
+                    LEFT JOIN (
+                        SELECT COUNT(NVL(MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE,0)) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
                         FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
-                        INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO
                         WHERE MS.COD_EXPEDICAO = $idExpedicao
                         GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
-                    UNION
-                    SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
+                    ) VOL_EMBALADOS ON VOL_EMBALADOS.COD_EXPEDICAO = E.COD_EXPEDICAO
+                    LEFT JOIN (
+                        SELECT COUNT(NVL(ES.COD_ETIQUETA_SEPARACAO,0)) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
                         FROM ETIQUETA_SEPARACAO ES
                         INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
                         INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
                         INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                         WHERE E.COD_EXPEDICAO = $idExpedicao
-                         AND ES.COD_STATUS = ". EtiquetaSeparacao::STATUS_CONFERIDO ."
-                        GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO) RESULTADO ON RESULTADO.COD_PESSOA = C.COD_PESSOA
-                GROUP BY C.COD_PESSOA";
+                        AND ES.COD_STATUS = ". EtiquetaSeparacao::STATUS_CONFERIDO ."
+                        GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO
+                    ) VOL_ETIQUETAS ON VOL_ETIQUETAS.COD_EXPEDICAO = E.COD_EXPEDICAO AND VOL_ETIQUETAS.COD_PESSOA = VOL_EMBALADOS.COD_PESSOA
+                    WHERE E.COD_EXPEDICAO = $idExpedicao";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

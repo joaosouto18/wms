@@ -933,7 +933,7 @@ class Mobile_EnderecamentoController extends Action
                 $LeituraColetor = new \Wms\Service\Coletor();
                 $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
                 $codBarras = $LeituraColetor->adequaCodigoBarras($codBarras);
-                
+
                 $produtoEn = $produtoRepo->getEmbalagensByCodBarras($codBarras);
 
                 if (empty($produtoEn['produto'])) throw new Exception("Nenhum produto encontrado com esse código de barras: $codBarras");
@@ -970,6 +970,7 @@ class Mobile_EnderecamentoController extends Action
             $this->view->qtdEmbalagem = $qtdEmbalagem;
             $this->view->controlaLote = ($produtoEn->getIndControlaLote() == 'S');
 
+/*
             $idEndereco = $endereco->getId();
 
             $SQL = "SELECT RE.*
@@ -984,6 +985,7 @@ class Mobile_EnderecamentoController extends Action
             if (count($verificaReservaSaida) > 0) {
                 throw new \Exception ("Existe reserva de saída para esse produto neste endereço que ainda não foi atendida!");
             }
+*/
         } catch (Exception $e) {
             $this->addFlashMessage('error',$e->getMessage());
             $this->redirect('movimentacao');
@@ -1176,7 +1178,7 @@ class Mobile_EnderecamentoController extends Action
 
                     $params['qtd'] = $qtd * -1;
                     $params['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoNovoEn->getDescricao();
-                    $estoqueRepo->movimentaEstoque($params);
+                    $estoqueRepo->movimentaEstoque($params, true, true);
                 }
             }
             else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
@@ -1201,21 +1203,6 @@ class Mobile_EnderecamentoController extends Action
 
                     if (empty($endereco))
                         throw new \Exception("Novo Endereço não encontrado!");
-
-                    /*
-                     * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
-                     *
-                    if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                            $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
-                            foreach ($embalagens as $embalagemEn) {
-                                $embalagemEn->setEndereco($endereco);
-                                $this->getEntityManager()->persist($embalagemEn);
-                            }
-                            $this->getEntityManager()->flush();
-                        }
-                    }
-                    */
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -1300,7 +1287,7 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
                     $params['qtd'] = $qtd * -1;
-                    $estoqueRepo->movimentaEstoque($params);
+                    $estoqueRepo->movimentaEstoque($params, true, true);
                 }
 
                 if (isset($volumeEn) && !empty($volumeEn)) {
@@ -1400,7 +1387,7 @@ class Mobile_EnderecamentoController extends Action
                         $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                         $params['endereco'] = $enderecoAntigo;
                         $params['qtd'] = $qtd * -1;
-                        $estoqueRepo->movimentaEstoque($params);
+                        $estoqueRepo->movimentaEstoque($params, true, true);
 
                     }
                 }
@@ -1560,6 +1547,8 @@ class Mobile_EnderecamentoController extends Action
         $codBarras = ColetorUtil::adequaCodigoBarras($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepository */
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepository */
+        $normaPaletizacaoRepository = $this->getEntityManager()->getRepository('wms:Produto\NormaPaletizacao');
         /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
@@ -1568,12 +1557,16 @@ class Mobile_EnderecamentoController extends Action
             $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
             /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
             $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
+            $codProduto = $volumeEn->getCodProduto();
+        } else {
+            $codProduto = $embalagemEn->getCodProduto();
         }
 
         if (empty($embalagemEn) && empty($volumeEn)) {
             $status = 'error';
             $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
+            $normaPaletizacaoEntity = $normaPaletizacaoRepository->getNormasByProduto($codProduto,'UNICA', true);
             $enderecoEmbalagem = $embalagemEn->getEndereco();
             $status = 'ok';
             $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao().'0' : null;
@@ -1582,6 +1575,8 @@ class Mobile_EnderecamentoController extends Action
             $result['embalado']   = $embalagemEn->getEmbalado();
             $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
             $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
+            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] : 0;
+            $result['camada']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_CAMADAS'] : 0;
         } else {
             $enderecoVolume = $volumeEn->getEndereco();
             $status = 'ok';

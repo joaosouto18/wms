@@ -6,7 +6,7 @@ templates.push({
 
 templates.push({
     name: 'dialog-template.html',
-    template: '<div id="wms-dialog-msg" style="font-size: 12px;">{{model.msg}}</div>'
+    template: '<div id="wms-dialog-msg" style="font-size: 12px; " ng-bind-html="model.msg"></div>'
 });
 
 templates.push({

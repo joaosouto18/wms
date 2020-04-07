@@ -663,12 +663,20 @@ class RecebimentoRepository extends EntityRepository
                 $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
 
                 if (!empty($arrConfLotes)) {
+                    if (empty($ordemServicoEn)) {
+                        /** @var OrdemServicoEntity $ordemServicoEn */
+                        $ordemServicoEn = $this->_em->createQueryBuilder()
+                            ->select('os')
+                            ->from(OrdemServicoEntity::class, 'os')
+                            ->where("os.recebimento = $idRecebimento AND os.dataFinal IS NULL")->getQuery()->getResult();
+                    }
                     $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $arrConfLotes, $ordemServicoEn->getPessoa());
                     $em->flush();
                 }
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+                /** @var OrdemServicoRepository $osRepo */
                 $osRepo = $this->getEntityManager()->getRepository("wms:OrdemServico");
 
                 $paletes = $em->getRepository("wms:Enderecamento\Palete")->findBy(array('recebimento' => $recebimentoEntity->getId(), 'codStatus' => PaleteEntity::STATUS_ENDERECADO));
@@ -1581,6 +1589,9 @@ class RecebimentoRepository extends EntityRepository
 
         // altero status e andamento do recebimento
         $recebimentoEntity = $this->find($idRecebimento);
+        $this->executaIntegracaoBDEmRecebimentoERP($recebimentoEntity);
+
+        $recebimentoEntity = $this->find($idRecebimento);
         $recebimentoEntity->addAndamento(RecebimentoEntity::STATUS_CONFERENCIA_COLETOR, false, 'Conferência iniciada pelo usuário.');
         $this->updateStatus($recebimentoEntity, RecebimentoEntity::STATUS_CONFERENCIA_COLETOR);
 
@@ -1589,6 +1600,66 @@ class RecebimentoRepository extends EntityRepository
             'id' => $idOrdemServico,
             'mensagem' => 'Ordem de Serviço Nº ' . $idOrdemServico . ' criada com sucesso.',
         );
+    }
+
+    /*
+     * @param RecebimentoEntity $recebimentoEntity
+     */
+    public function executaIntegracaoBDEmRecebimentoERP (RecebimentoEntity $recebimentoEntity) {
+        $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INICIO_RECEBIMENTO_ERP');
+        if ($idsIntegracao == "") return true;
+
+        if ($recebimentoEntity == null)  throw new \Exception("Recebimento não informado para integração");
+
+        if (($recebimentoEntity->getStatus()->getId() != RecebimentoEntity::STATUS_CRIADO) &&
+            ($recebimentoEntity->getStatus()->getId() != RecebimentoEntity::STATUS_INICIADO)) return false;
+
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+
+        $idRecebimento = $recebimentoEntity->getId();
+        $ids = explode(',', $idsIntegracao);
+        sort($ids);
+
+        foreach ($ids as $idIntegracao) {
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $options = array();
+
+            /*
+             * Devolve o Retorno a integração a nível de nota fiscal
+             * ?1 - Numero da Nota Fiscal
+             * ?2 - Série da Nota Fiscal
+             * ?3 - Código do Fornecedor
+             * ?4 - CNPJ do Fornecedor
+             * ?5 - Data de Emissão da Nota Fiscal
+             * ?6 - Código do Recebimento no ERP da Nota Fiscal
+             * ?7 - Código do Recebimento interno do WMS
+             */
+
+            $nfsEntity = $notaFiscalRepository->findBy(array('recebimento' => $idRecebimento));
+            /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
+            foreach ($nfsEntity as $notaFiscalEntity) {
+                $options = array(
+                    0 => $notaFiscalEntity->getNumero(),
+                    1 => $notaFiscalEntity->getSerie(),
+                    2 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                    3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
+                    4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
+                    5 => $notaFiscalEntity->getCodRecebimentoErp(),
+                    6 => $notaFiscalEntity->getRecebimento()->getId()
+                );
+                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                if (!$resultAcao === true) {
+                    throw new \Exception($resultAcao);
+                }
+                unset($options);
+            }
+        }
+
+        $recebimentoEntity = $this->find($idRecebimento);
+        $recebimentoEntity->addAndamento($recebimentoEntity->getStatus()->getId(), false, 'Inicio do recebimento comunicado ao ERP');
     }
 
     /**
@@ -2282,10 +2353,7 @@ class RecebimentoRepository extends EntityRepository
                 $options[] = $nota->getFornecedor()->getIdExterno();
                 $options[] = date_format($nota->getDataEmissao(), $formatoData);
 
-                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                if (!empty($resultAcao)) {
-                    throw new \Exception($resultAcao);
-                }
+                $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
             }
         }
     }

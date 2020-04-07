@@ -59,6 +59,40 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             'decorators' => array('ViewHelper'),
         ));
 
+        $config = \Zend_Registry::get('config');
+        $key = $config->system->key;
+        $serial = new \Wms\Serial($key);
+
+        if ($serial->expire()) {
+            $expiracao = $serial->expirationDate();
+            $diasRestantes = $serial->daysRemaing();
+        } else {
+            $expiracao = 'Sem Expiração';
+            $diasRestantes = "Ilimitado";
+        }
+
+        $form->addElement('text', 'chaveAtivacao', array(
+            'size' => 30,
+            'disabled' => 'disabled',
+            'label' => 'Chave de Ativação',
+            'value' => $key,
+        ));
+
+        $form->addElement('text', 'validade', array(
+            'size' => 15,
+            'disabled' => 'disabled',
+            'label' => 'Data de Expiração',
+            'value' => $expiracao,
+        ));
+
+        $form->addElement('text', 'restante', array(
+            'size' => 15,
+            'disabled' => 'disabled',
+            'label' => 'Dias Restantes',
+            'value' => $diasRestantes,
+        ));
+
+        $form->addDisplayGroup(array('chaveAtivacao','validade', 'restante'),'chave',array('legend'=>'Chave de Ativação'));
         $form->addDisplayGroup(array('versaoAtual','versao','submit'), 'identificacao', array('legend' => 'Versões'));
         $form->render();
         $form->setDefaults($values);

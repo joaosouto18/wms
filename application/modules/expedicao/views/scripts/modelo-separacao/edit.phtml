@@ -10,17 +10,13 @@
     }
 
     div.fieldsets {
-        width: 750px;
+        width: 100%;
+        display: flex;
     }
 
-    div.fieldset-left {
-        width: 380px;
-        float: left;
-    }
-
-    div.fieldset-right {
-        width: 350px;
-        float: right;
+    div.fieldset {
+        flex-direction: row;
+        flex: 1;
     }
 
     #fieldset-modelo input.error {
@@ -58,14 +54,12 @@
         </div>
 
         <div class="fieldsets">
-            <div class="fieldset-left">
+            <div class="fieldset">
                 <div class="checkboxes">
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaCaixaMaster'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaQuebraColetor'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaEtiquetaMae'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('usaSequenciaRotaPraca'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('agrupContEtiquetas'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('criarVolsFinalCheckout'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('forcarEmbVenda'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('produtoInventario'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaVolumePatrimonio'); ?><br />
@@ -82,7 +76,14 @@
                     <fieldset id="fieldsetQuebraEmbalados" class="fieldsets">
                         <legend>Quebras</legend>
                         <?php echo $this->form->getSubForm('identificacao')->getElement('quebraEmbalados'); ?>
+                    </fieldset><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('agrupContEtiquetas'); ?>
+                    <fieldset id="fieldSetCaixa" class="fieldsets">
+                        <legend>Para criação dos volumes embalados:</legend>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('usaCaixaPadrao'); ?><br /><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('tipoAgroupSeqEtiquetas'); ?>
                     </fieldset>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('criarVolsFinalCheckout'); ?><br /><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoEmbalado'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultEmbalado'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaEmbalado'); ?>
@@ -90,7 +91,7 @@
                 </fieldset>
             </div>
 
-            <div class="fieldset-right">
+            <div class="fieldset">
                 <fieldset>
                     <legend>Separação para Fracionados</legend>
                     <table>
@@ -137,6 +138,7 @@
     $(function () {
         $(document).ready(function () {
             checkStatusSeparacaoPc();
+            checkAgroupCaixa();
         });
 
         $("#separacaoPc").change(function () {
@@ -148,6 +150,19 @@
                 $("#fieldsetQuebraEmbalados").show();
             } else {
                 $("#fieldsetQuebraEmbalados").hide();
+            }
+        }
+
+        $("#agrupContEtiquetas").change(function () {
+            checkAgroupCaixa();
+        });
+
+        function checkAgroupCaixa() {
+            if ($("#agrupContEtiquetas").attr('checked')) {
+                $("#fieldSetCaixa").show();
+            } else {
+                $("#fieldSetCaixa").hide();
+                $("#usaCaixaPadrao").attr('checked', false);
             }
         }
 

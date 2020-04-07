@@ -63,16 +63,20 @@ class FilialRepository extends AtorRepository
 
     public function trocarPrincipal($id)
     {
-        $anterior = self::getFilialPrincipal();
-        $anterior->setIsPrincipal(false);
-        $this->_em->persist($anterior);
+        $atual = self::getFilialPrincipal();
+        if (!empty($atual) && $atual->getId() !== $id) {
+            $atual->setIsPrincipal(false);
+            $this->_em->persist($atual);
+        }
 
-        /** @var FilialEntity $nova */
-        $nova = $this->find($id);
-        $nova->setIsPrincipal(true);
-        $this->_em->persist($nova);
+        if (empty($atual) || (!empty($atual) && $atual->getId() !== $id)) {
+            /** @var FilialEntity $nova */
+            $nova = $this->find($id);
+            $nova->setIsPrincipal(true);
+            $this->_em->persist($nova);
 
-        $this->_em->flush();
+            $this->_em->flush();
+        }
     }
 
     public function getIdValue()

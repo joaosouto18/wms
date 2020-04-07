@@ -385,7 +385,6 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
                 $this->em->flush();
-                $this->addFlashMessage('success', 'Palete(s) ' . implode(", ", $paletes) . ' endereçado(s) com sucesso');
             }
 
             if ($this->getSystemParameterValue('IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP') == 'S') {
@@ -402,6 +401,7 @@ class Mobile_Enderecamento_ManualController extends Action
             }
 
             $this->getEntityManager()->commit();
+            $this->addFlashMessage('success', 'Palete(s) ' . implode(", ", $paletes) . ' endereçado(s) com sucesso');
             $this->_redirect('/mobile/enderecamento_manual/ler-codigo-barras/id/'.$params['id']);
 
         } catch (\Exception $ex) {

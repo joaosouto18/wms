@@ -60,6 +60,32 @@ echo $this->doctype();
             </div>
         </div>
     </div>
+
+    <?php
+    $config = \Zend_Registry::get('config');
+
+    $key = null;
+    $systemTag = $config->system;
+    if ($systemTag != null) $key = $config->system->key;
+
+    $serial = new \Wms\Serial($key);
+    if ($serial->expire()) {
+        if ($serial->daysRemaing() <=15) {
+            if ($serial->daysRemaing() == 0) {
+                $msg = "Atenção. A chave de ativação do sistema irá expirar hoje";
+            } else {
+                $msg = "Atenção. A chave de ativação do sistema irá expirar em " . $serial->daysRemaing() . " dias";
+            }
+            //echo "<script>alert('$msg') </script>";
+            echo "<ul class=\"flashMessenger\">
+                    <li class=\"info_message\">
+                        <div style=\"display: block;\">$msg</div>
+                    </li>
+                  </ul>";
+        }
+    }
+    ?>
+
     <div id="content">
         <div id="body">
             <center>
@@ -95,7 +121,7 @@ echo $this->doctype();
         // Date      false
         // function  false
 
-        if (val === undefined)
+        if (typeof val === undefined)
             return true;
 
         if (typeof (val) == 'function' || typeof (val) == 'number' || typeof (val) == 'boolean' || Object.prototype.toString.call(val) === '[object Date]')

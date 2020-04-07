@@ -1,10 +1,108 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: Luis Fernando
- * Date: 09/03/2018
- * Time: 14:51
- */
+<script src="<?php echo $this->baseUrl('/angularJS/controllers/estoque-proprietario/proprietraioGridCtrl.js') ?>"></script>
+<style>
+    .gTTitle a.sort span{ background:none}
+    .table-info-grid{
+    border-collapse: collapse;
+    } 
+    .table-info-grid th{
+    padding: 5px 10px; 
+    width: 16.66%; 
+    }
+    .table-info-grid td{
+    vertical-align: middle;
+    text-align: center
+    }
 
-echo $this->form;
-?>
+    label.lbl-filter {
+        background: #f5ede6;
+        padding: 2px;
+    }
+
+    label.lbl-filter .checkbox {
+        margin: 13px 0;
+    }
+    </style>
+<div ng-controller="proprietarioGridCtrl" ng-init="prepareForm()" style="font-size: 12px; " class="ui-dialog-content ui-widget-content">
+    <form id="mainForm" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="">
+        <div>
+            <fieldset id="fieldset-Buscar">
+                <legend>Controle de Estoque de Proprietário</legend>
+                <div class="field">
+                    <label for="typeResult">Consultar por:</label>
+                    <br />
+                    <label><input type="radio" class="input radio" name="typeResult" ng-model="params.tipoBusca" value="E">Estoque atual</label>
+                    <br />
+                    <label><input type="radio" class="input radio" name="typeResult" ng-model="params.tipoBusca" ng-change="setDateInterval()" value="H">Histórico de Movimentações</label>
+                    </div>
+                <div class="field">
+                    <label for="codPessoa" class="field optional">Proprietário</label>
+                    <select name="codPessoa" id="codPessoa" ng-model="params.proprietario" ng-options="prop.nomProp for prop in proprietarios">
+                        <option value="" label="Selecione...">Selecione...</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="idProduto" class="field optional">Cod. produto</label>
+                    <input type="text" name="idProduto" ng-model="params.codProduto" size="12">
+                </div>
+                <div class="field" ng-show="(params.tipoBusca == 'H')">
+                    <label class="field optional">Data Movimentação</label>
+                    <input type="text" ng-model="params.dataInicial" id="dataInicial" name="dataInicial" size="11" alt="date" class="date hasDatepicker">
+                    <span> a </span>
+                    <input type="text" ng-model="params.dataFinal" id="dataFinal" name="dataFinal" size="11" alt="date" class="date hasDatepicker">
+                </div>
+                <input type="button" ng-click="buscar()" class="btn" value="Buscar">
+                </fieldset>
+            </div>
+        </form>
+    <fieldset id="fs-grid-selected" ng-show="showGrid">
+        <legend>Resultado</legend>
+        <div class="grid">
+            <div class="gMassAction">
+                <div class="gAction">
+                    <button ng-show="results.length" type="button" class="btn-grid" ng-click="export('pdf')"><span>Exportar PDF</span></button>
+                    <button ng-show="results.length" type="button" class="btn-grid" ng-click="export('csv')"><span>Exportar CSV</span></button>
+                    </div>
+                </div>
+            <table class="gTable" style="width:1110px!important">
+                <tbody >
+                <tr class="gTTitle">
+                    <td ng-repeat="column in gridColumns" width="{{column.width}}">
+                        <div><a href="" title="" class="sort" ng-click="ordenarPor(column.name)"><span>{{column.label}}</span></a></div>
+                            <div class="field">
+                                <input ng-if="column.filter && column.filter.type == 'text'"
+                                       type="text" ng-model="objectFilter[column.name]"
+                                       ng-attr-ui-mask="{{column.filter.masked && column.filter.maskFilter || ''}}"
+                                       ng-attr-model-view-value="{{column.filter.masked && true || false}}"
+                                       size="{{column.filter.size}}"
+                                >
+                                <label ng-if="column.filter && column.filter.type == 'checkbox'" class="lbl-filter">
+                                    <input type="checkbox" ng-model="filterNoZeros[column.name]" ng-change="column.filter.function()" class="checkbox">{{column.filter.label}}
+                                </label>
+                                <select ng-if="column.filter && column.filter.type == 'select'" style="min-width: 120px" ng-model="objectFilter[column.name]" ng-options="o as o for o in column.filter.options">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                </table>
+            <div style="overflow-y:scroll; max-height: 340px; width:1127px!important" >
+                <table class="gTable">
+                    <tr ng-show="showLoading">
+                        <td colspan="100%" align="center">
+                            <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
+                            </td>
+                        </tr>
+                    <tr class="gTResultSet" ng-repeat="result in results | queryFilter:objectFilter | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                        <td ng-repeat="column in gridColumns" width="{{column.width}}">
+                            <div>{{result[column.name]}}</div>
+                            </td>
+                        </tr>
+                    <tr ng-show="(!showLoading && !(results.length))">
+                        <td colspan="100%" align="center" >Nenhum resultado obtido</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </fieldset>
+    </div>

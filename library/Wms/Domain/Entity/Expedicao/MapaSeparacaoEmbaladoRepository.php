@@ -14,10 +14,10 @@ use Wms\Domain\Entity\UsuarioRepository;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa, $codPessoa, $os)
+    public function save($idMapa, $codPessoa, $os, $returnEntity = true)
     {
         $conn = $this->_em->getConnection();
-        $idEmbalado = $conn->query("SELECT SQ_MAPA_SEPARACAO_EMBALADO_01.nextval ID_EMBALADO FROM DUAL")->fetch()['ID_EMBALADO'];
+        $idEmbalado = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO . $conn->query("SELECT SQ_MAPA_SEPARACAO_EMBALADO_01.nextval ID_EMBALADO FROM DUAL")->fetch()['ID_EMBALADO'];
         $sequencia = $conn->query("SELECT (NVL(MAX(NUM_SEQUENCIA), 0) + 1) AS SEQ 
                                    FROM MAPA_SEPARACAO_EMB_CLIENTE 
                                    WHERE COD_MAPA_SEPARACAO = $idMapa AND COD_PESSOA = $codPessoa")->fetch()['SEQ'];
@@ -42,7 +42,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         $conn->executeQuery($sql);
 
-        return $idEmbalado;
+        return ($returnEntity) ? $this->find($idEmbalado) : $idEmbalado;
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
@@ -91,7 +91,23 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO);
 
         foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
+            if ($mapaSeparacaoEmbaladoEntity->getStatus() == $siglaEn) {
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepository */
+                $andamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+                $andamentoRepository->save("Volume Embalado $idEmbalado já foi conferido", $idExpedicao);
+                throw new \Exception("O Volume Embalado $idEmbalado já está conferido!");
+
+            }
+
+            $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+
             $mapaSeparacaoEmbaladoEntity->setStatus($siglaEn);
+            $mapaSeparacaoEmbaladoEntity->setDataConferenciaCheckout(new \DateTime());
+            $mapaSeparacaoEmbaladoEntity->setConferente((int)$usuarioId);
+
+
+
             $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEntity);
         }
         $this->getEntityManager()->flush();
@@ -112,6 +128,9 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepository */
+        $mapaSeparacaoConferenciaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
         if (!$fechaEmbaladosNoFinal) {
             $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
         } else {
@@ -135,6 +154,18 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         } elseif ($isLast) {
             $setLastVol();
         }
+
+        if (!$fechaEmbaladosNoFinal) {
+            $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
+        } else {
+            $etiqueta = $this->getDadosEmbalado(null, $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getExpedicao()->getId(), $mapaSeparacaoEmbaladoEn->getPessoa()->getId());
+        }
+        if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
+            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
+        }
+
+        $produtosByVolume = $this->getQtdProdByVol($mapaSeparacaoEmbaladoEn->getId());
+        $qtdProdutosByVolume = reset($produtosByVolume)['QTD_PRODUTOS'];
 
         $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
         $xy = explode(",",$this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO'));
@@ -165,7 +196,14 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 break;
             case 7:
                 //LAYOUT MBLED
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100, 175));
+                break;
+            case 8:
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+                break;
+            case 9:
+                //LAYOUT VETSS
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
@@ -235,7 +273,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       NVL(R.NUM_SEQ, 0) SEQ_ROTA, NVL(PR.NUM_SEQ, 0) SEQ_PRACA,
                       NVL(R.NOME_ROTA, '') NOME_ROTA, NVL(PR.NOME_PRACA, '') NOME_PRACA,
                       TO_CHAR(OS.DTH_FINAL_ATIVIDADE, 'DD/MM/YYYY HH24:MI:SS') DTH_FECHAMENTO,
-                      OP.NOM_PESSOA AS CONFERENTE, B.DSC_BOX
+                      OP.NOM_PESSOA AS CONFERENTE, B.DSC_BOX,
+                      MSE.IND_ULTIMO_VOLUME, P.COD_PESSOA
                  FROM MAPA_SEPARACAO MS
            INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
            INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -255,7 +294,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 WHERE $where
              GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
                       PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, SIGLA.DSC_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
-                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX
+                      NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX, MSE.IND_ULTIMO_VOLUME, P.COD_PESSOA
              ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -344,7 +383,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         $dthOs = (new \DateTime())->format("d/m/Y H:i:s");
         $conn = $this->_em->getConnection();
-        $idOs = $conn->query("SELECT SQ_ORDEM_SERVICO_01.nextval ID_OS FROM DUAL")->fetch()[0]['ID_OS'];
+        $idOs = $conn->query("SELECT SQ_ORDEM_SERVICO_01.nextval ID_OS FROM DUAL")->fetch()['ID_OS'];
 
         $sql = "INSERT INTO ORDEM_SERVICO 
                     (
@@ -368,5 +407,41 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         return $idOs;
     }
+
+    public function getProdutosByMapaEmbalado($codVolumePatrimonio)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codProduto, p.grade, p.descricao, SUM(msc.qtdEmbalagem * msc.qtdConferida) quantidade')
+            ->from('wms:Expedicao\MapaSeparacaoConferencia','msc')
+            ->innerJoin('msc.mapaSeparacaoEmbalado', 'mse')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = msc.codProduto AND p.grade = msc.dscGrade')
+            ->where("mse.id = $codVolumePatrimonio")
+            ->groupBy('p.id, p.grade, p.descricao');
+
+        return $sql->getQuery()->getResult();
+    }
+
+    public function getQtdProdByVol($codMapaEmbalado)
+    {
+        $sql = "SELECT COUNT(DISTINCT COD_PRODUTO||DSC_GRADE) QTD_PRODUTOS, MSC.COD_MAPA_SEPARACAO_EMBALADO 
+                    FROM MAPA_SEPARACAO_CONFERENCIA MSC
+                WHERE MSC.COD_MAPA_SEPARACAO_EMBALADO = $codMapaEmbalado
+                GROUP BY MSC.COD_MAPA_SEPARACAO_EMBALADO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+    }
+
+    public function getQtdEtiquetaEmbalados($idExpedicao, $codPessoa)
+    {
+        $sql = "SELECT COUNT(*) NUMERO_CAIXAS
+                    FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
+                    INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao AND MSC.COD_PESSOA = $codPessoa
+                GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
 

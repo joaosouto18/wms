@@ -533,4 +533,15 @@ class Expedicao_OsController extends Action
 
     }
 
+    public function produtosVolumesEmbaladosAction()
+    {
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepository */
+        $mapaSeparacaoEmbaladoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $produtos = $mapaSeparacaoEmbaladoRepository->getProdutosByMapaEmbalado($this->_getParam('COD_MAPA_SEPARACAO_EMB_CLIENTE'));
+
+        $grid = new \Wms\Module\Expedicao\Grid\ProdutosEmbalados();
+        $this->view->grid = $grid->init($produtos);
+    }
+
 }

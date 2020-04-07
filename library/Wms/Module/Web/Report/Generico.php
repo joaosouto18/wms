@@ -9,6 +9,7 @@ class Generico extends Pdf {
 
     private $titulo;
     private $cabecalho;
+    private $headerMapReplace;
 
     public function Header()
     {
@@ -20,7 +21,8 @@ class Generico extends Pdf {
         foreach($this->cabecalho as $key => $linha )
         {
             $key = str_replace("_"," ",$key);
-            $this->Cell($linha, 5, utf8_decode($key), 1,0);
+            $headerText = (isset($this->headerMapReplace[$key])) ? utf8_decode($this->headerMapReplace[$key]) : utf8_decode($key);
+            $this->Cell($linha, 5, $headerText, 1,0);
         }
         $this->Cell(1, 5, "", 0,1);
 
@@ -51,12 +53,13 @@ class Generico extends Pdf {
         $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
     }
 
-    public function init(array $array = array(), $filename, $titulo) {
+    public function init(array $array = array(), $filename, $titulo, $headerMap = []) {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->titulo = $titulo;
+        $this->headerMapReplace = $headerMap;
         $this->SetFont('Arial', 'B', 8);
 
         $tamanho = $this->calculaTamanhoColunas($array);

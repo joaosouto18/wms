@@ -525,7 +525,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         return $arr;
     }
 
-    public function getCodBarrasAtivosByMapa($idMapa, $codCliente = null)
+    public function getCodBarrasAtivosByMapa($idExpdicao, $idMapa, $quebraColetor, $codCliente = null)
     {
         $andWhere = "";
         $sqlAppend = "";
@@ -536,12 +536,16 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             $andWhere = "AND P.COD_CLIENTE = $codCliente";
         }
 
+        if ($quebraColetor)
+            $andWhere .= " AND MSP.COD_MAPA_SEPARACAO = $idMapa";
+
         $sql = "SELECT DISTINCT NVL(PE.COD_BARRAS, PV.COD_BARRAS) COD_BARRAS 
                 FROM MAPA_SEPARACAO_PRODUTO MSP
+                INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                 $sqlAppend
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = MSP.COD_PRODUTO AND PE.DSC_GRADE = MSP.DSC_GRADE AND PE.DTH_INATIVACAO IS NULL AND PE.COD_BARRAS IS NOT NULL
                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME AND PV.DTH_INATIVACAO IS NULL AND PV.COD_BARRAS IS NOT NULL
-                WHERE MSP.COD_MAPA_SEPARACAO = $idMapa $andWhere";
+                WHERE MS.COD_EXPEDICAO = $idExpdicao $andWhere";
 
         $result = [];
         foreach ($this->getEntityManager()->getConnection()->query($sql)->fetchAll() as $r)

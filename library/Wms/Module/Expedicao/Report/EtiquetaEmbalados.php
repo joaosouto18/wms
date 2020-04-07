@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Expedicao\Report;
 
+use Wms\Util\Barcode\Barcode;
 use Wms\Util\Barcode\eFPDF,
     Wms\Util\CodigoBarras;
 
@@ -40,11 +41,17 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 6:
                 //LAYOUT PLANETA
-                self::bodyExpedicaoModelo6($volumePatrimonio);
+                self::bodyExpedicaoModelo6($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
                 break;
             case 7:
                 //LAYOUT MBLED
                 self::bodyExpedicaoModelo7($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
+                break;
+            case 8:
+                self::bodyExpedicaoModelo8($volumePatrimonio);
+                break;
+            case 9:
+                self::bodyExpedicaoModelo9($volumePatrimonio);
                 break;
             default:
                 self::bodyExpedicaoModelo1($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
@@ -334,11 +341,11 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo6($volumes)
+    private function bodyExpedicaoModelo6($volumes, $mapaSeparacaoEmbaladoRepo)
     {
-        $totalEtiquetas = count($volumes);
-
         foreach ($volumes as $volume) {
+
+            $qtdEtiquetasEmbalados = $mapaSeparacaoEmbaladoRepo->getQtdEtiquetaEmbalados($volume['COD_EXPEDICAO'], $volume['COD_PESSOA']);
 
             $imgW = 45;
             $imgH = 17;
@@ -366,7 +373,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(90,6);
             $this->SetFont('Arial', 'B', 17);
-            $this->MultiCell(40, 10, "$volume[NUM_SEQUENCIA]/$totalEtiquetas", 0, 'L');
+            $this->MultiCell(40, 10, $volume['NUM_SEQUENCIA'].'/'.reset($qtdEtiquetasEmbalados)['NUMERO_CAIXAS'], 0, 'L');
 
             $this->SetXY(88,14);
             $this->SetFont('Arial', 'B', 12);
@@ -458,16 +465,16 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = str_replace(array('0','1','2','3','4','5','6','7','8','9','-'),'',substr($volume['DSC_PLACA_CARGA'],0,16))."\n";
             $this->MultiCell(110, 9, $impressao, 0, 'L');
 
-            $this->SetY(17);
+            $this->SetY(14);
             $this->SetFont('Arial', 'B', 13);
             $impressao = utf8_decode($volume['NOM_PESSOA']."\n");
             $this->MultiCell(110, 5, $impressao, 0, 'L');
 
-            $this->SetY(30);
+            $this->SetY(28);
             $impressao = utf8_decode($volume['DSC_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
 
-            $this->SetY(45);
+            $this->SetY(36);
             $impressao = utf8_decode('PEDIDO: '.$volume['COD_CARGA_EXTERNO']) . ' - EXP.:' . $volume['COD_EXPEDICAO'];
             $this->MultiCell(110, 7.5, $impressao, 0, 'L');
 
@@ -488,6 +495,208 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 35, 52.5 , 60, 20);
 
+            $y = 52;
+            $this->SetFont('Arial', 'B', 7);
+
+            $volume['produtos'] = $em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->getProdutosByMapaEmbalado($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']);
+
+            foreach ($volume['produtos'] as $produto) {
+
+                $impressao = utf8_decode($produto['codProduto']);
+                $this->SetX(3);
+                $this->SetY($y);
+                $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = utf8_decode(substr($produto['descricao'], 0, 33));
+                $this->SetXY(19,$y);
+                $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = $produto['quantidade'];
+                $this->SetXY(85,$y);
+                $this->Cell(75,$y, $impressao, 0, 'L');
+
+                $y = $y + 3;
+            }
+
         }
     }
+
+    private function bodyExpedicaoModelo8($volumes)
+    {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        foreach ($volumes as $volume) {
+
+
+            $this->SetFont('Arial', 'B', 20);
+            //coloca o cod barras
+            $this->AddPage();
+
+            //monta o restante dos dados da etiqueta
+            $this->SetFont('Arial', 'B', 15);
+    //            $impressao = utf8_decode("EXP: $volume[expedicao] CLI: $volume[quebra]\n");
+    //            $volume['quebra'] = "TOMAZ GOMIDE NUNES - PREÇO REVENDA";
+            $impressao = utf8_decode(substr("$volume[NOM_PESSOA]\n",0,50));
+            $this->MultiCell(110, 4.1, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', 'B', 13);
+            $impressao = utf8_decode("Pedido:");
+            $this->SetY(15);
+            $this->SetX(82);
+            $this->MultiCell(100, 6, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', 'B', 16);
+            $impressao = utf8_decode("\n$volume[COD_PEDIDO]");
+            $this->SetY(17);
+            $this->SetX(82);
+            $this->MultiCell(100, 6, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', 'B', 7);
+            $impressao = utf8_decode("Código                          Produto                                                    Qtd.\n");
+            $this->SetX(5);
+            $this->SetY(10);
+            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+
+            //linha horizontal entre codigo produto quantidade e a descricao dos dados
+            $this->Line(0,14,150,14);
+            //linha vertical entre o codigo e a descrição do produto
+            $this->Line(19,14,19,100);
+            //linha vertical entre a descrição do produto e a quantidade
+            $this->Line(73,14,73,100);
+            //linha vertical entre a quantidade e o numero do pedido
+            $this->Line(82,14,82,80);
+            //linha horizontal entre o numero do pedido e o cod de barras
+            $this->Line(82,30,150,30);
+
+            $y = 12;
+            $this->SetFont('Arial', 'B', 7);
+
+            $volume['produtos'] = $em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->getProdutosByMapaEmbalado($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']);
+
+            foreach ($volume['produtos'] as $produtos) {
+
+                $impressao = utf8_decode($produtos['codProduto']);
+                $this->SetX(3);
+                $this->SetY($y);
+                $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = utf8_decode(substr($produtos['descricao'], 0, 33));
+                $this->SetXY(19,$y);
+                $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = $produtos['quantidade'];
+                $this->SetXY(75,$y);
+                $this->Cell(75,$y, $impressao, 0, 'L');
+
+                $y = $y + 2;
+            }
+            $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 83, 35, 20,5);
+
+            $angle    = 0;
+            $x        = 94;
+            $y        = 46;
+
+            $type     = 'code128';
+            $black    = '000000';
+            $codBarras =
+            Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>"$volume[COD_MAPA_SEPARACAO_EMB_CLIENTE]" . 0),0.40,7);
+        }
+    }
+
+    private function bodyExpedicaoModelo9($volumes)
+    {
+        foreach ($volumes as $volume) {
+
+            $imgW = 45;
+            $imgH = 17;
+            $this->AddPage();
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 1, $imgW - 1, $imgH);
+            $this->Cell($imgW, $imgH + 1, '', 1);
+
+            $this->Cell(59, 18, '', 1, 1);
+
+            $this->SetXY(48.5, 3);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(15, 5, 'PEDIDO', 0, 1);
+            $this->SetXY(48.5, 9);
+            $this->SetFont('Arial', 'B', 15);
+            $this->Cell(15, 4, utf8_decode($volume['COD_PEDIDO']));
+
+            $this->SetXY(48.5, 15);
+            $this->SetFont('Arial', null, 12);
+            $this->Cell(27, 4, "SEQUENCIA:");
+            $this->SetFont('Arial', 'B', 12);
+            $this->Cell(15, 4, "$volume[SEQ_ROTA]-$volume[SEQ_PRACA]");
+
+            $this->SetxY(84, 1);
+            $this->SetFont('Arial', '', 13);
+            $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
+
+            $this->SetxY(75, 6);
+            $this->SetFont('Arial', 'B', 17);
+            $dscSeq = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
+            $this->MultiCell(40, 10, $dscSeq, 0, 'C');
+
+            $this->SetXY(88, 14);
+            $this->SetFont('Arial', 'B', 12);
+            $this->Cell(20, 5, $volume['DSC_BOX']);
+
+            $this->SetY(20);
+            $this->Cell(104, 14, '', 1);
+
+            $this->SetXY(5, 22);
+            $this->SetFont('Arial', null, 11);
+            $this->Cell(15, 4, utf8_decode('CLIENTE:'));
+
+            $this->SetXY(5, 28);
+            $this->SetFont('Arial', 'B', 13);
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth($volume['NOM_PESSOA'], 100), 0, 'L');
+
+            $this->SetY(34.5);
+            $this->Cell(104, 16, '', 1);
+
+            $this->SetXY(5, 36.5);
+            $this->SetFont('Arial', null, 9);
+            $this->Cell(15, 4, utf8_decode('ENDEREÇO:'));
+
+            $this->SetXY(5, 41);
+            $this->SetFont('Arial', 'B', 11);
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[COD_REFERENCIA_SIGLA] - $volume[NOM_LOCALIDADE]"), 100), 0, 'L');
+            $this->SetXY(5, 45);
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[DSC_ENDERECO] nº: $volume[NUM_ENDERECO] "), 100), 0, 'L');
+
+            $this->SetY(51);
+            $this->Cell(104, 22, '', 1);
+            $this->Line(55, 51, 55, 73);
+
+            $this->SetXY(8, 52);
+            $this->SetFont('Arial', "B", 10);
+            $this->MultiCell(100, 4, utf8_decode("VOLUME FECHADO EM:"));
+            $this->SetXY(8, 56.5);
+            $this->SetFont('Arial', null, 12);
+            $this->MultiCell(100, 4, $volume['DTH_FECHAMENTO']);
+            $this->SetXY(15, 64);
+            $this->SetFont('Arial', "B", 10);
+            $this->MultiCell(100, 5, "CONFERENTE", 0, 'L');
+            $this->SetXY(3, 68);
+            $this->SetFont('Arial', null, 10);
+            $this->MultiCell(52, 5, utf8_decode($volume['CONFERENTE']), 0, 'C');
+
+            $this->SetXY(57, 53);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(12, 4, "ROTA:");
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(38, 4, $this->SetStringByMaxWidth($volume["NOME_ROTA"], 38));
+
+            $this->SetXY(57, 58);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(14, 4, utf8_decode("PRAÇA:"));
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(36, 4, $this->SetStringByMaxWidth($volume["NOME_PRACA"], 36));
+
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 56, 63, 50, 12);
+        }
+    }
+
 }

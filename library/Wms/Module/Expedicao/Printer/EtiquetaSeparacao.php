@@ -95,13 +95,25 @@ class EtiquetaSeparacao extends Pdf
                 case 16:
                     $this->SetFont('Arial','B',7);
                     //Go to 1.5 cm from bottom
-                    $this->SetY($this->footerPosition + 4);
+                    $this->SetY($this->footerPosition + 6);
                     $this->SetX(0);
-                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->Cell(20, 3,"", 0, 1, "L");
                     $this->SetFont('Arial','B',12);
-                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['contadorCargas'][$this->etiqueta['codCargaExterno']] . '/' . $this->etiqueta['qtdCargaDist'], 0, 1, "L");
-                    $this->SetFont('Arial','B',8);
+                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['contadorClientes'][$this->etiqueta['codClienteExterno']] . '/' . $this->etiqueta['qtdEtiquetaCliente'], 0, 1, "L");
+                    $this->SetFont('Arial','B',7);
                     $this->Cell(20, 4, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+                    $this->SetFont('Arial','B',7);
+                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    break;
+                case 17:
+                    // font
+                    $this->SetFont('Arial','B',7);
+                    //Go to 1.5 cm from bottom
+                    $this->SetY($this->footerPosition);
+                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->Cell(20, 3, 'Volume: ' .  $this->volEntrega['posEntrega'], 0, 1, "L");
+                    $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+                    $this->posVolume--;
                     break;
             }
         }
@@ -205,22 +217,32 @@ class EtiquetaSeparacao extends Pdf
         }
         $contadorCarga = array();
         $contadorProduto = array();
+        $contadorCliente = array();
 
         $agroupEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == "S");
+        $usaCaixaEmbPadrao = ($modeloSeparacaoEn->getUsaCaixaPadrao() == "S");
+
+        /** @var Expedicao $expedicaoEn */
+        $expedicaoEn = $em->find("wms:Expedicao", $idExpedicao);
 
         $this->posVolume = count($etiquetas);
         $arrVolsEntrega = [];
         if ($agroupEtiquetas) {
-            /** @var Expedicao $expedicaoEn */
-            $expedicaoEn = $em->find("wms:Expedicao", $idExpedicao);
-            $numEtiquetas = $expedicaoEn->getCountVolumes();
 
-            /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
-            $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-            $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
-            /** @var CaixaEmbalado $caixaEn */
-            $caixaEn = $em->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
-            $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
+            $preCountVolCliente = [];
+            if ($usaCaixaEmbPadrao) {
+                /** @var CaixaEmbalado $caixaEn */
+                $caixaEn = $em->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
+                if (empty($caixaEn))
+                    throw new \Exception("O modelo de separação está configurado para sequenciamento único dos volumes<br/>com base na caixa de embalagem padrão, para isso é obrigatório o cadastro de uma caixa de embalado padrão e que esteja ativa!");
+
+                $preCountVolCliente = CaixaEmbalado::calculaExpedicao(
+                    $caixaEn,
+                    $em->getRepository(Expedicao\MapaSeparacaoProduto::class)->getMaximosConsolidadoByCliente($idExpedicao)
+                );
+            }
+
+            $numEtiquetas = $expedicaoEn->getCountVolumes();
             $countEtiquetasCliente = $em->getRepository('wms:Expedicao\VEtiquetaSeparacao')->getCountEtiquetasByCliente($idExpedicao);
 
             while(!(empty($preCountVolCliente) && empty($countEtiquetasCliente))) {
@@ -262,34 +284,38 @@ class EtiquetaSeparacao extends Pdf
             }
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
+            if (!isset($contadorCliente[$etiqueta['codClienteExterno']])) {
+                $contadorCliente[$etiqueta['codClienteExterno']] = 0;
+            }
+            $contadorCliente[$etiqueta['codClienteExterno']] = $contadorCliente[$etiqueta['codClienteExterno']] + 1;
+
+
             if (!empty($dscBox)) $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
+            $etiqueta['contadorClientes'] = $contadorCliente;
             $this->layoutEtiqueta($etiqueta, $numEtiquetas,false, $modelo,false);
 
 
-            if ($agroupEtiquetas && empty($etiqueta['posVolume'])) {
+            if ($agroupEtiquetas) {
                 $this->volEntrega = [
                     'posEntrega' => $arrVolsEntrega[$etiqueta['codCliente']]['pos'],
                     'totalEntrega' => $arrVolsEntrega[$etiqueta['codCliente']]['total']
                 ];
-                $EtiquetaRepo->savePosVolumeImpresso($etiqueta['id'], $this->posVolume, $this->volEntrega);
+                if (empty($etiqueta['posVolume'])) {
+                    $EtiquetaRepo->savePosVolumeImpresso($etiqueta['id'], $this->posVolume, $this->volEntrega);
+                }
                 $arrVolsEntrega[$etiqueta['codCliente']]['pos']--;
             }
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
-        /** @var ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
-        /** @var Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
-
-        if ($ExpedicaoEntity->getStatus()->getId() == Expedicao::STATUS_INTEGRADO) {
+        if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_INTEGRADO) {
             $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-            $ExpedicaoEntity->setStatus($statusEntity);
-            $ExpedicaoEntity->setBox($boxEntity);
+            $expedicaoEn->setStatus($statusEntity);
+            $expedicaoEn->setBox($boxEntity);
 
-            $em->persist($ExpedicaoEntity);
+            $em->persist($expedicaoEn);
         }
 
         foreach($etiquetas as $etiqueta) {
@@ -388,6 +414,7 @@ class EtiquetaSeparacao extends Pdf
 
         $contadorCarga = array();
         $contadorProduto = array();
+        $contadorCliente = array();
         /** @var Expedicao\EtiquetaSeparacao $etiquetaEntity */
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
@@ -402,6 +429,12 @@ class EtiquetaSeparacao extends Pdf
 
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
+            if (!isset($contadorCliente[$etiqueta['codClienteExterno']])) {
+                $contadorCliente[$etiqueta['codClienteExterno']] = 0;
+            }
+            $contadorCliente[$etiqueta['codClienteExterno']] = $contadorCliente[$etiqueta['codClienteExterno']] + 1;
+
+
             $cargaEntity = $em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $etiqueta['codCargaExterno']));
             $boxEntity = $cargaEntity->getExpedicao()->getBox();
             $dscBox = '';
@@ -410,6 +443,7 @@ class EtiquetaSeparacao extends Pdf
             $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
+            $etiqueta['contadorClientes'] = $contadorCliente;
             $this->posVolume = $etiqueta['posVolume'];
             $this->layoutEtiqueta($etiqueta, $numEtiquetas,true, $modelo,false);
             $etiquetaEntity->setReimpressao($motivo);
@@ -822,6 +856,9 @@ class EtiquetaSeparacao extends Pdf
     protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         switch ($modelo) {
+            case 17: //LAYOUT VETSS
+                $this->layoutModelo17($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
+                break;
             case 16: //LAYOUT MBLED
                 $this->layoutModelo16($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
                 break;
@@ -1497,8 +1534,8 @@ class EtiquetaSeparacao extends Pdf
         $impressao = utf8_encode("$etiqueta[cliente]").' - ('.$estadoEntrega.')'."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
-        $this->Line(0,35.5,100,35.5);
-        $this->SetY(37);
+        $this->Line(0,42,100,42);
+        $this->SetY(44);
         $this->SetFont('Arial', 'B', 13);
         if ($etiqueta['codProduto'] . ' - ' . utf8_decode(trim($etiqueta['produto'])) > 55) {
             $this->SetFont('Arial', 'B', 10);
@@ -1509,16 +1546,94 @@ class EtiquetaSeparacao extends Pdf
         $this->InFooter = true;
         $this->etiqueta = $etiqueta;
         if ($reentrega == false) {
-            $this->Line(0,49,100,49);
-            $this->SetY(51);
+            $this->Line(0,55,100,55);
+            $this->SetY(57);
             $this->SetFont('Arial', 'B', 13);
-            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao] - ($etiqueta[quantidade])\n");
+            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao]($etiqueta[quantidade])\n");
             $this->MultiCell(100, 5, $impressao, 0, 'L');
-            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 35, 57, 62,17);
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 45.5, 57, 51,17);
         } else {
             $this->SetFont('Arial', 'B', 20);
             $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
         }
 
+    }
+
+    protected function layoutModelo17($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
+    {
+        $this->SetMargins(3, 1.5, 0);
+        $this->SetFont('Arial', 'B', 9);
+
+        $strReimpressao = "";
+        if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
+
+        $this->AddPage();
+        $this->total=$countEtiquetas;
+        $this->modelo = $modelo;
+        $this->strReimpressao = $strReimpressao;
+        $this->SetFont('Arial', 'B', 9);
+
+        switch ( $etiqueta['tipoCarga'] ) {
+
+            case 'TRANSBORDO' :
+                $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
+                $impressao .= substr(utf8_decode("$etiqueta[tipoPedido]:$etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40) . "\n";
+                $impressao .= substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
+                $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
+                $impressao .= utf8_decode(substr(trim($etiqueta['produto']),0,40))."\n";
+                $impressao .= substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
+                $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
+                $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+                if ($reentrega == false) {
+                    $impressao = utf8_decode("$etiqueta[endereco]\n");
+                    $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                } else {
+                    $this->SetFont('Arial', 'B', 20);
+                    $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
+                }
+                break;
+
+            default:
+                $this->SetFont('Arial', 'B', 10);
+                $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
+                $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+                $this->SetFont('Arial', 'B', 9);
+                $impressao = substr(utf8_decode("$etiqueta[tipoPedido]:$etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40) . "\n";
+                $impressao .= substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
+                $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
+                $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+                $this->SetFont('Arial', 'B', 10);
+                $impressao = utf8_decode(substr(trim($etiqueta['produto']),0,70))."\n";
+                $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+                $this->SetFont('Arial', 'B', 8);
+                $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
+
+                if (!isset($etiqueta['quantidade'])) {
+                    $etiqueta['quantidade'] = '';
+                }
+
+                $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] -  $etiqueta[tipoComercializacao] ($etiqueta[quantidade])"."\n";
+                $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+                $this->SetFont('Arial', 'B', 10);
+                if ($reentrega == false) {
+                    $impressao = utf8_decode("$etiqueta[endereco]\n");
+                    $this->MultiCell(90, 3.9, $impressao, 0, 'L');
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68, 17);
+
+                    if (isset($etiqueta['sequenciaPedido']) && ($etiqueta['sequenciaPedido'] != null)) {
+                        $this->SetY(8);
+                        $this->SetX(85);
+
+                        $this->SetFont('Arial', 'B', 50);
+                        $this->Cell(10,5,$etiqueta['sequenciaPedido']);
+                    }
+
+                } else {
+                    $this->SetFont('Arial', 'B', 20);
+                    $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
+                }
+                break;
+        }
     }
 }

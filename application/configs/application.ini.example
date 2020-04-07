@@ -1,5 +1,7 @@
 [production]
 
+system.key = EOEOOROPOOOOOOOO
+
 ; --------------------------
 ; PHP Specific Configuration
 ; --------------------------

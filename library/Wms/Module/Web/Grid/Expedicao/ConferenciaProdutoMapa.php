@@ -46,6 +46,10 @@ class ConferenciaProdutoMapa extends Grid
                 'index' => 'QTD_CONFERIDA',
             ))
             ->addColumn(array(
+                'label' => 'Volume Embalado',
+                'index' => 'COD_MAPA_SEPARACAO_EMBALADO'
+            ))
+            ->addColumn(array(
                 'label' => 'Data e Hora',
                 'index' => 'DTH_CONFERENCIA',
             ))

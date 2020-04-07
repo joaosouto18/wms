@@ -11,6 +11,27 @@
                 <input type="submit" name="submit" id="submit" value="Conferir" class="btn">
             </dl>
         </fieldset>
+        <a class="finalizar" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'ler-codigo-barras', 'idExpedicao' => $this->idExpedicao)); ?>">Alterar para Caixaria</a>
     </dd>
+
     <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao  ?>" >Finalizar</a></td>
 </form>
+<div id="dummy"></div>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
+<script>
+    function playSound(soundfile) {
+        if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+            document.getElementById("bgSoundId").src = soundfile;
+        } else {
+            var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+            $('#dummy').html(dummy);
+        }
+    }
+
+    <?php if ($this->error == true) : ?>
+        var song = "/alarme.mp3";
+        playSound(song);
+    <?php endif ?>
+</script>

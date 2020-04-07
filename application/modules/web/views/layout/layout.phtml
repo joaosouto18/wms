@@ -110,6 +110,7 @@ use Core\Util\Converter;
             echo $this->headLink();
         ?>
         <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+        <script src="<?php echo $this->baseUrl('angularJS/ng-sanitize.js') ?>"></script>
         <script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
         <script src="<?php echo $this->baseUrl('angularJS/libs/uiDialogService.js') ?>"></script>
         <script src="<?php echo $this->baseUrl('angularJS/libs/shareDataService.js') ?>"></script>
@@ -160,6 +161,33 @@ use Core\Util\Converter;
                 echo $this->navigation();
                 ?>
             </div>
+
+                <?php
+                $config = \Zend_Registry::get('config');
+
+                $key = null;
+                $systemTag = $config->system;
+                if ($systemTag != null) $key = $config->system->key;
+
+                $serial = new \Wms\Serial($key);
+                if ($serial->expire()) {
+                    if ($serial->daysRemaing() <=15) {
+                        if ($serial->daysRemaing() == 0) {
+                            $msg = "Atenção. A chave de ativação do sistema irá expirar hoje";
+                        } else {
+                            $msg = "Atenção. A chave de ativação do sistema irá expirar em " . $serial->daysRemaing() . " dias";
+                        }
+                        echo "<script>alert('$msg') </script>";
+                        echo "<ul class=\"flashMessenger\">
+                    <li class=\"info_message\">
+                        <div style=\"display: block;\">$msg</div>
+                    </li>
+                  </ul>";
+                    }
+                }
+                ?>
+
+
             <div id="content">
                 <div class="contentPadding">
                     <div id="panelPage">

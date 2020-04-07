@@ -18,6 +18,8 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setUsaSequenciaRotaPraca($params['usaSequenciaRotaPraca']);
         $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
         $entity->setAgrupContEtiquetas($params['agrupContEtiquetas']);
+        $entity->setTipoAgroupSeqEtiquetas($params['tipoAgroupSeqEtiquetas']);
+        $entity->setUsaCaixaPadrao($params['usaCaixaPadrao']);
         $entity->setCriarVolsFinalCheckout($params['criarVolsFinalCheckout']);
         $entity->setImprimeEtiquetaVolume($params['imprimeEtiquetaPatrimonio']);
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
@@ -177,8 +179,15 @@ class ModeloSeparacaoRepository extends EntityRepository
         return true;
     }
 
+    /**
+     * @param $idExpedicao
+     * @return ModeloSeparacao
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function getModeloSeparacao($idExpedicao)
     {
+        /** @var ModeloSeparacao $modeloSeparacaoEn */
+        $modeloSeparacaoEn = null;
         $expedicaoEntity = $this->getEntityManager()->getReference('wms:Expedicao',$idExpedicao);
         if (!is_null($expedicaoEntity->getModeloSeparacao())) {
             $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();

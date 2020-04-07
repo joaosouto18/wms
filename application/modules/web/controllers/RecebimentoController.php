@@ -783,7 +783,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         }
 
                         //recebimento para o status finalizado
-                        $result = $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
+                        $result = $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true, $ordemServicoEntity);
                         if (isset($result['exception']) && !empty($result['exception'])) throw $result['exception'];
                         $this->addFlashMessage('success', 'Recebimento finalizado com divergencias.');
 
@@ -1165,6 +1165,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     throw new \Exception('Já existe uma ordem de serviço de conferencia cega Nº. ' . $ordemServicoEntity->getId() . ' aberta para este recebimento.');
 
                 // gerar
+                $recebimentoRepo->executaIntegracaoBDEmRecebimentoERP($recebimentoEntity);
                 $recebimentoEntity->addAndamento(RecebimentoEntity::STATUS_CONFERENCIA_CEGA, false, 'Conferência iniciada pelo WMS.');
                 $recebimentoRepo->updateStatus($recebimentoEntity, RecebimentoEntity::STATUS_CONFERENCIA_CEGA);
                 $ordemServicoRepo->save(new OrdemServicoEntity, array('identificacao' => array(

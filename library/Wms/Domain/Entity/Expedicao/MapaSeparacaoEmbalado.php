@@ -85,6 +85,16 @@ class MapaSeparacaoEmbalado
     protected $os;
 
     /**
+     * @Column(name="DTH_CONF_CHECKOUT", type="datetime", nullable=true)
+     */
+    protected $dataConferenciaCheckout;
+
+    /**
+     * @Column(name="COD_USUARIO_CONFERENCIA", type="integer", nullable=true)
+     */
+    protected $conferente;
+
+    /**
      * Define o id da embalagem
      * @param $em EntityManager
      * @return MapaSeparacaoEmbalado
@@ -256,4 +266,35 @@ class MapaSeparacaoEmbalado
         $this->totalEntrega = $totalEntrega;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getDataConferenciaCheckout()
+    {
+        return $this->dataConferenciaCheckout;
+    }
+
+    /**
+     * @param mixed $dataConferenciaCheckout
+     */
+    public function setDataConferenciaCheckout($dataConferenciaCheckout)
+    {
+        $this->dataConferenciaCheckout = $dataConferenciaCheckout;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConferente()
+    {
+        return $this->conferente;
+    }
+
+    /**
+     * @param mixed $conferente
+     */
+    public function setConferente($conferente)
+    {
+        $this->conferente = $conferente;
+    }
 }
