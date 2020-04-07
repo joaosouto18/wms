@@ -1,7 +1,5 @@
 <?php
 
-use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
-use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Module\Web\Page,

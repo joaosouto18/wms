@@ -2,7 +2,6 @@
 namespace Wms\Module\Expedicao\Form;
 
 use Wms\Module\Web\Form;
-use Wms\Util\WMS_Exception;
 
 class RelatoriosCorte extends Form
 {

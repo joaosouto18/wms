@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Integracao;
 use Composer\DependencyResolver\Transaction;
 use Doctrine\ORM\EntityRepository;
 use Wms\Service\Integracao;
+use Wms\Util\IntegracaoLogger;
 
 class AcaoIntegracaoRepository extends EntityRepository
 {
@@ -222,16 +223,15 @@ class AcaoIntegracaoRepository extends EntityRepository
         $acaoEn = $this->findOneBy(array('id'=>$idAcao));
 
         $encontrouRegistro = false;
+        $houveRollback = false;
         $sucess = "S";
         $observacao = "";
         $trace = "";
         $query = "";
-        $existeOutraTransacaoAtiva = "N";
-        $iniciouTransacaoAtual = 'N';
         $integracaoService = null;
 
         if ($acaoEn->getIndExecucao() == 'S') {
-            $existeOutraTransacaoAtiva = "S";
+            throw new \Exception("Integração em andamento em outro processo");
         } else {
             $iniciouTransacaoAtual = 'S';
             $acaoEn->setIndExecucao("S");
@@ -242,10 +242,6 @@ class AcaoIntegracaoRepository extends EntityRepository
         try {
 
             $this->_em->beginTransaction();
-
-            if ($existeOutraTransacaoAtiva == 'S') {
-                throw new \Exception("Integração em andamento em outro processo");
-            }
 
             $conexaoEn = $acaoEn->getConexao();
 
@@ -362,15 +358,19 @@ class AcaoIntegracaoRepository extends EntityRepository
             $result = $e->getMessage();
 
             $this->_em->rollback();
+            $houveRollback = true;
             $this->_em->clear();
         }
 
         try {
 
             $iniciouBeginTransaction = false;
-            if ($this->_em->isOpen() == false) {
-                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+            if ($houveRollback) {
+                $this->_em = $this->_em->create($this->_em->getConnection()->getParams(),$this->_em->getConfiguration());
             }
+
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
 
             $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
@@ -380,8 +380,10 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $this->_em->flush();
             }
 
-            $this->_em->beginTransaction();
-            $iniciouBeginTransaction = true;
+            //IntegracaoLogger::changeState($this->_em->getConnection(), $idAcao, 'N');
+
+
+
 
             if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
@@ -406,6 +408,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                     $this->_em->persist($andamentoEn);
                 }
+
+                //IntegracaoLogger::register($this->_em->getConnection(), $acaoEn->getId(), $sucess, $_SERVER['REQUEST_URI'], $destino, $observacao, $errNumber, $trace, $query);
             }
 
 
