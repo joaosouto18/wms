@@ -194,6 +194,10 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         component.updateUnitPos();
     };
 
+    let getActiveComponent = function (){
+        return $scope.componentAdded.filter((item) => item.isSelected())[0]
+    };
+
     $scope.prepareInteract = function(element) {
         interact(element)
             .draggable({
@@ -244,7 +248,7 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
         $scope.componentForm.list.push({type:'text', exampleValue: "UNICA", name:"grade", desc:"Grade", selected:false, width:80, minW:80, minH: 12, height: 12});
         $scope.componentForm.list.push({type:'text', exampleValue: "552154", name:"codEtiqueta", desc:"Num. Etiqueta", selected:false, width:80, minW:80, minH: 12, height: 12});
         $scope.componentForm.list.push({type:'text', exampleValue: "223542", name:"codPedido", desc:"Pedido", selected:false, width:80, minW:80, minH: 12, height: 12});
-        $scope.componentForm.list.push({type:'img',  name:"logo", desc:"Logomarca", selected:false, src:'/img/layoutDesigner/logo_cliente.png', width:120, minW:120, minH: 60, height: 60});
+        $scope.componentForm.list.push({type:'image',  name:"logo", desc:"Logomarca", selected:false, src:'/img/layoutDesigner/logo_cliente.png', width:120, minW:120, minH: 60, height: 60});
     };
 
     $scope.updateUnitArea = function () {
@@ -261,16 +265,18 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
             uiDialogService.dialogAlert("Selecione o componente que deseja adicionar!");
             return;
         }
-        let component = null;
-        switch ($scope.componentForm.selected.type) {
-            case 'text':
-                component = new TextComponent($scope.componentForm.selected, $scope.displayArea, ($scope.componentAdded.length + 1));
-                break;
-            case 'img':
-                component = new ImageComponent($scope.componentForm.selected, $scope.displayArea, ($scope.componentAdded.length + 1));
-        }
+        let className = capitalize($scope.componentForm.selected.type + "Component");
+        console.lgo(className);
+        let component = new window[className]($scope.componentForm.selected, $scope.displayArea, ($scope.componentAdded.length + 1));
         $scope.componentAdded.push(component);
         $scope.selectComponent(component);
+    };
+
+    $scope.removeComponent = function () {
+        let activeComponent = getActiveComponent();
+        if (isEmpty(activeComponent)) return;
+        $scope.componentAdded.splice($scope.componentAdded.indexOf(activeComponent), 1);
+        $scope.componentConfig = {};
     };
 
     $scope.changeSizeArea = function() {
@@ -304,7 +310,7 @@ angular.module("wms").controller("layoutDesingerCtrl", function($scope, $http, $
     };
 
     $scope.selectComponent = function (component) {
-        let activeItem = $scope.componentAdded.filter((item) => item.isSelected())[0];
+        let activeItem = getActiveComponent();
         if (!isEmpty(activeItem)) activeItem.unSelect();
         component.updateUnit();
         component.select();

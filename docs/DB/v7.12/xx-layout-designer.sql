@@ -60,5 +60,3 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('Script executado com sucesso');
     END IF;
 END;
- 
- SELECT * FROM ACAO;
