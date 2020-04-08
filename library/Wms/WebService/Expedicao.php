@@ -1205,7 +1205,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $PedidoRepo->remove($PedidoEntity,false);
                         $retorno = true;
                     } else {
-                        throw new Exception("O Pedido $pedido[codPedido] se encontra em processo de geração de ressuprimento ou emissão de Mapas/Etiquetas dentro do WMS");
+                        throw new Exception("3 - O Pedido $pedido[codPedido] se encontra em processo de geração de ressuprimento ou emissão de Mapas/Etiquetas dentro do WMS");
                     }
 
                 } else {
@@ -1222,14 +1222,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                         if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
                             if (!$isIntegracaoSQL) {
-                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                                throw new Exception("1 - Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                             } else {
                                 $retorno = false;
                             }
                         }
 
                         if (!$isIntegracaoSQL) {
-                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
+                            throw new Exception("2 - Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
                         } else {
                             $retorno = false;
                         }
