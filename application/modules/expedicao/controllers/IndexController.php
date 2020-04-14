@@ -62,8 +62,9 @@ class Expedicao_IndexController extends Action {
         if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
             $acaoEn = $acaoIntRepo->find(24);
             $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
-            foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
 
+            $acaoEn = $acaoIntRepo->find(24);
+            foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
 
                 /*
                  * Seta como cancelada as cargas na tabela TR_PEDIDO antes que possam ser listadas pela integração de pedidos
@@ -87,8 +88,6 @@ class Expedicao_IndexController extends Action {
                         $em->flush();
                     }
                 }
-
-
 
                 $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
                 if(!empty($cargaEntity)) {

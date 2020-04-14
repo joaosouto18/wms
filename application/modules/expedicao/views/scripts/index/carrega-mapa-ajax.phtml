@@ -139,6 +139,22 @@ if ($this->erro) {
 ?>
 <script>
     $('#codigoBarras').focus();
+    $(document).keydown(function (e) {
+        if (e.which == 113) {
+            var qtd = $('#qtd');
+            var lote = $('#lote');
+
+            if (qtd && !qtd.is(":focus")) {
+                qtd.focus();
+                qtd.select();
+                return false;
+            } else if (lote && !lote.is(":focus")) {
+                lote.focus();
+                lote.select();
+                return false;
+            }
+        }
+    });
 
     <?php if ($temLote) { ?>
     var loteCodigoBarras = <?php echo $this->lotesCodBarras ?>;
@@ -248,14 +264,6 @@ if ($this->erro) {
     }
 
     <?php  } else { ?>
-    $("input").keydown(function (e) {
-        if (e.which == 113) {
-            var qtd = $('#qtd');
-            qtd.focus();
-            qtd.select();
-            return false;
-        }
-    });
     $("#qtd").keydown(function (e) {
         if (e.which == 13) {
             $('#codigoBarras').focus();
