@@ -102,6 +102,12 @@ class AcaoIntegracao
     protected $parametros;
 
     /**
+     * @var string
+     * @Column(name="DSC_ACAO_INTEGRACAO", type="string")
+     */
+    protected $dscAcaoIntegracao;
+
+    /**
      * @return mixed
      */
     public function getIdAcaoRelacionada()
@@ -276,6 +282,22 @@ class AcaoIntegracao
     public function setTabelaReferencia($tabelaReferencia)
     {
         $this->tabelaReferencia = $tabelaReferencia;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDscAcaoIntegracao()
+    {
+        return $this->dscAcaoIntegracao;
+    }
+
+    /**
+     * @param string $dscAcaoIntegracao
+     */
+    public function setDscAcaoIntegracao($dscAcaoIntegracao)
+    {
+        $this->dscAcaoIntegracao = $dscAcaoIntegracao;
     }
 
 }

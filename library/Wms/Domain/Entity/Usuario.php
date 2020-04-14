@@ -72,7 +72,13 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      * @Column(name="PERCENT_RECEB", type="integer", length=3)
      */
     protected $percentReceb;
-    
+
+    /**
+     * @var bool
+     * @Column(name="ROOT_USER", type="integer", length=1, nullable=false)
+     */
+    protected $root;
+
 
     public function __construct()
     {
@@ -295,5 +301,21 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
         }
 
         return $maxPercent;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRoot()
+    {
+        return $this->root;
+    }
+
+    /**
+     * @param bool $root
+     */
+    public function setRoot($root)
+    {
+        $this->root = $root;
     }
 }

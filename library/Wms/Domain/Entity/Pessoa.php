@@ -63,12 +63,6 @@ class Pessoa implements Ator
      */
     protected $documentos;
 
-    /**
-     * @var bool
-     * @Column(name="ROOT_USER", type="integer", length=1, nullable=false)
-     */
-    protected $root;
-
     public function __construct()
     {
         $this->enderecos = new ArrayCollection;
@@ -188,22 +182,6 @@ class Pessoa implements Ator
     {
         $this->getEnderecos()->add($endereco);
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRoot()
-    {
-        return $this->root;
-    }
-
-    /**
-     * @param bool $root
-     */
-    public function setRoot($root)
-    {
-        $this->root = $root;
     }
 
 }
