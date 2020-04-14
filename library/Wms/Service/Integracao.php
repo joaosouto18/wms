@@ -1063,8 +1063,7 @@ class Integracao {
             0 => $notaFiscalEntity->getCodRecebimentoErp(),
         );
         $codRecebimentoErp = $notaFiscalEntity->getCodRecebimentoErp();
-
-        $params = $this->
+        
         //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
         $acaoEn = $acaoIntRepository->find($valorParametro[0]);
         $conexaoEn = $acaoEn->getConexao();

@@ -38,10 +38,38 @@ class Expedicao_OndaRessuprimentoController extends Action
         if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
             $acaoEn = $acaoIntRepo->find(24);
             $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+
+            $acaoEn = $acaoIntRepo->find(24);
             foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
+
+                /*
+                 * Seta como cancelada as cargas na tabela TR_PEDIDO antes que possam ser listadas pela integração de pedidos
+                 */
+                $explodeIntegracoes = explode(',', $parametroPedidosTelaExpedicao);
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+                $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+                foreach ($explodeIntegracoes as $codIntegracao) {
+                    $acaoPedidoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                    if (!is_null($acaoPedidoEntity->getTabelaReferencia())) {
+                        $observacao = "Carga " . $cargaCanceladaEntity['COD_CARGA_EXTERNO']. " cancelada pelo ERP";
+
+                        $query = " UPDATE " . $acaoPedidoEntity->getTabelaReferencia() . "
+                                      SET IND_PROCESSADO = 'C', DSC_OBSERVACAO_INTEGRACAO = '$observacao'
+                                    WHERE CARGA = " . $cargaCanceladaEntity['COD_CARGA_EXTERNO'] . "
+                                      AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N') ";
+
+                        $update = true;
+                        $conexaoEn = $acaoPedidoEntity->getConexao();
+                        $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                        $em->flush();
+                    }
+                }
+
                 $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
                 if(!empty($cargaEntity)) {
-                    if ($cargaEntity->getExpedicao()->getCodStatus() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
+                    /** @var Expedicao $expedicao */
+                    $expedicao = $cargaEntity->getExpedicao();
+                    if ($expedicao->getCodStatus() == Expedicao::STATUS_FINALIZADO || $expedicao->getIndProcessando() == 'S') {
                         $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
                         continue;
                     }
