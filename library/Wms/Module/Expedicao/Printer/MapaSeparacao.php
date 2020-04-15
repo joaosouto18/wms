@@ -2133,9 +2133,10 @@ class MapaSeparacao extends eFPDF {
         $this->Cell(20, 1, "", 0, 1);
 
         $total = 0;
-        $y1 = 40;
+        $y1 = 35;
         $y2 = 50;
-        foreach ($produtos as $produto) {
+        foreach ($produtos as $key => $produto) {
+            $objectIndex = $produto;
             $produto = reset($produto);
             $this->SetFont('Arial', null, 8);
             $embalagemEn = $this->embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
@@ -2183,15 +2184,8 @@ class MapaSeparacao extends eFPDF {
                 $this->Cell(15, -4, $quantidade, 0, 0);
                 $this->Cell(13, -4, $embalagem, 0, 0);
                 $this->Cell(12, -4, $caixas, 0, 0, 'C');
-                $this->Line(185,$y1,200,$y1);
-                $this->Line(185,$y1,185,$y2);
-                $this->Line(185,$y2,200,$y2);
-                $this->Line(200,$y1,200,$y2);
-                if (strlen($descricao) >= 35) {
-                    $this->Cell(5, 2.5, '', 0, 1, 'L');
-                } else {
-                    $this->Cell(5, 6, '', 0, 1, 'L');
-                }
+
+                $this->Cell(5, 6, '', 0, 1, 'L');
             } else {
                 $this->Cell(20, $h, $dscEndereco, 0, 0);
                 $this->Cell(20, $h, $codProduto, 0, 0);
@@ -2203,9 +2197,14 @@ class MapaSeparacao extends eFPDF {
             }
             $this->SetFont('Arial', null, 8);
             $total += $quantidade;
-            $y1 = $y1 + 11;
-            $y2 = $y2 + 11;
-            $this->Cell(20, 1, "- - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+            $y2 = $y2 + 10;
+
+
+            if ($tipoQuebra) {
+                $this->Line(179,$y1,179,$this->getY());
+                $this->Line(196,$y1,196,$this->getY());
+            }
+            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
         }
 
 //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA

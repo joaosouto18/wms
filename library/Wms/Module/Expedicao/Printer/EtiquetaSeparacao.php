@@ -856,6 +856,9 @@ class EtiquetaSeparacao extends Pdf
     protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         switch ($modelo) {
+            case 18: //LAYOUT MACROLUB
+                $this->layoutModelo18($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
+                break;
             case 17: //LAYOUT VETSS
                 $this->layoutModelo17($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
                 break;
@@ -1635,5 +1638,42 @@ class EtiquetaSeparacao extends Pdf
                 }
                 break;
         }
+    }
+
+    protected function layoutModelo18($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
+    {
+        $this->SetMargins(3, 1.5, 0);
+        $this->SetFont('Arial', 'B', 9);
+
+        $strReimpressao = "";
+        if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
+
+        $this->AddPage();
+        $this->total=$countEtiquetas;
+        $this->modelo = $modelo;
+        $this->strReimpressao = $strReimpressao;
+        $this->setY(3);
+        $this->SetFont('Arial', 'B', 9);
+        $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
+        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
+        $this->setY(6);
+        $impressao  = substr(utf8_decode("$etiqueta[tipoPedido]: $etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40);
+        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
+        $this->setY(9);
+        $impressao = substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40);
+        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
+        $this->setY(12);
+        $impressao = "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]";
+        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
+        $this->SetFont('Arial', 'B', 10);
+        $impressao = utf8_decode(substr(trim($etiqueta['produto']),0,70))."\n";
+        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        $this->SetFont('Arial', 'B', 8);
+
+        if (!isset($etiqueta['quantidade'])) {
+            $etiqueta['quantidade'] = '';
+        }
+
+
     }
 }
