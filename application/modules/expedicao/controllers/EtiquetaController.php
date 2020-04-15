@@ -694,6 +694,14 @@ class Expedicao_EtiquetaController  extends Action
                     //LAYOUT PREMIUM
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
                     break;
+                case 9:
+                    //LAYOUT VETSS
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 10:
+                    //LAYOUT MOTOARTE
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;
@@ -760,6 +768,10 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 9:
                     //LAYOUT VETSS
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 10:
+                    //LAYOUT MOTOARTE
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 default:
