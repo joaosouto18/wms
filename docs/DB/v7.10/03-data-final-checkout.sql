@@ -16,8 +16,8 @@ BEGIN
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
 
-        EXECUTE IMMEDIATE 'alter table mapa_separacao_emb_cliente add DTH_CONF_CHECKOUT date null;';
-        EXECUTE IMMEDIATE 'alter table mapa_separacao_emb_cliente add COD_USUARIO_CONFERENCIA NUMBER null;';
+        EXECUTE IMMEDIATE 'alter table mapa_separacao_emb_cliente add DTH_CONF_CHECKOUT date null';
+        EXECUTE IMMEDIATE 'alter table mapa_separacao_emb_cliente add COD_USUARIO_CONFERENCIA NUMBER null';
 /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
 ************************************************************************/

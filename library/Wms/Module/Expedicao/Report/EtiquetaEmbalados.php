@@ -51,7 +51,12 @@ class EtiquetaEmbalados extends eFPDF
                 self::bodyExpedicaoModelo8($volumePatrimonio);
                 break;
             case 9:
+                //LAYOUT VETSS
                 self::bodyExpedicaoModelo9($volumePatrimonio);
+                break;
+            case 10:
+                //LAYOUT MOTOARTE
+                self::bodyExpedicaoModelo10($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
                 break;
             default:
                 self::bodyExpedicaoModelo1($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
@@ -699,4 +704,101 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
+    private function bodyExpedicaoModelo10($volumes, $mapaSeparacaoEmbaladoRepo)
+    {
+        foreach ($volumes as $volume) {
+
+            $existeItensPendentes = empty($mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S')));
+
+            $imgW = 18;
+            $imgH = 17;
+            $this->AddPage();
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 8, 1, $imgW-1, $imgH);
+            $this->Cell($imgW + 10, $imgH+1, '', 1);
+
+            $this->Cell(66.5, 18, '',1,1);
+
+            $xBox1 = 33.5;
+
+            $this->SetXY($xBox1,3);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(15, 5, 'PEDIDO',0,1);
+            $this->SetXY($xBox1,9);
+            $this->SetFont('Arial', 'B', 15);
+            $this->Cell(15, 4, utf8_decode($volume['COD_PEDIDO']));
+
+            $this->SetXY($xBox1,15);
+            $this->SetFont('Arial', null, 12);
+            $this->Cell(27, 4, "SEQUENCIA:");
+            $this->SetFont('Arial', 'B', 12);
+            $this->Cell(15, 4, "$volume[SEQ_ROTA]-$volume[SEQ_PRACA]");
+
+            $this->SetXY(88,14);
+            $this->SetFont('Arial', 'B', 12);
+            $this->Cell(20, 5, $volume['DSC_BOX']);
+
+            $this->SetY(20);
+            $this->Cell(94.5, 14, '',1);
+
+            $this->SetXY(4,22);
+            $this->SetFont('Arial', null, 11);
+            $this->Cell(15, 4, utf8_decode('CLIENTE:'));
+
+            $this->SetXY(4,28);
+            $this->SetFont('Arial', 'B', 13);
+            $this->MultiCell(90, 4, $this->SetStringByMaxWidth($volume['NOM_PESSOA'], 90), 0, 'L');
+
+            $this->SetY(34.5);
+            $this->Cell(94.5, 20, '',1);
+
+            $this->SetXY(4,36.5);
+            $this->SetFont('Arial', null, 9);
+            $this->Cell(15, 4, utf8_decode('ENDEREÇO:'));
+
+            $this->SetXY(4,42);
+            $this->SetFont('Arial', 'B', 11);
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[COD_REFERENCIA_SIGLA] - $volume[NOM_LOCALIDADE]"),100), 0, 'L');
+            $this->SetXY(4,48);
+            $this->MultiCell(90, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[DSC_ENDERECO] nº: $volume[NUM_ENDERECO] "), 90), 0, 'L');
+
+            $this->SetY(55);
+            $this->Cell(94.5, 42, '',1);
+
+            $this->SetXY(2,56);
+            $this->SetFont('Arial', "B", 10);
+            $this->MultiCell(95, 5, "CONFERENTE", 0, 'C');
+            $this->SetXY(1,61);
+            $this->SetFont('Arial', null, 10);
+            $this->MultiCell(95, 5, utf8_decode($volume['CONFERENTE']), 0, 'C');
+
+            $this->SetXY(5,71);
+            $this->SetFont('Arial', 'B', 13);
+            $this->Cell(19, 4, "PLACA:");
+            $this->SetFont('Arial', null, 14);
+            $this->Cell(38, 4, $volume["DSC_PLACA_CARGA"]);
+
+            $this->SetXY(54,69);
+            $this->SetFont('Arial', "B", 10);
+            $this->MultiCell(100, 4, utf8_decode("VOLUME FECHADO EM:"));
+            $this->SetXY(55,74.5);
+            $this->SetFont('Arial', null, 12);
+            $this->MultiCell(100, 4, $volume['DTH_FECHAMENTO']);
+
+            $this->Line(3,81,97.5,81);
+
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 5, 83 , 50, 12);
+
+            $this->SetxY(65,81);
+            $this->SetFont('Arial', '', 14);
+            $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
+
+            if (!$existeItensPendentes)
+                $impressao = $volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = $volume['NUM_SEQUENCIA'];
+            $this->SetxY(67,87);
+            $this->SetFont('Arial', 'B', 22);
+            $this->MultiCell(20, 10, $impressao, 0, 'C');
+        }
+    }
 }
