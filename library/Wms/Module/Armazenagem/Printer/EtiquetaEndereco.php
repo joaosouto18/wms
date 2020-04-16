@@ -208,16 +208,16 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(23,13,utf8_decode("APTO"),0,1);
 
 
-        $this->SetFont('Arial', 'B', 18);
+        $this->SetFont('Arial', 'B', 15);
         $this->Cell(0,0," ",0,1);
 
         $this->SetFont('Arial', 'B', 50);
-        $this->Cell(26,8,"$rua",0,0);
-        $this->Cell(32,8,"$predio",0,0);
-        $this->Cell(24,8,"$nivel",0,0);
-        $this->Cell(23,8,"$apto",0,0);
+        $this->Cell(24,8,"$rua.",0,0);
+        $this->Cell(28,8,"$predio.",0,0);
+        $this->Cell(21,8,"$nivel.",0,0);
+        $this->Cell(18,8,"$apto",0,0);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","","$rua.$predio.$nivel.$apto")) , 5, 28 , 100);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","","$rua.$predio.$nivel.$apto")) , 5, 28 , 85);
     }
 
     public function layoutModelo13($codBarras){

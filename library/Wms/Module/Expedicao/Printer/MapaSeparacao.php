@@ -2115,7 +2115,7 @@ class MapaSeparacao extends eFPDF {
         if ($tipoQuebra) {
             $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
             $this->Cell(15, 5, utf8_decode("Cod.Prod."), 1, 0);
-            $this->Cell(83, 5, utf8_decode("Produto"), 1, 0);
+            $this->Cell(60, 5, utf8_decode("Produto"), 1, 0);
             $this->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
             $this->Cell(12, 5, utf8_decode("Qtd."), 1, 0);
             $this->Cell(15, 5, utf8_decode("Desc"), 1, 0);
@@ -2133,7 +2133,10 @@ class MapaSeparacao extends eFPDF {
         $this->Cell(20, 1, "", 0, 1);
 
         $total = 0;
-        foreach ($produtos as $produto) {
+        $y1 = 35;
+        $y2 = 50;
+        foreach ($produtos as $key => $produto) {
+            $objectIndex = $produto;
             $produto = reset($produto);
             $this->SetFont('Arial', null, 8);
             $embalagemEn = $this->embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
@@ -2171,32 +2174,22 @@ class MapaSeparacao extends eFPDF {
 
             $h = 4;
 
-            if (!isset($zebrado)) {
-                $zebrado = false ;
-            }
-
-            if (!$zebrado){
-                $this->SetFillColor(255,255,255);
-                $zebrado = true ;
-            } else {
-                $this->SetFillColor(220,220,220);
-                $zebrado = false ;
-            }
             if ($tipoQuebra) {
                 $this->Cell(20, $h, $dscEndereco, 0, 0);
                 $this->Cell(15, $h, $codProduto, 0, 0);
-                $this->MultiCell(83, $h, $descricao,3);
-                $this->setXY(132,$this->getY());
+                $this->MultiCell(60, $h, $descricao,3);
+                $this->setXY(105,$this->getY());
                 $this->Cell(30, -4, $codigoBarras, 0, 0);
                 $this->SetFont('Arial', "B", 10);
                 $this->Cell(15, -4, $quantidade, 0, 0);
                 $this->Cell(13, -4, $embalagem, 0, 0);
                 $this->Cell(12, -4, $caixas, 0, 0, 'C');
-                $this->Cell(5, 6, '        ', 1, 1, 'L');
+
+                $this->Cell(5, 6, '', 0, 1, 'L');
             } else {
                 $this->Cell(20, $h, $dscEndereco, 0, 0);
                 $this->Cell(20, $h, $codProduto, 0, 0);
-                $this->MultiCell(85, $h, $descricao, 3);
+                $this->MultiCell(60, $h, $descricao, 3);
                 $this->Cell(20, $h, $codigoBarras, 0, 0);
                 $this->SetFont('Arial', "B", 10);
                 $this->Cell(15, $h, $quantidade, 0, 0, 'C');
@@ -2204,7 +2197,14 @@ class MapaSeparacao extends eFPDF {
             }
             $this->SetFont('Arial', null, 8);
             $total += $quantidade;
-            $this->Cell(20, 1, "- - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+            $y2 = $y2 + 10;
+
+
+            if ($tipoQuebra) {
+                $this->Line(179,$y1,179,$this->getY());
+                $this->Line(196,$y1,196,$this->getY());
+            }
+            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
         }
 
 //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
