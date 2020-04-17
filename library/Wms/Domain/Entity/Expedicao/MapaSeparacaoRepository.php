@@ -1314,7 +1314,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
 
             //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LOTE ESPECÍFICO
-            if (!empty($mapa["DSC_LOTE"]) && $mapa["DSC_LOTE"] != $lote) continue;
+            if (!empty($lote) && $mapa["DSC_LOTE"] != $lote) continue;
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
