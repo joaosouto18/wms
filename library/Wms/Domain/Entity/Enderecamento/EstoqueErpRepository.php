@@ -36,7 +36,7 @@ class EstoqueErpRepository extends EntityRepository
         }
         $fieldReservaEntrada = "";
         $joinReservaEntrada = "";
-        if (!empty($params['considerarReservaEntrada']) && $params['considerarReservaEntrada'] = 'S') {
+        if (!empty($params['considerarReserva']) && in_array('E', $params['considerarReserva'])) {
             $fieldReservaEntrada = " + NVL(RE.QTD, 0)";
             $joinReservaEntrada = " 
             LEFT JOIN (
@@ -51,7 +51,7 @@ class EstoqueErpRepository extends EntityRepository
 
         $fieldReservaSaida = "";
         $joinReservaSaida = "";
-        if (!empty($params['considerarReservaSaida']) && $params['considerarReservaSaida'] = 'S') {
+        if (!empty($params['considerarReserva']) && in_array('S', $params['considerarReserva'])) {
             $fieldReservaSaida = " - NVL(RS.QTD, 0)";
             $joinReservaSaida = "
             LEFT JOIN (
@@ -152,9 +152,40 @@ class EstoqueErpRepository extends EntityRepository
         $sql.= $joinReservaEntrada;
         $sql.= $joinReservaSaida;
 
+        $directionOrder = ($params['directionOrder'] == 'C') ? 'ASC' : 'DESC';
+
+        switch ((int)$params['orderBy']){
+            case 1:
+                $orderBy = "TO_NUMBER($fieldEstoqueERP) $directionOrder";
+                break;
+            case 2:
+                $orderBy = "TO_NUMBER(NVL((WMS.QTD $fieldReservaEntrada $fieldReservaSaida),0)) $directionOrder";
+                break;
+            case 3:
+                $orderBy = "TO_NUMBER(NVL((WMS.QTD $fieldReservaEntrada $fieldReservaSaida),0) - $fieldEstoqueERP) $directionOrder";
+                break;
+            case 4:
+                $orderBy = "TO_NUMBER(NVL(NVL((WMS.QTD $fieldReservaEntrada $fieldReservaSaida),0) * ERP.VLR_ESTOQUE_UNIT,0)) $directionOrder";
+                break;
+            case 5:
+                $orderBy = "TO_NUMBER(NVL($fieldEstoqueERP * ERP.VLR_ESTOQUE_UNIT,0)) $directionOrder";
+                break;
+            case 6:
+                $orderBy = "TO_NUMBER(NVL((NVL((WMS.QTD $fieldReservaEntrada $fieldReservaSaida),0) - $fieldEstoqueERP) * ERP.VLR_ESTOQUE_UNIT,0)) $directionOrder";
+                break;
+            default:
+                $orderBy = "P.DSC_PRODUTO, P.COD_PRODUTO, P.DSC_GRADE";
+                break;
+        }
+
+//        if ($params['naoEmIntenvario'] == 'S')
+//        {
+//            $where .= ' AND NOT EXISTS (SELECT COD_PRODUTO';
+//        }
+
         $sql.= " WHERE 1 = 1
                     $where         
-                 ORDER BY P.DSC_PRODUTO, P.COD_PRODUTO, P.DSC_GRADE";
+                 ORDER BY $orderBy";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key => $value) {
