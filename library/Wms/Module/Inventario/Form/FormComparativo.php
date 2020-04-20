@@ -52,6 +52,11 @@ class FormComparativo extends Form
             'A' => 'Antigo',
             'N' => 'Novo'
         );
+        $emInventario = array(
+            '' => 'Todos',
+            'S' => 'SIM',
+            'N' => 'NÃO'
+        );
 
         $this->setAction(
             $this->getView()->url(array(
@@ -122,9 +127,9 @@ class FormComparativo extends Form
                 'multiOptions' => [ 'C' => 'Crescente', 'D' => 'Decrescente' ],
                 'value' => 'C',
             ))
-            ->addElement('checkbox', 'naoEmIntenvario', array(
-                'label' => 'Itens fora de Inventários',
-                'checkedValue' => 'S'
+            ->addElement('select','emInventario', array(
+                'label' => 'Em inventário Ativo',
+                'multiOptions' => $emInventario,
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
@@ -140,7 +145,7 @@ class FormComparativo extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'considerarReserva', 'orderBy', 'directionOrder', 'naoEmIntenvario', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'considerarReserva', 'orderBy', 'directionOrder', 'emInventario', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }

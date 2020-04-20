@@ -178,10 +178,20 @@ class EstoqueErpRepository extends EntityRepository
                 break;
         }
 
-//        if ($params['naoEmIntenvario'] == 'S')
-//        {
-//            $where .= ' AND NOT EXISTS (SELECT COD_PRODUTO';
-//        }
+       if (!empty($params['emInventario']))
+           {
+               $crierio = ($params['emInventario']=='S') ? "":" NOT ";
+
+            $where .= " AND $crierio EXISTS (SELECT DISTINCT NVL(IEP.COD_PRODUTO,E.COD_PRODUTO) as COD_PRODUTO, NVL(IEP.DSC_GRADE ,E.DSC_GRADE) as dSC_GRADE
+                                      FROM INVENTARIO_NOVO I
+                                      LEFT JOIN inventario_endereco_novo IEN ON IEN.COD_INVENTARIO = I.COD_INVENTARIO AND ien.ind_ativo = 'S'
+                                      LEFT JOIN INVENTARIO_END_PROD IEP ON iep.cod_inventario_endereco = ien.cod_inventario_endereco AND iep.ind_ativo = 'S' AND I.IND_CRITERIO = 'P'
+                                      LEFT JOIN ESTOQUE E ON E.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO AND I.IND_CRITERIO = 'E'
+                                     WHERE NVL(IEP.COD_PRODUTO,E.COD_PRODUTO) = P.COD_PRODUTO 
+                                       AND NVL(IEP.DSC_GRADE ,E.DSC_GRADE) = P.DSC_GRADE
+                                       AND (IEP.COD_PRODUTO IS NOT NULL OR E.COD_PRODUTO IS NOT NULL)
+                                       AND I.COD_STATUS NOT IN (3,5))";
+        }
 
         $sql.= " WHERE 1 = 1
                     $where         

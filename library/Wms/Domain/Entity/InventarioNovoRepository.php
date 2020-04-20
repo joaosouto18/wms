@@ -417,10 +417,7 @@ class InventarioNovoRepository extends EntityRepository
             ->from('wms:Enderecamento\Estoque', 'e')
             ->innerJoin('e.depositoEndereco', 'de')
             ->innerJoin('e.produto', 'p')
-            ->innerJoin('p.classe', 'cl')
-            ->innerJoin('p.fabricante', 'f')
             ->innerJoin('de.caracteristica', 'c')
-            ->innerJoin('p.linhaSeparacao', 'ls')
         ;
 
         $query1->distinct(true);
@@ -440,11 +437,8 @@ class InventarioNovoRepository extends EntityRepository
                 p.grade,
                 p.descricao as dscProduto,
                 de.rua, de.predio, de.nivel, de.apartamento,
-                CONCAT(CONCAT(CONCAT(de.rua, de.predio), de.nivel), de.apartamento) endConcated")
+                REPLACE(de.descricao, '.', '') cleanEnd")
             ->from("wms:Produto", 'p')
-            ->innerJoin('p.classe', 'cl')
-            ->innerJoin('p.fabricante', 'f')
-            ->innerJoin('p.linhaSeparacao', 'ls')
             ->leftJoin('p.embalagens', 'pe')
             ->leftJoin('p.volumes', 'pv')
             ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco')
@@ -458,7 +452,7 @@ class InventarioNovoRepository extends EntityRepository
 
         $query2->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
 
-        $arr = array_unique(array_merge($query1->getQuery()->getResult(), $query2->getQuery()->getResult()), SORT_REGULAR);
+        $arr = array_values(array_unique(array_merge($query1->getQuery()->getResult(), $query2->getQuery()->getResult()), SORT_REGULAR));
 
         return $arr;
     }
