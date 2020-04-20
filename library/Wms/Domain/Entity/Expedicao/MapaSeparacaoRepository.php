@@ -1214,6 +1214,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        P.DSC_PRODUTO,
                        P.COD_PRODUTO,
                        P.DSC_GRADE,
+                       NVL(P.IND_CONTROLA_LOTE, 'N') as IND_CONTROLA_LOTE,
                        MSP.DSC_LOTE,
                        P.IND_FRACIONAVEL,
                        PE.COD_PRODUTO_EMBALAGEM,
@@ -1314,7 +1315,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
 
             //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LOTE ESPECÍFICO
-            if (!empty($lote) && $mapa["DSC_LOTE"] != $lote) continue;
+            if ($mapa['IND_CONTROLA_LOTE'] == 'S' && !empty($mapa["DSC_LOTE"]) && $mapa["DSC_LOTE"] != $lote) continue;
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
