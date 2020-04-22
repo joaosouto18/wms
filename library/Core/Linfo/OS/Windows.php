@@ -283,7 +283,7 @@ class Windows extends OS
             );
         }
 
-        \usort($drives, array('Linfo\OS\Windows', 'compare_drives'));
+        \usort($drives, array('Core\Linfo\OS\Windows', 'compare_drives'));
 
         return $drives;
     }
@@ -387,7 +387,7 @@ class Windows extends OS
             $volumes[] = $a;
         }
 
-        \usort($volumes, array('Linfo\OS\Windows', 'compare_mounts'));
+        \usort($volumes, array('Core\Linfo\OS\Windows', 'compare_mounts'));
 
         return $volumes;
     }
@@ -427,7 +427,7 @@ class Windows extends OS
         }
 
         // Sort by 1. Type, 2. Vendor
-        \usort($devs, array('Linfo\OS\Windows', 'compare_devices'));
+        \usort($devs, array('Core\Linfo\OS\Windows', 'compare_devices'));
 
         return $devs;
     }
