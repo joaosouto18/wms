@@ -11,12 +11,7 @@ use Core\Linfo\Common;
 class Web_DevtoolsController extends \Wms\Controller\Action
 {
 
-    public function indexAction()
-    {
-
-        $linfo = new Core\Linfo\Linfo();
-        $parser = $linfo->getParser();
-
+    public function getConfig() {
         $settings = array();
         $settings['byte_notation'] = 1024; // Either 1024 or 1000; defaults to 1024
         $settings['dates'] = 'm/d/y h:i A (T)'; // Format for dates shown. See php.net/date for syntax
@@ -26,7 +21,7 @@ class Web_DevtoolsController extends \Wms\Controller\Action
         $settings['gzip'] = false; // Manually gzip output. Unneeded if your web server already does it.
 
 
-        $settings['allow_changing_themes'] = false; // Allow changing the theme per user in the UI?
+        $settings['allow_changing_themes'] = true; // Allow changing the theme per user in the UI?
         /*
          * Possibly don't show stuff
          */
@@ -40,9 +35,9 @@ class Web_DevtoolsController extends \Wms\Controller\Action
         $settings['show']['ram'] = true;
         $settings['show']['hd'] = true;
         $settings['show']['mounts'] = true;
-        $settings['show']['mounts_options'] = false; // Might be useless/confidential information; disabled by default.
-        $settings['show']['webservice'] = false; // Might be dangerous/confidential information; disabled by default.
-        $settings['show']['phpversion'] = false; // Might be dangerous/confidential information; disabled by default.
+        $settings['show']['mounts_options'] = true; // Might be useless/confidential information; disabled by default.
+        $settings['show']['webservice'] = true; // Might be dangerous/confidential information; disabled by default.
+        $settings['show']['phpversion'] = true; // Might be dangerous/confidential information; disabled by default.
         $settings['show']['network'] = true;
         $settings['show']['uptime'] = true;
         $settings['show']['cpu'] = true;
@@ -57,7 +52,7 @@ class Web_DevtoolsController extends \Wms\Controller\Action
 // CPU Usage on Linux (per core and overall). This requires running sleep(1) once so it slows
 // the entire page load down. Enable at your own inconvenience, especially since the load averages
 // are more useful.
-        $settings['cpu_usage'] = false;
+        $settings['cpu_usage'] = true;
 
 // Sometimes a filesystem mount is mounted more than once. Only list the first one I see?
 // (note, duplicates are not shown twice in the file system totals)
@@ -73,7 +68,7 @@ class Web_DevtoolsController extends \Wms\Controller\Action
         $settings['show']['wifi'] = false; # Not finished
 
 // Service monitoring
-        $settings['show']['services'] = false;
+        $settings['show']['services'] = true;
 
         /*
          * Misc settings pertaining to the above follow below:
@@ -156,7 +151,7 @@ class Web_DevtoolsController extends \Wms\Controller\Action
          */
 
 // Show errors? Disabled by default to hide vulnerabilities / attributes on the server
-        $settings['show_errors'] = false;
+        $settings['show_errors'] = true;
 
 // Show results from timing ourselves? Similar to above.
 // Lets you see how much time getting each bit of info takes.
@@ -180,7 +175,14 @@ class Web_DevtoolsController extends \Wms\Controller\Action
             //'ps' // For example
         );
 
-        $linfo = new Linfo($settings);
+        return $settings;
+    }
+
+    public function indexAction()
+    {
+
+        $linfo = new Core\Linfo\Linfo();
+        $linfo = new Linfo($this->getConfig());
         $linfo->scan();
 
         if (isset($_SERVER['LINFO_NCURSES']) && php_sapi_name() == 'cli') {
