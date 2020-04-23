@@ -489,6 +489,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                 $estoquePulmao = $arrTemp;
             }
+            $lotes = [];
 
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
@@ -523,10 +524,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     break;
                 }
             }
-        }
 
-        if ($controlaLote) {
-            $reservaEstoqueRepo->updateReservaExpedicao($strExp, $codProduto, $grade, $idPicking, $lotes);
+            if ($controlaLote && !empty($lotes)) {
+                $reservaEstoqueRepo->updateReservaExpedicao($strExp, $codProduto, $grade, $idPicking, $lotes);
+            }
         }
 
         return $qtdOsGerada;
