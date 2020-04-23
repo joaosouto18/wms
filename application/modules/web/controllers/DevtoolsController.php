@@ -180,8 +180,7 @@ class Web_DevtoolsController extends \Wms\Controller\Action
 
     public function indexAction()
     {
-
-        $linfo = new Core\Linfo\Linfo();
+        
         $linfo = new Linfo($this->getConfig());
         $linfo->scan();
 
