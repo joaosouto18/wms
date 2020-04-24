@@ -1121,7 +1121,10 @@ class NotaFiscalRepository extends EntityRepository {
                 /** @var LoteRepository $loteRepository */
                 $loteRepository = $em->getRepository('wms:Produto\Lote');
                 $notaFiscalItemLoteRepository = $em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
-                $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                $idPessoa = null;
+                if (\Zend_Auth::getInstance()->getIdentity() != null) {
+                    $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                }
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
                     $idProduto = ProdutoUtil::formatar($idProduto);
