@@ -25,13 +25,30 @@
             padding: 0 20px;
         }
 
-        form fieldset div.checkbox{
-         padding-top: 18px;
+        .lbl-checkbox {
+
         }
 
-        form fieldset div.checkbox input[type='checkbox']{
+        .lbl-checkbox input[type='checkbox']{
             margin-top: 2px;
         }
+
+        div.div-checkbox input[type='checkbox']{
+            margin-top: 5px;
+            margin-right: 5px;
+            margin-left: 7px;
+        }
+
+        div.div-checkbox label{
+            margin-right: 20px;
+        }
+
+        .inline {
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: row;
+        }
+
     </style>
     <?php echo $this->form; ?>
     <table width="100%">
@@ -51,7 +68,11 @@
                             </div>
                         </div>
                         <div class="gMassAction">
-                            <div class="gSelect">
+                            <div class="gSelect inline">
+                                <div class="div-checkbox inline">
+                                    <input class="checkbox" name="checkAllGridResult" id="checkAllGridResult" type="checkbox" ng-model="resultFormPaginator.selectedAll" ng-change="selectAllGrid('resultForm')">
+                                    <label class="lbl-checkbox" for="checkAllGridResult">Selecionar TUDO</label>
+                                </div>
                                 <span>{{(resultForm | filter:{checked: true }).length }} selecionados</span>
                             </div>
                             <div class="gAction">
@@ -63,7 +84,7 @@
                                 <tr class="gTTitle">
                                     <td ng-repeat="column in gridColumnsResult" width="{{column.width}}" align="{{(column.type === 'checkBox')? 'center':''}}">
                                         <div ng-if="column.type === 'checkBox'">
-                                            <input name="checkAllGridResult" id="checkAllGridResult" type="checkbox" ng-model="resultFormPaginator.actPage.selectedAll" ng-change="selectAllPage('resultForm')">
+                                            <input name="checkAllPageResult" id="checkAllPageResult" type="checkbox" ng-model="resultFormPaginator.actPage.selectedAll" ng-change="selectAllPage('resultForm')">
                                         </div>
                                         <div ng-if="column.type === 'ordenator'"><a href="" title="" class="sort" ng-click="ordenarPor(column, 'resultForm')"><span>{{column.label}}</span></a></div>
                                         <div ng-if="column.type === 'dropAction'" align="center"><span>Ação</span></div>
@@ -119,7 +140,7 @@
                             <tr class="gTTitle">
                                 <td ng-repeat="column in gridColumnsElements" width="{{column.width}}">
                                     <div ng-if="column.type === 'checkBox'">
-                                        <input name="checkAllGridResult" id="checkAllGridResult" type="checkbox" ng-model="resultFormPaginator.actPage.selectedAll" ng-change="selectAllPage('resultForm')">
+                                        <input name="checkAllPageElements" id="checkAllPageElements" type="checkbox" ng-model="elementsPaginator.actPage.selectedAll" ng-change="selectAllPage('elements')">
                                     </div>
                                     <div ng-if="column.type === 'ordenator'"><a href="" title="" class="sort" ng-click="ordenarPor(column.name, 'elements')"><span>{{column.label}}</span></a></div>
                                     <div ng-if="column.type === 'dropAction'" align="center"><span>Ação</span></div>

@@ -901,7 +901,8 @@ class NotaFiscalRepository extends EntityRepository {
                           r.dataInicial as dataRecebimento,
                           pe.id as idEmbalagem, pe.descricao as dscEmbalagem, pe.quantidade,
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
-                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras")
+                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras,
+                          NVL(de.descricao, 'N/D') picking")
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
@@ -916,10 +917,11 @@ class NotaFiscalRepository extends EntityRepository {
                 ->setParameter('idRecebimento', $idRecebimento);
 
         if (empty($emb)) {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.isPadrao = \'S\' AND (pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)');
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', "pe.isPadrao = 'S' AND (pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)");
         } else {
             $dql->leftJoin('p.embalagens', 'pe', 'WITH', '(pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)');
         }
+        $dql->leftJoin(Endereco::class, 'de', 'WITH', '(de = pv.endereco or de = pe.endereco)');
 
         if ($codProduto == null) {
             $dql->andWhere('(pe.imprimirCB = \'S\' OR pv.imprimirCB = \'S\')');
@@ -1119,7 +1121,10 @@ class NotaFiscalRepository extends EntityRepository {
                 /** @var LoteRepository $loteRepository */
                 $loteRepository = $em->getRepository('wms:Produto\Lote');
                 $notaFiscalItemLoteRepository = $em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
-                $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                $idPessoa = null;
+                if (\Zend_Auth::getInstance()->getIdentity() != null) {
+                    $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                }
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
                     $idProduto = ProdutoUtil::formatar($idProduto);

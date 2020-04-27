@@ -1,7 +1,39 @@
 <?php
-echo $this->form;
+//echo $this->form;
+/** @var Zend_Form $form */
+$form = $this->form;
+?>
+<form method="get" class="filtro" action="">
+    <div>
+    <fieldset id="fieldset-apontamento">
+        <legend>Relatório de comparativo de estoque ERP x WMS</legend>
+        <?php echo $form->getElement('modeloInventario'); ?>
+        <?php echo $form->getElement('inventario'); ?>
+        <?php echo $form->getElement('divergencia'); ?>
+        <?php echo $form->getElement('tipoDivergencia'); ?>
+        <?php echo $form->getElement('estoqueWms'); ?>
+        <?php echo $form->getElement('estoqueErp'); ?>
+        <?php echo $form->getElement('deduzirAvaria'); ?>
+        <?php echo $form->getElement('emInventario'); ?>
+        <?php echo $form->getElement('fabricante'); ?>
+        <?php echo $form->getElement('linhaSeparacao'); ?>
+        <?php echo $form->getElement('considerarReserva'); ?>
+        <?php echo $form->getElement('orderBy'); ?>
+        <div class="field">
+            <?php echo $form->getElement('directionOrder'); ?>
+        </div>
+        <div class="field">
+            <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
+            <input type="submit" name="gerarPdf" id="gerarPdf" value="Gerar relatório" class="btn">
+        </div>
+    </fieldset>
+    </div>
+</form>
+
+<?php
 echo $this->grid;
 ?>
+
 
 <div id="div-form-hidded"></div>
 <script>
@@ -51,4 +83,13 @@ echo $this->grid;
             }
         }
     });
+    $(document).ready(function () {
+        if (isEmpty($(".orderByInpt").val())) $("#directionOrder-label").parent().hide();
+    });
+
+    $(".orderByInpt").change(function () {
+        let directionOrder = $("#directionOrder-label").parent();
+        if (!isEmpty($(this).val())) directionOrder.show();
+        else directionOrder.hide();
+    })
 </script>

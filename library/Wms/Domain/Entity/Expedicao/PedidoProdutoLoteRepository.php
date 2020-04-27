@@ -10,6 +10,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository;
 
 class PedidoProdutoLoteRepository extends EntityRepository
@@ -43,4 +44,12 @@ class PedidoProdutoLoteRepository extends EntityRepository
         }
     }
 
+    public function update($data)
+    {
+        $entity = $this->findOneBy(['pedidoProduto' => $data['pedidoProduto'], 'lote' => Lote::LND]);
+        Configurator::configure($entity, $data);
+        $this->_em->persist($entity);
+
+        return $entity;
+    }
 }
