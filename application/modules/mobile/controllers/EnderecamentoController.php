@@ -1088,7 +1088,7 @@ class Mobile_EnderecamentoController extends Action
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoNovoEn->getId()) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
@@ -1206,7 +1206,7 @@ class Mobile_EnderecamentoController extends Action
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $endereco->getId()) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $endereco->liberadoPraSerPicking()) {
@@ -1324,12 +1324,12 @@ class Mobile_EnderecamentoController extends Action
 
                         if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                             $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $endereco->getId()) {
                                 throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                             }
                             if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                                 if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                    $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
+                                    $str[] = ($endereco->isBloðqueadaEntrada()) ? "Entrada" : "";
                                     $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
                                     throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                                 }
