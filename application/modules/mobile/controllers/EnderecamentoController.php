@@ -1577,7 +1577,7 @@ class Mobile_EnderecamentoController extends Action
             $result['embalado']   = $embalagemEn->getEmbalado();
             $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
             $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
-            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] : 0;
+            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] * reset($normaPaletizacaoEntity)['QTD_EMBALAGEM'] / $embalagemEn->getQuantidade(): 0;
             $result['camada']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_CAMADAS'] : 0;
         } else {
             $enderecoVolume = $volumeEn->getEndereco();
