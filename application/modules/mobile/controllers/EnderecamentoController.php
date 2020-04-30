@@ -6,7 +6,6 @@ use Wms\Controller\Action,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
     Wms\Domain\Entity\Enderecamento\Estoque;
-use Wms\Util\Coletor;
 
 
 class Mobile_EnderecamentoController extends Action
@@ -1512,7 +1511,7 @@ class Mobile_EnderecamentoController extends Action
                     throw new Exception('error', "O endereço ".$enderecoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                 }
 
-                $codBarras = Coletor::adequaCodigoBarras($codBarras);
+                $codBarras = ColetorUtil::adequaCodigoBarras($codBarras);
                 if (filter_var($isEmbalagem, FILTER_VALIDATE_BOOLEAN)) {
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
