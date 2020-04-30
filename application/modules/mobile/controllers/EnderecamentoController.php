@@ -6,6 +6,7 @@ use Wms\Controller\Action,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
     Wms\Domain\Entity\Enderecamento\Estoque;
+use Wms\Util\Coletor;
 
 
 class Mobile_EnderecamentoController extends Action
@@ -1088,7 +1089,7 @@ class Mobile_EnderecamentoController extends Action
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoNovoEn->getId()) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
@@ -1206,7 +1207,7 @@ class Mobile_EnderecamentoController extends Action
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $endereco->getId()) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $endereco->liberadoPraSerPicking()) {
@@ -1324,12 +1325,12 @@ class Mobile_EnderecamentoController extends Action
 
                         if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                             $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $endereco->getId()) {
                                 throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                             }
                             if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                                 if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                    $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
+                                    $str[] = ($endereco->isBloðqueadaEntrada()) ? "Entrada" : "";
                                     $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
                                     throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                                 }
@@ -1511,6 +1512,7 @@ class Mobile_EnderecamentoController extends Action
                     throw new Exception('error', "O endereço ".$enderecoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                 }
 
+                $codBarras = Coletor::adequaCodigoBarras($codBarras);
                 if (filter_var($isEmbalagem, FILTER_VALIDATE_BOOLEAN)) {
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
@@ -1575,7 +1577,7 @@ class Mobile_EnderecamentoController extends Action
             $result['embalado']   = $embalagemEn->getEmbalado();
             $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
             $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
-            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] : 0;
+            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] * reset($normaPaletizacaoEntity)['QTD_EMBALAGEM'] / $embalagemEn->getQuantidade(): 0;
             $result['camada']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_CAMADAS'] : 0;
         } else {
             $enderecoVolume = $volumeEn->getEndereco();
