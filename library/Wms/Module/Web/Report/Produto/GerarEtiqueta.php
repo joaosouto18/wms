@@ -570,21 +570,12 @@ class GerarEtiqueta extends eFPDF
         $codigo = $produto['codigoBarras'];
 
         $wCell = 90;
-
+        $this->SetFontSize(12);
         $this->AddPage();
-        $this->MultiCell($wCell,2.7,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
-        //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
-        $this->Ln(1.5);
-        $this->Cell($wCell, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
-        $this->Ln(3);
-        $this->Cell($wCell, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), $wCell), 0, 0);
-        if ($tipo == "NF") {
-            $this->Ln(3);
-            $this->Cell($wCell, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), $wCell), 0, 0);
-        }
+        $this->MultiCell($wCell,3.6,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
 
         $this->InFooter = true;
-
+        $this->SetFontSize(10);
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);
             $this->Cell($wCell, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " (".$produto['quantidade'].") - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
@@ -600,6 +591,7 @@ class GerarEtiqueta extends eFPDF
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell($wCell, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
         }
+        $this->SetFontSize(8);
 
         $x        = 35;
         $y        = 24;
