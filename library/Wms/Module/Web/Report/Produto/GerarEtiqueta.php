@@ -214,6 +214,12 @@ class GerarEtiqueta extends eFPDF
 
                 $this->layout7($produto);
                 break;
+            case 8:
+                $this->SetMargins(4, 3, 0);
+                $this->SetFont('Arial', 'B', 8);
+
+                $this->layout8($produto, $tipo);
+                break;
             default:
                 $this->SetMargins(7, 5, 0);
                 $this->SetFont('Arial', 'B', 8);
@@ -559,5 +565,52 @@ class GerarEtiqueta extends eFPDF
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
     }
 
+    public function layout8($produto, $tipo)
+    {
+        $codigo = $produto['codigoBarras'];
 
+        $wCell = 90;
+        $this->SetFontSize(12);
+        $this->AddPage();
+        $this->MultiCell($wCell,3.6,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
+
+        $this->InFooter = true;
+        $this->SetFontSize(10);
+        if ($produto['idEmbalagem'] != null) {
+            $this->Ln(3);
+            $this->Cell($wCell, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " (".$produto['quantidade'].") - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+        }
+
+        if ($produto['idVolume'] != null) {
+            $this->Ln(3);
+            $this->Cell($wCell, 0, 'Volume: ' . utf8_decode($produto['dscVolume']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+        }
+        if ($produto['dataValidade'] != null) {
+            $this->Ln(3);
+            $dataValidade = new \DateTime($produto['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell($wCell, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+        }
+        $this->SetFontSize(8);
+
+        $x        = 35;
+        $y        = 24;
+        $height   = 8;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,10);
+        $len = $this->GetStringWidth($data['hri']);
+
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 8,$codigo);
+
+        $this->SetXY(70,11);
+        $this->SetFontSize(10);
+        $this->Cell(27, 20, 'PICKING', null,null,'C');
+
+        $this->SetXY(70,15);
+        $this->SetFontSize(12);
+        $this->Cell(27, 20, $produto['picking'], null, null, 'C');
+
+    }
 }

@@ -357,7 +357,7 @@ class EstoqueRepository extends EntityRepository
         $subWhere = '';
         $paramJoin = '';
         $groupByLote = '';
-        if (isset($params['controlaLote']) && !empty($params['controlaLote']) && $params['controlaLote'] == 'S') {
+        if (isset($params['controlaLote']) && !empty($params['controlaLote']) && $params['controlaLote']) {
             $subSelect = ', REP.DSC_LOTE';
             $paramJoin = ' AND RS.DSC_LOTE = ESTQ.DSC_LOTE';
             $groupByLote = ', ESTQ.DSC_LOTE';

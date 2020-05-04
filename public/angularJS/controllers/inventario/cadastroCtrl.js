@@ -88,7 +88,8 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
         return {
             pages: [],
             actPage: {},
-            show: false
+            show: false,
+            selectedAll: false
         };
     };
 
@@ -113,7 +114,7 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
     };
 
     $scope.changePage = function (destination, grid) {
-        if ((destination > 0  && ($scope[grid + 'Paginator'].actPage.idPage + 1 ) === $scope[grid + 'Paginator'].size )
+        if ((destination > 0  && ($scope[grid + 'Paginator'].actPage.idPage + 1 ) === $scope[grid + 'Paginator'].pages.length )
             || (destination < 0 && $scope[grid + 'Paginator'].actPage.idPage === 0)) return;
 
         $scope[grid + 'Paginator'].actPage = $scope[grid + 'Paginator'].pages[ $scope[grid + 'Paginator'].actPage.idPage + destination ];
@@ -175,15 +176,51 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
         $scope[grid + 'Paginator'].actPage.selectedAll = (
             $filter("filter")(
                 $scope[grid].slice($scope[grid + 'Paginator'].actPage.indexStart, $scope[grid + 'Paginator'].actPage.indexEnd + 1),
-                {checked: true}).length === $scope[grid + 'Paginator'].actPage.itensPerPage);
+                {checked: true}).length === $scope[grid + 'Paginator'].actPage.itensPerPage
+        );
+
+        $scope[grid + 'Paginator'].selectedAll = (
+            $filter("filter")(
+                $scope[grid + 'Paginator'].pages,
+                {selectedAll: true}).length === $scope[grid + 'Paginator'].pages.length
+        );
     };
-    
+
+    let selectAll = function (grid, checked) {
+        angular.forEach($scope[grid], function (obj) { obj.checked = checked; });
+        $scope[grid + 'Paginator'].selectedAll = checked;
+        angular.forEach($scope[grid + 'Paginator'].pages, function (obj) { obj.selectedAll = checked; });
+
+    };
+
     $scope.selectAllPage = function(grid) {
+        if ($scope[grid].length === 0) {
+            $scope[grid + 'Paginator'].actPage.selectedAll = false;
+            return;
+        }
         angular.forEach($scope[grid], function (obj, k) {
             if (k >= $scope[grid + 'Paginator'].actPage.indexStart && k <= $scope[grid + 'Paginator'].actPage.indexEnd) {
                 $scope[grid][k].checked = $scope[grid + 'Paginator'].actPage.selectedAll;
             }
-        })
+        });
+        $scope.checkSelected(grid);
+    };
+
+    $scope.selectAllGrid = function(grid) {
+        if ($scope[grid + 'Paginator'].selectedAll) {
+            if ($scope[grid].length === 0) {
+                $scope[grid + 'Paginator'].selectedAll = false;
+                return;
+            }
+            uiDialogService.dialogConfirm("Esta ação irá selecionar todos os itens de todas as páginas, deseja realmente continuar?", null, "Sim", "Não", function () {
+                selectAll(grid, $scope[grid + 'Paginator'].selectedAll)
+            }, null, function () {
+                $scope[grid + 'Paginator'].selectedAll = false;
+                selectAll(grid, $scope[grid + 'Paginator'].selectedAll)
+            })
+        } else {
+            selectAll(grid, $scope[grid + 'Paginator'].selectedAll)
+        }
     };
 
     $scope.removeSelecionado = function(obj) {
@@ -206,12 +243,7 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
             }
         });
         if (count > 0) preparePaginator('elements', $scope.elements.length);
-        $scope.selectAll('resultForm', true, true)
-    };
-
-    $scope.selectAll = function (grid, undo, onlyPaginator) {
-        if (!onlyPaginator) angular.forEach($scope[grid], function (obj) { obj.checked = !undo; });
-        angular.forEach($scope[grid + 'Paginator'], function (obj) { obj.selectedAll = !undo; })
+        selectAll('resultForm', false)
     };
 
     $scope.showPreviewer = function() {
@@ -224,7 +256,4 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
             uiDialogService.dialogAlert("Nenhum elemento foi adicionado na lista");
         }
     };
-
-
-
 });

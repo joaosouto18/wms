@@ -1078,6 +1078,7 @@ class Expedicao_IndexController extends Action {
             list($temLote, $lotesCodBarras) = $mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa);
             $this->view->temLote = $temLote;
             $this->view->lotesCodBarras = json_encode($lotesCodBarras);
+            $this->view->desconsideraZeroEsquerda = (self::getSystemParameterValue('DESCONSIDERA_ZERO_ESQUERDA') == 'S');
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();

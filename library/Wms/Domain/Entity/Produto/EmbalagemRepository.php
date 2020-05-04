@@ -50,7 +50,6 @@ class EmbalagemRepository extends EntityRepository {
 
     public function setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado) {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $codBarras = Coletor::adequaCodigoBarras($codBarras);
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($embalagemEn)) {
@@ -73,28 +72,70 @@ class EmbalagemRepository extends EntityRepository {
     public function setNormaPaletizacaoEmbalagem($codBarras, $numLastro, $numCamadas, $unitizador)
     {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $pesoRepo = $this->getEntityManager()->getRepository('wms:Produto\Peso');
+        $produtoDadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
+        $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
+
         $codBarras = Coletor::adequaCodigoBarras($codBarras);
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
-        $produtoDadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
-        $produtoDadoLogisticoEn = $produtoDadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
-        if (!$produtoDadoLogisticoEn)
-            throw new \Exception('Dado Logistico nao cadastrado! Verifique com o PCE.');
-
-        $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
-        $normaPaletizacaoEn = $produtoDadoLogisticoEn->getNormaPaletizacao();
-
-        $unitizadorEn = $unitizadorRepo->find($unitizador);
-
         if (empty($embalagemEn)) {
             throw new \Exception('Embalagem não encontrada');
         }
 
-        if ($normaPaletizacaoEn) {
+        $peso = 0;
+        $pesoEn = $pesoRepo->findOneBy(array(
+            'produto'=>$embalagemEn->getProduto()->getId(),
+            'grade'=> $embalagemEn->getProduto()->getGrade()
+        ));
+        if ($pesoEn != null) $peso = $pesoEn->getPeso();
+
+        $unitizadorEn = $unitizadorRepo->find($unitizador);
+        if (empty($unitizadorEn)) {
+            throw new \Exception('Unitizador não encontrado');
+        }
+
+        $dql = $this->_em->createQueryBuilder()
+            ->select ('pdl.id as id')
+            ->from('wms:Produto\DadoLogistico','pdl')
+            ->leftJoin('pdl.embalagem','e')
+            ->leftJoin('e.produto','p')
+            ->where("e.codProduto = :codProduto")
+            ->andWhere("e.grade = :grade")
+            ->setParameter('codProduto', $embalagemEn->getProduto()->getId())
+            ->setParameter('grade', $embalagemEn->getProduto()->getGrade());
+        $result = $dql->getQuery()->getResult();
+
+        if (count($result) >0) {
+            $produtoDadoLogisticoEn = $produtoDadoLogisticoRepo->find($result[0]['id']);
+            $normaPaletizacaoEn = $produtoDadoLogisticoEn->getNormaPaletizacao();
+
+            $produtoDadoLogisticoEn->setEmbalagem($embalagemEn);
             $normaPaletizacaoEn->setNumLastro($numLastro);
             $normaPaletizacaoEn->setNumCamadas($numCamadas);
             $normaPaletizacaoEn->setNumNorma($numLastro * $numCamadas);
             $normaPaletizacaoEn->setUnitizador($unitizadorEn);
+            $normaPaletizacaoEn->setNumPeso($numLastro*$numCamadas*$peso*$embalagemEn->getQuantidade());
             $this->_em->persist($normaPaletizacaoEn);
+        } else {
+
+            $normaPaletizacaoEn = new NormaPaletizacao();
+            $normaPaletizacaoEn->setNumLastro($numLastro);
+            $normaPaletizacaoEn->setNumCamadas($numCamadas);
+            $normaPaletizacaoEn->setNumNorma($numLastro * $numCamadas);
+            $normaPaletizacaoEn->setNumPeso($numLastro*$numCamadas*$peso*$embalagemEn->getQuantidade());
+            $normaPaletizacaoEn->setUnitizador($unitizadorEn);
+            $normaPaletizacaoEn->setIsPadrao("S");
+            $this->_em->persist($normaPaletizacaoEn);
+
+            $produtoDadoLogisticoEn = new DadoLogistico();
+            $produtoDadoLogisticoEn->setAltura(0);
+            $produtoDadoLogisticoEn->setCubagem(0);
+            $produtoDadoLogisticoEn->setEmbalagem($embalagemEn);
+            $produtoDadoLogisticoEn->setLargura(0);
+            $produtoDadoLogisticoEn->setNormaPaletizacao($normaPaletizacaoEn);
+            $produtoDadoLogisticoEn->setPeso(0);
+            $produtoDadoLogisticoEn->setProfundidade(0);
+            $this->_em->persist($produtoDadoLogisticoEn);
         }
     }
 

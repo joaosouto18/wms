@@ -69,7 +69,7 @@ class Expedicao_OndaRessuprimentoController extends Action
                 if(!empty($cargaEntity)) {
                     /** @var Expedicao $expedicao */
                     $expedicao = $cargaEntity->getExpedicao();
-                    if ($expedicao->getCodStatus() == Expedicao::STATUS_FINALIZADO || $expedicao->getIndProcessando() == 'S') {
+                    if ($expedicao->getCodStatus() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO || $expedicao->getIndProcessando() == 'S') {
                         $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
                         continue;
                     }

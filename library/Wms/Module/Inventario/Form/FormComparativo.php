@@ -52,6 +52,11 @@ class FormComparativo extends Form
             'A' => 'Antigo',
             'N' => 'Novo'
         );
+        $emInventario = array(
+            '' => 'Todos',
+            'S' => 'SIM',
+            'N' => 'NÃO'
+        );
 
         $this->setAction(
             $this->getView()->url(array(
@@ -65,7 +70,7 @@ class FormComparativo extends Form
                 'class' => 'filtro'
             ))
             ->addElement('text', 'inventario', array(
-                'size' => 50,
+                'size' => 6,
                 'label' => 'Num. Inventario',
             ))
             ->addElement('select', 'divergencia', array(
@@ -73,7 +78,7 @@ class FormComparativo extends Form
                 'multiOptions' => $divergenciaArray
             ))
             ->addElement('select', 'deduzirAvaria', array(
-                'label' => 'Deduzir Avaria no Estoque ERP',
+                'label' => 'Deduzir Avaria no ERP',
                 'mostrarSelecione' => false,
                 'multiOptions' => $deduzirAvaria
             ))
@@ -81,13 +86,12 @@ class FormComparativo extends Form
                 'label' => 'Tipo Divergência',
                 'multiOptions' => $tipoDivergenciaArray
             ))
-            ->addElement('checkbox', 'considerarReservaSaida', array(
-                'label' => 'Considerar Reservas de Saída',
-                'checkedValue' => 'S'
-            ))
-            ->addElement('checkbox', 'considerarReservaEntrada', array(
-                'label' => 'Considerar Reservas de Entrada',
-                'checkedValue' => 'S'
+            ->addElement('multiCheckbox', 'considerarReserva', array(
+                'label' => 'Considerar Reservas de',
+                'multiOptions' => [
+                    'S' => 'Saída',
+                    'E' => 'Entrada'
+                ]
             ))
             ->addElement('select', 'linhaSeparacao', array(
                 'label' => 'Linha de separação',
@@ -105,11 +109,32 @@ class FormComparativo extends Form
                 'label' => 'Fabricante',
                 'multiOptions' => $fabricanteArray
             ))
+            ->addElement('select', 'orderBy', array(
+                'label' => 'Ordenar por',
+                'multiOptions' => [
+                    '' => 'Padrão',
+                    1  => 'Estoque ERP',
+                    2  => 'Estoque WMS',
+                    3  => 'Divergência',
+                    4  => 'Vlr. WMS',
+                    5  => 'Vlr. ERP',
+                    6  => 'Vlr. Diverg',
+                ],
+                'class' => 'orderByInpt'
+            ))
+            ->addElement('radio', 'directionOrder', array(
+                'label' => 'Sentido Ordenação',
+                'multiOptions' => [ 'C' => 'Crescente', 'D' => 'Decrescente' ],
+                'value' => 'C',
+            ))
+            ->addElement('select','emInventario', array(
+                'label' => 'Em inventário Ativo',
+                'multiOptions' => $emInventario,
+            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
                 'class' => 'btn',
-                'decorators' => array('ViewHelper'),
-
+                'decorators' => array('ViewHelper')
             ))
             ->addElement('select', 'modeloInventario', array(
                 'label' => 'Tipo.Inventário',
@@ -120,7 +145,7 @@ class FormComparativo extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'considerarReservaEntrada', 'considerarReservaSaida', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'considerarReserva', 'orderBy', 'directionOrder', 'emInventario', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }

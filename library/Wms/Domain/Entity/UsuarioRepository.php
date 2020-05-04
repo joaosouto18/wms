@@ -170,6 +170,7 @@ class UsuarioRepository extends AtorRepository {
             ->innerJoin('u.depositos', 'd')
             ->innerJoin('u.perfis', 'p')
             ->orderBy('pf.nome')
+            ->andWhere("u.isAtivo = 'S'")
             ->andWhere("p.nome = '$perfil' OR p.id = '$idPerfil'");
 
         return $source->getQuery()->getResult();

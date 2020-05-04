@@ -29,6 +29,9 @@ class Web_FornecedorController extends \Wms\Controller\Action
                     ->innerJoin('f.pessoa', 'p')
                     ->orderBy('p.nome');
 
+            if (!empty($codigo)) {
+                $source->andWhere("f.idExterno = $codigo");
+            }
             if (!empty($nome)) {
                 $nomeFornecedor = mb_strtoupper($nome, 'UTF-8');
                 $source->andWhere("p.nome LIKE '{$nomeFornecedor}%'");
@@ -45,7 +48,11 @@ class Web_FornecedorController extends \Wms\Controller\Action
 
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
             $grid->addColumn(array(
-                        'label' => 'Razao Social',
+                        'label' => 'Código',
+                        'index' => 'idExterno'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Razão Social',
                         'index' => 'nome'
                     ))
                     ->addColumn(array(

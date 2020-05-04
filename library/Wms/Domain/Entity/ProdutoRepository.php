@@ -1318,7 +1318,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     public function buscarProdutosImprimirCodigoBarras($codProduto, $grade, $idEmbalagens = null) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('
+                ->select("
                       p.id as idProduto,
                       p.grade,
                       p.descricao as dscProduto,
@@ -1332,19 +1332,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       pv.id as idVolume,
                       pv.codigoSequencial as codSequencialVolume,
                       pv.descricao as dscVolume,
-                      NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
+                      NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras,
+                      NVL(de.descricao, 'N/D') picking")
                 ->from('wms:Produto', 'p')
                 ->innerJoin('p.tipoComercializacao', 'tc')
                 ->leftJoin('p.linhaSeparacao', 'ls')
                 ->leftJoin('p.fabricante', 'fb');
 
         if (isset($codProduto) && !empty($codProduto)) {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade');
+            $dql->leftJoin('p.embalagens', 'pe');
         } else {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', "pe.isPadrao = 'S'");
         }
 
-            $dql->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+            $dql->leftJoin('p.volumes', 'pv')
+                ->leftJoin(Endereco::class, 'de', 'WITH', '(de = pv.endereco or de = pe.endereco)')
                 ->where('p.id = :codProduto')
                 ->andWhere("p.grade = :grade")
                 ->setParameter('codProduto', $codProduto)

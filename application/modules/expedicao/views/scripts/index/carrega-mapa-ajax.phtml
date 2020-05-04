@@ -158,6 +158,7 @@ if ($this->erro) {
 
     <?php if ($temLote) { ?>
     var loteCodigoBarras = <?php echo $this->lotesCodBarras ?>;
+    var desconsideraZeroEsquerda = <?php echo ($this->desconsideraZeroEsquerda) ? 'true': 'false' ?>;
 
     $("#lote").focus(function () {
         verificaCodBarras()
@@ -167,15 +168,15 @@ if ($this->erro) {
         var result = true;
         if (event.which == 13 || event.keyCode == 13) {
             if (verificaCodBarras()) {
-                var codBarras = $("#codigoBarras");
-                if (loteCodigoBarras[codBarras.val()] instanceof Array) {
+                var inptCodBarras = $("#codigoBarras");
+                if (loteCodigoBarras[validaCodBarras(inptCodBarras.val())] instanceof Array) {
                     var lote = $('#lote');
                     if (lote) {
                         lote.focus();
                         lote.val("");
                     }
                 } else {
-                    return requestAjax(event, $("#qtd"), codBarras);
+                    return requestAjax(event, $("#qtd"), inptCodBarras);
                 }
             }
             if (event.preventDefault) {
@@ -206,8 +207,11 @@ if ($this->erro) {
     }
 
     function validaCodBarras(codBarras) {
+        if (desconsideraZeroEsquerda && codBarras.charAt(0) === '0') {
+            codBarras = codBarras.substring(1);
+        }
         if (codBarras in loteCodigoBarras) {
-            return true;
+            return codBarras;
         } else {
             alert("Código de barras " + codBarras + " não esperado para este mapa");
             return false;
@@ -246,18 +250,19 @@ if ($this->erro) {
         return false;
     }
 
-    function verificacao (codBarras, lote) {
+    function verificacao (inptCodBarras, lote) {
         var result = true;
-        if (validaCodBarras(codBarras.val())) {
-            if (loteCodigoBarras[codBarras.val()] instanceof Array) {
-                var checkLote = checkLoteByCodBarras(codBarras.val(), lote.val());
+        var codBarras = validaCodBarras(inptCodBarras.val());
+        if (codBarras) {
+            if (loteCodigoBarras[codBarras] instanceof Array) {
+                var checkLote = checkLoteByCodBarras(codBarras, lote.val());
                 if (!checkLote) {
                     lote.val("").focus();
                 }
                 result = checkLote;
             }
         } else {
-            codBarras.val("").focus();
+            inptCodBarras.val("").focus();
             result = false;
         }
         return result;

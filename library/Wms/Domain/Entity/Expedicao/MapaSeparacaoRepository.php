@@ -1214,6 +1214,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        P.DSC_PRODUTO,
                        P.COD_PRODUTO,
                        P.DSC_GRADE,
+                       NVL(P.IND_CONTROLA_LOTE, 'N') as IND_CONTROLA_LOTE,
                        MSP.DSC_LOTE,
                        P.IND_FRACIONAVEL,
                        PE.COD_PRODUTO_EMBALAGEM,
@@ -1314,7 +1315,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
 
             //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LOTE ESPECÍFICO
-            if (!empty($lote) && $mapa["DSC_LOTE"] != $lote) continue;
+            if ($mapa['IND_CONTROLA_LOTE'] == 'S' && !empty($mapa["DSC_LOTE"]) && $mapa["DSC_LOTE"] != $lote) continue;
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
@@ -1551,26 +1552,24 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function getCaixasByExpedicao($idExpedicao)
     {
-        $sql = "SELECT NVL(VOL_EMBALADOS.NUMERO_CAIXAS,0) + NVL(VOL_ETIQUETAS.NUMERO_CAIXAS,0) NUMERO_CAIXAS, NVL(VOL_EMBALADOS.COD_PESSOA,VOL_ETIQUETAS.COD_PESSOA) COD_PESSOA, E.COD_EXPEDICAO
-                    FROM EXPEDICAO E 
-                    LEFT JOIN (
-                        SELECT COUNT(NVL(MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE,0)) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
-                        FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
-                        INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO
-                        WHERE MS.COD_EXPEDICAO = $idExpedicao
-                        GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
-                    ) VOL_EMBALADOS ON VOL_EMBALADOS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    LEFT JOIN (
-                        SELECT COUNT(NVL(ES.COD_ETIQUETA_SEPARACAO,0)) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
-                        FROM ETIQUETA_SEPARACAO ES
-                        INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
-                        INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-                        INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                        WHERE E.COD_EXPEDICAO = $idExpedicao
+        $sql = "SELECT SUM(NUMERO_CAIXAS) NUMERO_CAIXAS, COD_EXPEDICAO, COD_PESSOA
+                FROM (
+                    SELECT COUNT(NVL(MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE,0)) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
+                    FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
+                    INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao
+                    GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
+                UNION ALL
+                    SELECT COUNT(NVL(ES.COD_ETIQUETA_SEPARACAO,0)) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
+                    FROM ETIQUETA_SEPARACAO ES
+                    INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                    INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    WHERE E.COD_EXPEDICAO = $idExpedicao 
                         AND ES.COD_STATUS = ". EtiquetaSeparacao::STATUS_CONFERIDO ."
-                        GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO
-                    ) VOL_ETIQUETAS ON VOL_ETIQUETAS.COD_EXPEDICAO = E.COD_EXPEDICAO AND VOL_ETIQUETAS.COD_PESSOA = VOL_EMBALADOS.COD_PESSOA
-                    WHERE E.COD_EXPEDICAO = $idExpedicao";
+                    GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO)
+                WHERE COD_EXPEDICAO = $idExpedicao
+                GROUP BY COD_EXPEDICAO, COD_PESSOA";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

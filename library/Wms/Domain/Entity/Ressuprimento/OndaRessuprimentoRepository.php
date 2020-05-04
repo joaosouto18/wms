@@ -337,7 +337,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $statusEn = $siglaRepo->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA));
 
         if (empty($lotes)) {
-            $lotes[Produto\Lote::LND] = [
+            $lotes[Produto\Lote::NCL] = [
                 'QTD' => $qtdOnda,
                 'VALIDADE' => $validade
             ];
@@ -364,7 +364,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             $qtdOnda = $val['QTD'];
             $validade = $val['VALIDADE'];
-            $lote = ($dscLote != Produto\Lote::LND) ? $dscLote : null;
+            $lote = ($dscLote != Produto\Lote::NCL) ? $dscLote : null;
 
             $produtosEntrada = array();
             $produtosSaida = array();
@@ -430,7 +430,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
     }
 
-    private function calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios) {
+    private function calculaRessuprimentoByPicking($strExp, $picking, $ondaEn, $dadosProdutos, $repositorios) {
         $qtdOsGerada = 0;
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
@@ -459,7 +459,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $idPicking, "E");
         $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $idPicking, "S");
         $saldo = $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking;
-        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
         if ($saldo <= $pontoReposicao) {
             $qtdRessuprir = $saldo * -1;
             $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
@@ -490,6 +489,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                 $estoquePulmao = $arrTemp;
             }
+            $lotes = [];
 
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
@@ -514,7 +514,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
-                    $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lotes);
+                    $this->saveOs($dadosProdutos[$codProduto][$grade]['entidade'], $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lotes);
                     $qtdOsGerada ++;
                 }
 
@@ -524,11 +524,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     break;
                 }
             }
-        }
 
-//        if ($controlaLote == 'S') {
-//            $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $lotes);
-//        }
+            if ($controlaLote && !empty($lotes)) {
+                $reservaEstoqueRepo->updateReservaExpedicao($strExp, $codProduto, $grade, $idPicking, $lotes);
+            }
+        }
 
         return $qtdOsGerada;
     }
@@ -543,7 +543,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
     }
 
-    public function calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
+    public function calculaRessuprimentoByProduto($strExp, $produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
         $qtdRessuprimentos = 0;
         $arrErroCapacidade = [];
         $arrErroVolSemPicking = [];
@@ -553,7 +553,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             /** @var Produto $produtoEn */
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-            $controlaLote = $produtoEn->getIndControlaLote();
+            $controlaLote = ($produtoEn->getIndControlaLote() == 'S');
 
             $pickings = array();
             if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
@@ -630,7 +630,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
 
             foreach ($pickings as $picking) {
-                $qtdRessuprimentos = $qtdRessuprimentos + $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
+                $qtdRessuprimentos = $qtdRessuprimentos + $this->calculaRessuprimentoByPicking($strExp, $picking, $ondaEn, $dadosProdutos, $repositorios);
             }
         }
 
