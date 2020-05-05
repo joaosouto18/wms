@@ -21,10 +21,18 @@ class FiltroDadosOnda extends Form
         $usuarioRepo = $em->getRepository('wms:Usuario');
 
         $this
+            ->addElement('text', 'codOs', array(
+                'size' => 7,
+                'label' => 'Ordem de Serviço',
+                'class' => 'focus',
+            ))
+            ->addElement('text', 'codOnda', array(
+                'size' => 7,
+                'label' => 'Onda'
+            ))
             ->addElement('text', 'idProduto', array(
                 'size' => 12,
                 'label' => 'Cod. produto',
-                'class' => 'focus',
             ))
             ->addElement('text', 'grade', array(
                 'size' => 12,
@@ -34,7 +42,6 @@ class FiltroDadosOnda extends Form
                 'label' => 'Expedição',
                 'size' => 10,
                 'maxlength' => 10,
-                'class' => 'focus',
             ))
             ->addElement('date', 'dataInicial', array(
                 'size' => 20,
@@ -47,12 +54,10 @@ class FiltroDadosOnda extends Form
             ->addElement('select', 'operador', array(
                 'label' => 'Operador de Empilhadeira',
                 'multiOptions' => array('firstOpt' => 'Todos', 'options' => $usuarioRepo->getIdValueByPerfil($perfilParam->getValor())),
-                'decorators' => array('ViewHelper'),
             ))
             ->addElement('select', 'status', array(
-                'label' => 'Status das OS',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(74)),
-                'decorators' => array('ViewHelper'),
+                'label' => 'Status',
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(74))
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
@@ -62,7 +67,7 @@ class FiltroDadosOnda extends Form
             ->addElement('hidden', 'actionParams', array(
                 'values'=>false
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'operador', 'expedicao', 'dataInicial','dataFinal', 'status', 'submit','actionParams'),'filtro', array('legend' => 'Busca')
+            ->addDisplayGroup(array('codOs', 'codOnda', 'expedicao', 'idProduto', 'grade', 'operador', 'dataInicial','dataFinal', 'status', 'submit','actionParams'),'filtro', array('legend' => 'Busca')
             );
     }
 

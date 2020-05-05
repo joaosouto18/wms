@@ -76,7 +76,7 @@ class OsRessuprimento extends Grid
                 'index' => 'STATUS',
             ))
             ->addColumn(array(
-                'label' => 'Conferente',
+                'label' => 'Responsável',
                 'index' => 'NOM_PESSOA'
             ))
             ->addColumn(array(
