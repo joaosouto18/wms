@@ -257,6 +257,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
                 } elseif ($modelo == '14' || $modelo == '16') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 75));
+                } elseif ($modelo == '17') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(110, 55));
                 } elseif ($modelo == '18') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 35));
                 } else {
