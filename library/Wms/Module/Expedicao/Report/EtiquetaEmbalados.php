@@ -653,13 +653,17 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->SetXY(5, 28.5);
             $this->SetFont('Arial', null, 9);
-            $this->Cell(15, 4, utf8_decode('ENDEREÇO:'));
+            $this->Cell(20.5, 4, utf8_decode("EXPEDIÇÃO:"));
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(35, 4, utf8_decode("$volume[COD_EXPEDICAO]"));
+            $this->SetFont('Arial', null, 9);
+            $this->Cell(13, 4, utf8_decode("CARGA:"));
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(35, 4, utf8_decode("$volume[COD_CARGA_EXTERNO]"));
 
-            $this->SetXY(5, 33);
-            $this->SetFont('Arial', 'B', 11);
-            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[COD_REFERENCIA_SIGLA] - $volume[NOM_LOCALIDADE]"), 100), 0, 'L');
-            $this->SetXY(5, 36.5);
-            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[DSC_ENDERECO] nº: $volume[NUM_ENDERECO] "), 100), 0, 'L');
+            $this->SetXY(5, 35);
+            $this->SetFont('Arial', 'B', 13);
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("TRANSP: $volume[DSC_PLACA_CARGA]"), 100), 0, 'L');
 
             $this->SetY(42);
             $this->Cell(104, 11, '', 1);
