@@ -596,8 +596,9 @@ class EstoqueRepository extends EntityRepository
         if (isset($parametros['volume']) && !empty($parametros['volume'])) {
             $SQLWhere .= " AND PV.COD_PRODUTO_VOLUME = " . $parametros['volume'];
         }
-
-        $SQLgroupBy = " GROUP BY DE.DSC_DEPOSITO_ENDERECO, DE.COD_DEPOSITO_ENDERECO, C.COD_CARACTERISTICA_ENDERECO, C.DSC_CARACTERISTICA_ENDERECO, P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME, NVL(PV.COD_PRODUTO_VOLUME,0), NVL(PV.COD_NORMA_PALETIZACAO,0), ESTQ.DTH_VALIDADE, NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE))";
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO = " . $parametros['tipoEndereco'];
+        }
 
         if ($orderBy != null) {
             $SQLOrderBy = $orderBy;
