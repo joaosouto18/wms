@@ -1,4 +1,6 @@
 <?php
+
+use Wms\Domain\Entity\Enderecamento as Enderecamento;
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Page;;
 
@@ -19,19 +21,23 @@ class Enderecamento_Relatorio_InventarioController extends Action
         if ($params) {
             $form->populate($params);
 
+            /** @var Enderecamento\VSaldoInterface $saldoRepo */
+            $saldoRepo = null;
+
 			if($params['tipo'] == "C") {
-				/** @var \Wms\Domain\Entity\Enderecamento\VSaldoCompletoRepository $SaldoCompletoRepository */
-				$SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
-				$saldo = $SaldoCompletoRepository->saldo($params);
+                $saldoRepo = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
+                $Report = new \Wms\Module\Armazenagem\Report\Inventario("L");
+			} elseif ($params['tipo'] == "L"){
+				/** @var Enderecamento\VSaldoLoteCompletoRepository $SaldoRepository */
+                $saldoRepo = $this->_em->getRepository(Enderecamento\VSaldoLoteCompleto::class);
+                $Report = new \Wms\Module\Armazenagem\Report\InventarioLote("L");
 			} else {
-				/** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
-				$SaldoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldo');
-				$saldo = $SaldoRepository->saldo($params);
+				/** @var Enderecamento\VSaldoRepository $SaldoRepository */
+                $saldoRepo = $this->_em->getRepository('wms:Enderecamento\VSaldo');
+                $Report = new \Wms\Module\Armazenagem\Report\Inventario("L");
 			}
 
-            $Report = new \Wms\Module\Armazenagem\Report\Inventario("L");
-			
-            if ($Report->init($saldo,$params['mostraEstoque'])) {
+            if ($Report->init($saldoRepo->saldo($params), $params['mostraEstoque'])) {
                 $this->addFlashMessage('error', 'Produto não encontrado');
             }
         }

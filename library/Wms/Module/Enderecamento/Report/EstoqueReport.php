@@ -206,7 +206,7 @@ class EstoqueReport extends Pdf
                 $this->Cell(25, 5, $qtdEstoqueP, 1, 0,'C');
                 $this->Cell(40, 5,"", 1, 1,'R');
 
-                $this->Ln();
+                //$this->Ln();
             }
 
             $volumeAnterior = $produto['VOLUME'];
