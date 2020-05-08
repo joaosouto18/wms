@@ -52,7 +52,7 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 9:
                 //LAYOUT VETSS
-                self::bodyExpedicaoModelo9($volumePatrimonio);
+                self::bodyExpedicaoModelo9($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             case 10:
                 //LAYOUT MOTOARTE
@@ -640,8 +640,15 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->SetxY(75, 6);
             $this->SetFont('Arial', 'B', 17);
-            $dscSeq = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
-            $this->MultiCell(40, 10, $dscSeq, 0, 'C');
+
+            if ($fechaEmbaladosNoFinal)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
+            else if ($existeItensPendentes == false)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
+            $this->MultiCell(40, 10, $impressao, 0, 'C');
 
             $this->SetXY(88, 14);
             $this->SetFont('Arial', 'B', 12);
