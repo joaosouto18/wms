@@ -378,7 +378,8 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(90,6);
             $this->SetFont('Arial', 'B', 17);
-            $this->MultiCell(40, 10, $volume['NUM_SEQUENCIA'].'/'.reset($qtdEtiquetasEmbalados)['NUMERO_CAIXAS'], 0, 'L');
+            $dscSeq = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
+            $this->MultiCell(40, 10, $dscSeq, 0, 'L');
 
             $this->SetXY(88,14);
             $this->SetFont('Arial', 'B', 12);
