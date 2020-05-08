@@ -50,7 +50,7 @@ class Filtro extends Form
                     'label' => 'Tipo de Inventário',
 					'mostrarSelecione' => false,
                     'style' => 'height:auto; width:100%',
-                     'multiOptions' => array('C'=> 'Inventário Completo','P'=>'Inventário Parcial')
+                     'multiOptions' => array('C'=> 'Inventário Completo','P'=>'Inventário Parcial', 'L' => 'Por Lote')
                 ))
                 ->addElement('checkbox', 'mostraEstoque', array(
                     'label' => 'Imprimir o Estoque',
