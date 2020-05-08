@@ -609,9 +609,15 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo9($volumes)
+    private function bodyExpedicaoModelo9($volumes, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
         foreach ($volumes as $volume) {
+
+            $existeItensPendentes = true;
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S'));
+            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+                $existeItensPendentes = false;
+            }
 
             $imgW = 45;
             $imgH = 17;
