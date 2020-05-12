@@ -9,6 +9,9 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
+use Wms\Domain\Entity\Pessoa\Fisica;
+use Wms\Domain\Entity\Pessoa\Juridica;
+use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Produto\Lote;
@@ -5975,5 +5978,91 @@ class ExpedicaoRepository extends EntityRepository {
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    public function getRastreioExpedicoes(array $params)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("
+                e.id as codExpedicao,
+                c.codCargaExterno as codCarga,
+                p.codExterno as codPedido,
+                TO_CHAR(e.dataInicio, 'DD/MM/YYYY') as dthInicio,
+                TO_CHAR(e.dataFinalizacao, 'DD/MM/YYYY') as dthFim,
+                pcl.nome as nomCliente,
+                prod.id as codProduto,
+                prod.descricao as dscProd,
+                prod.grade,
+                ppl.lote,
+                CASE WHEN ppl.id IS NOT NULL 
+                    THEN ppl.quantidade - NVL(ppl.qtdCorte,0)
+                    ELSE pp.quantidade - NVL(pp.qtdCortada,0)
+                END as qtdAtendida
+            ")
+            ->from(Expedicao\PedidoProduto::class, 'pp')
+            ->innerJoin(Produto::class, 'prod', 'WITH', 'prod.id = pp.codProduto AND prod.grade = pp.grade')
+            ->innerJoin(Expedicao\Pedido::class, 'p', 'WITH', 'pp.pedido = p')
+            ->innerJoin(Expedicao\Carga::class, 'c', 'WITH', 'p.carga = c')
+            ->innerJoin(Expedicao::class, 'e', 'WITH', 'c.expedicao = e')
+            ->innerJoin("p.pessoa", 'cl')
+            ->innerJoin('cl.pessoa', 'pcl')
+            ->leftJoin(Expedicao\PedidoProdutoLote::class, 'ppl', 'WITH', 'ppl.pedidoProduto = pp')
+            ->where('e.status = ' . Expedicao::STATUS_FINALIZADO)
+            ->andWhere("pp.quantidade > NVL(pp.qtdCortada, 0)")
+            ->orderBy("e.id")
+        ;
+
+        if (!empty($params['codExpedicao'])) {
+            $dql->andWhere("e.id = :codExpedicao")
+                ->setParameter('codExpedicao', $params['codExpedicao']);
+        }
+
+        if (!empty($params['codCarga'])) {
+            $dql->andWhere("c.codCargaExterno = :codCarga")
+                ->setParameter('codCarga', $params['codCarga']);
+        }
+
+        if (!empty($params['nomCliente'])) {
+            $dql->andWhere("pcl.nome LIKE :nomCliente")
+                ->setParameter('nomCliente', "%$params[nomCliente]%");
+        }
+
+        if (!empty($params['lote'])) {
+            $dql->andWhere("ppl.lote = :lote")
+                ->setParameter('lote', $params['lote']);
+        }
+
+        if (!empty($params['cpfCnpj'])) {
+            $cleanCpfCnpj = str_replace(['.', '/', '-'], '', $params['cpfCnpj']);
+            if (strlen($cleanCpfCnpj) == 14) {
+                $dql->innerJoin(Juridica::class, 'pj', 'WITH', 'pcl.id = pj.id')
+                    ->andWhere("pj.cnpj = :cnpj")
+                    ->setParameter('cnpj', $cleanCpfCnpj);
+            } else {
+                $dql->innerJoin(Fisica::class, 'pf', 'WITH', 'pcl.id = pf.id')
+                    ->andWhere("pf.cpf = :cpf")
+                    ->setParameter('cpf', $cleanCpfCnpj);
+            }
+        }
+
+        if (!empty($params['dthInicial1']) || !empty($params['dthInicial2'])) {
+            if (!empty($params['dthInicial1']) && !empty($params['dthInicial2']))
+                $dql->andWhere("e.dataInicio BETWEEN TO_DATE('$params[dthInicial1]','DD/MM/YYYY') AND TO_DATE('$params[dthInicial2]','DD/MM/YYYY')");
+            else {
+                $date = (!empty($params['dthInicial1'])) ? $params['dthInicial1'] : $params['dthInicial2'];
+                $dql->andWhere("e.dataInicio = TO_DATE('$date','DD/MM/YYYY')");
+            }
+        }
+
+        if (!empty($params['dthFinal1']) || !empty($params['dthFinal2'])) {
+            if (!empty($params['dthFinal1']) && !empty($params['dthFinal2']))
+                $dql->andWhere("e.dataFinalizacao BETWEEN TO_DATE('$params[dthFinal1]','DD/MM/YYYY') AND TO_DATE('$params[dthFinal2]','DD/MM/YYYY')");
+            else {
+                $date = (!empty($params['dthFinal1'])) ? $params['dthFinal1'] : $params['dthFinal2'];
+                $dql->andWhere("e.dataFinalizacao = TO_DATE('$date','DD/MM/YYYY')");
+            }
+        }
+
+        return $dql->getQuery()->getResult();
     }
 }

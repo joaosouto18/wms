@@ -1,4 +1,4 @@
-angular.module("wms", ['ngSanitize', 'uiDialogService', 'ui.mask'])
+angular.module("wms", ['ngSanitize', 'uiDialogService', 'ui.mask', 'ngMask'])
     .filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {
@@ -25,6 +25,31 @@ angular.module("wms", ['ngSanitize', 'uiDialogService', 'ui.mask'])
         }
         return $filter('filter')(array, needle, strict);
     }
+}).directive('uppercase', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, modelCtrl) {
+            let uppercase = function(inputValue) {
+                if (inputValue == undefined) inputValue = '';
+                let upped = inputValue.toUpperCase();
+                if (upped !== inputValue) {
+                    // see where the cursor is before the update so that we can set it back
+                    let selection = element[0].selectionStart;
+                    modelCtrl.$setViewValue(upped);
+                    modelCtrl.$render();
+                    // set back the cursor after rendering
+                    element[0].selectionStart = selection;
+                    element[0].selectionEnd = selection;
+                }
+                return upped;
+            }
+            if (!isEmpty(attrs.uppercase) && attrs.uppercase != 'false' && attrs.uppercase != '' && attrs.uppercase != '0') {
+                modelCtrl.$parsers.push(uppercase);
+                uppercase(scope[attrs.ngModel]); // capitalize initial value
+            }
+        }
+    };
 });
 
 function typeSensitiveComparatorFn () {
