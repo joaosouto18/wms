@@ -1,0 +1,121 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: tarci
+ * Date: 11/01/2019
+ * Time: 16:34
+ */
+?>
+
+<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('css/admin/accordion.css'); ?>" />
+<div>
+    <div class="accordion" id="accordion-master"></div>
+</div>
+<script>
+    $(function() {
+        var arrProdutos = <?php echo $this->produtos; ?> ;
+
+        $(document).ready(function () {
+            if (Object.keys(arrProdutos).length > 0) {
+                $.each(arrProdutos, function (k, produtos) {
+
+                    let accordionRua = $('<div class="accordion"></div>');
+
+                    $.each(produtos, function (k, prod) {
+
+                        let tableConf = prepareGridConf(prod.separacao);
+                        accordionRua.append(
+                            newAccordionGroup(k, prod, tableConf, true)
+                        )
+                    });
+
+
+                    $("#accordion-master").append(
+                        newAccordionGroup(k, produtos, accordionRua)
+                    )
+
+                })
+            }
+
+            $(".accordion")
+                .accordion({
+                    active: false,
+                    header: "> div > h3",
+                    autoHeight: false,
+                    fillHeight: true,
+                    collapsible: true,
+                    icons: {
+                        header: "ui-icon-accordion-header",
+                        headerSelected: "ui-icon-accordion-active"
+                    }
+                })
+                .sortable({
+                    axis: "y",
+                    handle: "h3",
+                    stop: function( event, ui ) {
+                        // IE doesn't register the blur when sorting
+                        // so trigger focusout handlers to remove .ui-state-focus
+                        ui.item.children( "h3" ).triggerHandler( "focusout" );
+
+                        // Refresh accordion to handle new order
+                        $( this ).accordion( "refresh" );
+                    }
+                });
+        });
+
+        var prepareGridConf = function (conferencias) {
+            let tBody = $('<tbody>');
+            tBody.append('<tr class="gTTitle">' +
+                '<td>Data da Separação</td>' +
+                '<td>Separador</td>' +
+                '<td>Lote</td>' +
+                '<td>Qtd</td>' +
+                '</tr>');
+
+            $.each(conferencias, function (k, conf) {
+                tBody.append('<tr class="gTResultSet ">' +
+                    '<td>'+conf.dthSeparacao+'</td>' +
+                    '<td>'+conf.separador+'</td>' +
+                    '<td>'+conf.lote+'</td>' +
+                    '<td>'+conf.embalagem+'</td>' +
+                    '</tr>');
+            });
+
+            return $('<table class="gTable">').append(tBody);
+        };
+
+        var newAccordionGroup = function (index, accTitle, dataBody, subAcc) {
+            let divGroupAcc = $('<div class="group"></div>');
+            let accHeader = null;
+
+            if (!subAcc) {
+                let title = '' +
+                    '<table width="100%">' +
+                    '<thead>' +
+                    '<tr>' +
+                    '<td class="accordion-master-head" width="15%">Acompanhamento da Separação</td>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '</table>';
+                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
+            }
+            else {
+                let title = '' +
+                    '<table width="100%">' +
+                    '<thead>' +
+                    '<tr>' +
+                    '<td class="accordion-master-head" >Código: '+accTitle.codProduto+'</td>' +
+                    '<td class="accordion-master-head" >Grade: '+accTitle.grade+'</td>' +
+                    '<td class="accordion-master-head" >Produto: '+accTitle.descricao+'</td>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '</table>';
+                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
+            }
+
+            let divAccBody = $('<div class="accordion-body"></div>');
+
+            return divGroupAcc.append(accHeader).append(divAccBody.append(dataBody));
+        };
+    });
+</script>

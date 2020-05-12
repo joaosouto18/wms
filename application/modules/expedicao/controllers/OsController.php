@@ -533,6 +533,17 @@ class Expedicao_OsController extends Action
 
     }
 
+    public function consultarSeparacaoAjaxAction(){
+        $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
+        $mapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $produtos = json_encode($mapaSeparacaoRepository->getDetalhamentoSeparacaoByMapa($idMapa));
+
+        $this->view->produtos = $produtos;
+
+    }
+
     public function produtosVolumesEmbaladosAction()
     {
 
