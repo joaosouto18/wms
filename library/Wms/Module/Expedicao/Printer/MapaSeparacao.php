@@ -204,6 +204,9 @@ class MapaSeparacao extends eFPDF {
                     case 13:
                         $this->layoutModelo13($mapa, $produtos, !empty($quebraConsolidado), ['txt' => $txtCarga, 'str' => $stringCargas]);
                         break;
+                    case 14:
+                        $this->layoutModelo14($mapa, $produtos, !empty($quebraConsolidado), ['txt' => $txtCarga, 'str' => $stringCargas]);
+                        break;
                     default:
                         $this->layoutModelo1($mapa, $produtos, $usaGrade, !empty($quebraConsolidado), $dscBox, ['txt' => $txtCarga, 'str' => $stringCargas]);
                 }
@@ -2210,6 +2213,147 @@ class MapaSeparacao extends eFPDF {
 //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
         $this->SetFont('Arial', null, 10);
         $this->Cell(20, 4, utf8_decode("- - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - TOTAL À SEPARAR ==> $total"), 0, 1);
+
+        $this->total = $total;
+        $this->imgCodBarras = $imgCodBarras;
+        $this->cubagemTotal = $cubagemTotal;
+        $this->pesoTotal = $pesoTotal;
+        $this->mapa = $mapa;
+
+        $this->InFooter = true;
+        $pageSizeA4 = $this->_getpagesize();
+        $wPage = $pageSizeA4[0] / 12;
+
+        $this->SetY(-23);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+        $this->SetFont('Arial', null, 10);
+        $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+        $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+        $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
+        $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
+        $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+
+        $this->Image($this->imgCodBarras, 143, 280, 50);
+        $this->InFooter = false;
+    }
+
+    private function layoutModelo14($mapa, $produtos, $tipoQuebra, $arrDataCargas) {
+
+        $this->idMapa = $mapa->getId();
+        $this->quebrasEtiqueta = $mapa->getDscQuebra();
+        $pesoTotal = 0.0;
+        $cubagemTotal = 0;
+
+        $this->AddPage();
+
+        $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
+
+//Select Arial bold 8
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1, "C");
+        $this->Cell(20, 1, "_______________________________________________________________________________________________", 0, 1);
+        $this->Cell(20, 3, "", 0, 1);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+        $this->SetFont('Arial', null, 10);
+        $this->Cell(4, 4, utf8_decode($this->idExpedicao) . " - $arrDataCargas[txt]: $arrDataCargas[str]", 0, 1);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(35,4, utf8_decode('HORA IMPRESSÃO: '), 0, 0);
+        $this->SetFont('Arial', null, 10);
+        $this->Cell(4, 4, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
+        $this->SetFont('Arial', null, 10);
+        $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
+
+        $this->Image($imgCodBarras, 150, 3, 50);
+        $this->Cell(20, 4, "", 0, 1);
+        $this->SetFont('Arial', 'B', 8);
+
+        if ($tipoQuebra) {
+            $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
+            $this->Cell(17, 5, utf8_decode("Cod.Prod."), 1, 0);
+            $this->Cell(85, 5, utf8_decode("Produto"), 1, 0);
+            $this->Cell(15, 5, utf8_decode("Embal."), 1, 0);
+            $this->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
+            $this->Cell(12, 5, utf8_decode("Qtd."), 1, 1);
+//            $this->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
+        } else {
+            $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
+            $this->Cell(20, 5, utf8_decode("Cod.Produto"), 1, 0);
+            $this->Cell(85, 5, utf8_decode("Produto"), 1, 0);
+            $this->Cell(40, 5, utf8_decode("Embal."), 1, 0);
+            $this->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
+            $this->Cell(12, 5, utf8_decode("Quant."), 1, 1);
+        }
+
+        $this->Cell(20, 1, "", 0, 1);
+
+        $total = 0;
+        foreach ($produtos as $produto) {
+            $produto = reset($produto);
+            $this->SetFont('Arial', null, 8);
+            $embalagemEn = $this->embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
+            $volumeEn = $produto->getProdutoVolume();
+
+            $endereco = $produto->getDepositoEndereco();
+            $codProduto = $produto->getCodProduto();
+            $descricao = utf8_decode($produto->getProduto()->getDescricao());
+            $quantidade = $produto->getQtdSeparar();
+            $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
+            $dscEndereco = "";
+            $codigoBarras = '';
+            if ($endereco != null)
+                $dscEndereco = $endereco->getDescricao();
+            if (isset($embalagemEn) && !empty($embalagemEn)) {
+                $codigoBarras = $embalagemEn->getCodigoBarras();
+            } elseif (isset($volumeEn) && !empty($volumeEn)) {
+                $codigoBarras = $volumeEn->getDescricao();
+            }
+
+            if ($produto->getProdutoEmbalagem() != null) {
+                $peso = $produto->getProdutoEmbalagem()->getPeso();
+                $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
+                $dscEmbalagem = $produto->getProdutoEmbalagem()->getDescricao();
+            }
+            if ($produto->getProdutoVolume() != null) {
+                $peso = $produto->getProdutoVolume()->getPeso();
+                $cubagem = $produto->getProdutoVolume()->getCubagem();
+                $dscEmbalagem = $produto->getProdutoVolume()->getDescricao();
+            }
+            $pesoTotal += ($quantidade * str_replace(",",".",$peso));
+            $cubagemTotal += ($quantidade * str_replace(",",".",$cubagem));
+
+            if ($tipoQuebra) {
+                $this->Cell(20, 4, $dscEndereco, 0, 0);
+                $this->Cell(17, 4, $codProduto, 0, 0);
+                $this->Cell(85, 4, substr($descricao, 0, 45), 0, 0);
+                $this->Cell(15, 4, $dscEmbalagem, 0, 0);
+                $this->Cell(30, 4, $codigoBarras, 0, 0);
+                $this->SetFont('Arial', "B", 10);
+                $this->Cell(15, 4, $quantidade, 0, 1);
+//                $this->Cell(15, 4, $caixas, 0, 1, 'C');
+            } else {
+                $this->Cell(20, 4, $dscEndereco, 0, 0);
+                $this->Cell(20, 4, $codProduto, 0, 0);
+                $this->Cell(85, 4, substr($descricao, 0, 57), 0, 0);
+                $this->Cell(40, 4, $dscEmbalagem, 0, 0);
+                $this->Cell(20, 4, $codigoBarras, 0, 0);
+                $this->SetFont('Arial', "B", 10);
+                $this->Cell(15, 4, $quantidade, 0, 1, 'C');
+            }
+            $this->SetFont('Arial', null, 8);
+            $total += $quantidade;
+            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+        }
+
+//FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
+        $this->SetFont('Arial', null, 10);
+        $this->Cell(20, 4, utf8_decode("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - TOTAL À SEPARAR ==> $total"), 0, 1);
 
         $this->total = $total;
         $this->imgCodBarras = $imgCodBarras;
