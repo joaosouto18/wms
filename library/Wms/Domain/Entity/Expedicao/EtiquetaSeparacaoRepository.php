@@ -288,7 +288,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae, es.posVolume, es.posEntrega, es.totalEntrega,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica,
-                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox, uf.sigla siglaEstado
+                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox, uf.sigla siglaEstado, pedEnd.localidade as cidadeEntrega
                 ")
             ->addSelect("
                         (
@@ -330,6 +330,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin("cl.praca", "pr")
             ->leftJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
+            ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = p')
             ->leftjoin('etq.codDepositoEndereco', 'de')
             ->leftJoin('wms:Pessoa\Endereco', 'enderecoEntrega', 'WITH', 'enderecoEntrega.pessoa = cl.id')
             ->leftJoin('wms:Util\Sigla', 'uf', 'WITH', 'uf.id = enderecoEntrega.uf');
@@ -400,13 +401,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, 
-                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox')
+                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, pedEnd.localidade as cidadeEntrega')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
             ->leftJoin("e.box", "b")
             ->leftJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','etq.id = es.codBarras')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('p.pessoa', 'cl')
+            ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = p')
             ->leftJoin("cl.rota", "r")
             ->leftJoin("cl.praca", "pr")
             ->andWhere('etq.id >= '.$codigoInicial)
@@ -431,7 +433,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(" es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
-                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega,
+                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega, pedEnd.localidade as cidadeEntrega,
                     exp.id as reentregaExpedicao,
                     r.id as codReentrega,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
@@ -442,6 +444,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'es.codStatus = s.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
             ->leftJoin('etq.reentrega','r')
+            ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = etq.pedido')
             ->leftJoin('r.carga','c')
             ->leftJoin('c.expedicao','exp')
             ->leftJoin('etq.produtoEmbalagem','emb')
@@ -483,7 +486,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
-					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca
+					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, pedEnd.localidade as cidadeEntrega
                 ')
             ->addSelect("
                         (
@@ -520,6 +523,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->innerJoin('p.pessoa', 'cl')
+            ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = p')
             ->leftJoin("cl.rota", "r")
             ->leftJoin("cl.praca", "pr")
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
