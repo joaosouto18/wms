@@ -16,6 +16,10 @@ class ApontamentoMapaRepository extends EntityRepository {
         $em = $this->getEntityManager();
         $usuarioEn = $em->getReference('wms:Usuario',$codUsuario);
 
+        /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepository */
+        $ordemServicoRepository = $this->getEntityManager()->getRepository('wms:OrdemServico');
+
+
         $apontamentoEn = new ApontamentoMapa();
         $apontamentoEn->setDataConferencia(new \DateTime());
         $apontamentoEn->setCodMapaSeparacao($mapaSeparacao->getId());
@@ -33,6 +37,26 @@ class ApontamentoMapaRepository extends EntityRepository {
         }
 
         $em->persist($apontamentoEn);
+
+        /*
+         * Cria a Ordem de Serviço de Separação
+         */
+        $ordemEntity = $ordemServicoRepository->findOneBy(array(
+            'idExpedicao' => $mapaSeparacao->getCodExpedicao(),
+            'atividade' => Atividade::SEPARACAO,
+            'pessoa' => $codUsuario,
+            'formaConferencia' => 'D'));
+
+        if (!isset($ordemEntity)) {
+            $array = array();
+            $array['identificacao']['idExpedicao'] = $mapaSeparacao->getCodExpedicao();
+            $array['identificacao']['tipoOrdem'] = 'expedicao';
+            $array['identificacao']['idAtividade'] = Atividade::SEPARACAO;
+            $array['identificacao']['idPessoa'] = $codUsuario;
+            $array['identificacao']['formaConferencia'] = 'D';
+            $ordemServicoRepository->save(new OrdemServico(), $array, true, 'entity');
+        }
+
         $em->flush();
 
         if ($apontar) {
@@ -470,6 +494,10 @@ class ApontamentoMapaRepository extends EntityRepository {
 
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
+
+                $ordemServicoEntity->setDataFinal(new \DateTime());
+                $this->getEntityManager()->persist($ordemServicoEntity);
+
                 $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
                 while ($contador < $qtdPorPessoa) {
                     $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
@@ -483,6 +511,8 @@ class ApontamentoMapaRepository extends EntityRepository {
                     $contador = $contador + 1;
                 }
             }
+
+            $this->getEntityManager()->flush();
         }
     }
 

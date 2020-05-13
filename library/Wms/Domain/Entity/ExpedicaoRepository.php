@@ -2939,8 +2939,9 @@ class ExpedicaoRepository extends EntityRepository {
                        MSP.QTD_SEPARAR as QTD_PRODUTOS, 
                        MSP.QTD_CUBAGEM as QTD_CUBAGEM, 
                        MSP.QTD_PESO as QTD_PESO, 
-                       CAST((NVL(MSC.QTD_CONF,0)/NVL(MSP.QTD_SEPARAR,0)) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_CONFERENCIA,
-                       CAST((NVL(SMS.TOTAL_SEPARADO,0)/NVL(MSP.QTD_SEPARAR,0)) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
+                       NVL(SEP.SEPARADOR, PRD.SEPARADOR) as SEPARADOR,
+                       CAST(CASE WHEN NVL(MSP.QTD_SEPARAR,0) = 0 THEN 0 ELSE (NVL(MSC.QTD_CONF,0)/NVL(MSP.QTD_SEPARAR,0)) * 100 END as NUMBER(6,2)) || '%' as PERCENTUAL_CONFERENCIA, 
+                       CAST(CASE WHEN NVL(MSP.QTD_SEPARAR,0) = 0 THEN 0 ELSE (NVL(SMS.TOTAL_SEPARADO,0)/NVL(MSP.QTD_SEPARAR,0)) * 100 END as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO, 
                        CASE WHEN PRD.APONTADO = 1 THEN 'APONTAMENTO FINALIZADO'
                             WHEN PRD.APONTADO = 0 THEN 'APONTAMENTO INICIADO'
                             WHEN PRD.APONTADO IS NULL THEN 'SEM APONTAMENTO'
@@ -2961,9 +2962,21 @@ class ExpedicaoRepository extends EntityRepository {
                                FROM MAPA_SEPARACAO_CONFERENCIA GROUP BY COD_MAPA_SEPARACAO) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_MAPA_SEPARACAO
                                FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY  COD_MAPA_SEPARACAO) SMS ON SMS.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MIN(CASE WHEN DTH_FIM_CONFERENCIA IS NULL THEN 0 ELSE 1 END) AS APONTADO 
-                              FROM APONTAMENTO_SEPARACAO_MAPA GROUP BY COD_MAPA_SEPARACAO) PRD ON PRD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS                  
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, 
+                                    MIN(CASE WHEN DTH_FIM_CONFERENCIA IS NULL THEN 0 ELSE 1 END) AS APONTADO,
+                                    LISTAGG(P.NOM_PESSOA, ',') WITHIN GROUP (ORDER BY ASM.COD_MAPA_SEPARACAO) SEPARADOR       
+                              FROM APONTAMENTO_SEPARACAO_MAPA ASM
+                              LEFT JOIN PESSOA P ON P.COD_PESSOA = ASM.COD_USUARIO 
+                             GROUP BY COD_MAPA_SEPARACAO) PRD ON PRD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN (SELECT SMS.COD_MAPA_SEPARACAO 
+                                    ,LISTAGG(SMS.NOM_PESSOA, ',') WITHIN GROUP (ORDER BY SMS.COD_MAPA_SEPARACAO) SEPARADOR
+                               FROM (SELECT DISTINCT COD_MAPA_SEPARACAO, NOM_PESSOA 
+                                       FROM separacao_mapa_separacao SMS
+                                       LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = SMS.COD_OS
+                                       LEFT JOIN PESSOA P ON P.COD_PESSOA = OS.COD_PESSOA) SMS
+                                      GROUP BY SMS.COD_MAPA_SEPARACAO) SEP 
+                         ON SEP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO                  
                  INNER JOIN ($sqlInner) FILTRO ON FILTRO.COD_EXPEDICAO = E.COD_EXPEDICAO
                  $innerJoinProduto
                  WHERE 1 = 1 $wherePrincipal 
