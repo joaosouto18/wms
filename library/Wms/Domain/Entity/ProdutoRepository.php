@@ -1744,7 +1744,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
                 ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
                 ->leftJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = pv.endereco OR de = pe.endereco')
-                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
+                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
                 ->setParameters(array('codigoBarras' => $codigoBarras));
 
         return $dql->getQuery()->getArrayResult();
