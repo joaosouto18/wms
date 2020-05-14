@@ -81,7 +81,8 @@ class ModeloSeparacao extends Form
         ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
             'multiOptions' => array(
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO => 'Por Produto',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO => 'Por Embalagem de Produto',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_TODAS_EMBALAGENS => 'Todas as Embalagens',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_FRACIONADOS => 'Todos os fracionados'),
         ))->addElement('select', 'tipoConferenciaEmbalado', array(
             'label' => 'Tipo de Conferência para Embalados',
@@ -142,7 +143,8 @@ class ModeloSeparacao extends Form
             'class' => 'disableSequenciaPraca',
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
-                MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota'
+                MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota',
+                MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação'
             ]
         ));
 

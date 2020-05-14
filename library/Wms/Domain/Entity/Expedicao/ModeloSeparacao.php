@@ -12,6 +12,7 @@ class ModeloSeparacao
 
     const DEFAULT_EMBALADO_PRODUTO = "P";
     const DEFAULT_EMBALADO_FRACIONADOS = "F";
+    const DEFAULT_EMBALADO_TODAS_EMBALAGENS = "T";
 
     const QUEBRA_VOLUME_CARGA = "A";
     const QUEBRA_VOLUME_CLIENTE = "C";

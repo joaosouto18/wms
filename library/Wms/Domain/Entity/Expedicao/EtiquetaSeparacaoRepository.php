@@ -1339,22 +1339,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 throw new WMS_Exception($msg);
                             }
 
+                            $embalado = false;
                             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
-                                if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
-                                    if ($embalagemAtual->getEmbalado() == "S") {
-                                        $embalado = true;
-                                    } else {
-                                        $embalado = false;
-                                    }
-                                } else {
-                                    if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
-                                        $embalado = true;
-                                    } else {
-                                        $embalado = false;
-                                    }
+                                $regra = $modeloSeparacaoEn->getTipoDefaultEmbalado();
+                                if (($regra == ModeloSeparacao::DEFAULT_EMBALADO_TODAS_EMBALAGENS) ||
+                                    ($regra == ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO && $embalagemAtual->getEmbalado() == "S") ||
+                                    ($regra == ModeloSeparacao::DEFAULT_EMBALADO_FRACIONADOS && $embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento)
+                                ) {
+                                    $embalado = true;
                                 }
-                            } else {
-                                $embalado = false;
                             }
 
                             if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
@@ -2195,7 +2188,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $dscQuebra = "PRACA: $codQuebra - $nomPraca";
             }
 
-            //PRAÇA
+            //ROTA
             elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_ROTA) {
 
                 $codQuebra = 0;
