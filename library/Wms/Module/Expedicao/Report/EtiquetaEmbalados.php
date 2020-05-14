@@ -673,7 +673,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->Cell(12, 4, "CIDADE:");
             $this->SetXY(5, 48);
             $this->SetFont('Arial', 'B', 12);
-            $this->Cell(50, 4, $this->SetStringByMaxWidth(utf8_decode('CONCEIÇÃO DO MATO DENTRO'), 50));
+            $this->Cell(50, 4, $this->SetStringByMaxWidth(utf8_decode($volume['NOM_LOCALIDADE']), 50));
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 56, 42.5, 50, 11);
         }
