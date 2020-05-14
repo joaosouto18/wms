@@ -528,7 +528,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                if ($qtdRessuprirMax <= 0) {
+                if ($qtdRessuprir <= 0) {
                     break;
                 }
             }
