@@ -673,8 +673,9 @@
                     if (usaGrade) {
                         dscProd += " - " + v.grade;
                     }
-                    dscProd += " - " + v.descricao + " - " + v.codBarras;
 
+                    dscProd += " - " + v.descricao + " - " + "****" + v.codBarras.toString().slice(v.codBarras.toString().length -6);
+                    //dscProd += " - " + v.descricao + " - " + v.codBarras;
                     if (!isEmpty(v.lote)) {
                         dscProd += " Lote: " + v.lote;
                     }
