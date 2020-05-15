@@ -514,7 +514,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         (
                             SELECT COUNT(etiqueta.codBarras) 
                             FROM wms:Expedicao\VEtiquetaSeparacao etiqueta
-                            WHERE etiqueta.codExpedicao = es.codExpedicao
+                            WHERE etiqueta.codExpedicao = es.codExpedicao AND es.codClienteExterno = etiqueta.codClienteExterno
                             GROUP BY etiqueta.codClienteExterno
                         ) AS qtdEtiquetaCliente
                         ")
