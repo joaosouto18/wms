@@ -553,9 +553,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function savePosVolumeImpresso($idEtiqueta, $posVolume, $volEntrega)
+    public function savePosVolumeImpresso($idEtiqueta, $posVolume, $volEntrega, $totalEntrega)
     {
-        $sql = "UPDATE ETIQUETA_SEPARACAO SET POS_VOLUME = $posVolume WHERE COD_ETIQUETA_SEPARACAO = $idEtiqueta";
+        $sql = "UPDATE ETIQUETA_SEPARACAO SET POS_VOLUME = $posVolume, POS_ENTREGA = $volEntrega, TOTAL_ENTREGA = $totalEntrega WHERE COD_ETIQUETA_SEPARACAO = $idEtiqueta";
         $this->_em->getConnection()->query($sql)->execute();
     }
 
