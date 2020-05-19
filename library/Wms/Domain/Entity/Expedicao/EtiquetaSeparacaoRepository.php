@@ -514,7 +514,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         (
                             SELECT COUNT(etiqueta.codBarras) 
                             FROM wms:Expedicao\VEtiquetaSeparacao etiqueta
-                            WHERE etiqueta.codExpedicao = es.codExpedicao
+                            WHERE etiqueta.codExpedicao = es.codExpedicao AND es.codClienteExterno = etiqueta.codClienteExterno
                             GROUP BY etiqueta.codClienteExterno
                         ) AS qtdEtiquetaCliente
                         ")
@@ -553,9 +553,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function savePosVolumeImpresso($idEtiqueta, $posVolume, $volEntrega)
+    public function savePosVolumeImpresso($idEtiqueta, $posVolume, $volEntrega, $totalEntrega)
     {
-        $sql = "UPDATE ETIQUETA_SEPARACAO SET POS_VOLUME = $posVolume WHERE COD_ETIQUETA_SEPARACAO = $idEtiqueta";
+        $sql = "UPDATE ETIQUETA_SEPARACAO SET POS_VOLUME = $posVolume, POS_ENTREGA = $volEntrega, TOTAL_ENTREGA = $totalEntrega WHERE COD_ETIQUETA_SEPARACAO = $idEtiqueta";
         $this->_em->getConnection()->query($sql)->execute();
     }
 
@@ -2195,7 +2195,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $dscQuebra = "PRACA: $codQuebra - $nomPraca";
             }
 
-            //PRAÇA
+            //ROTA
             elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_ROTA) {
 
                 $codQuebra = 0;

@@ -77,7 +77,7 @@ class EtiquetaSeparacao extends Pdf
                     $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
                     $this->Cell(20, 3, 'Etiqueta ' .  $this->posVolume  . '/' . $this->total, 0, 1, "L");
                     $this->Cell(20, 3, 'Volume de Entrega', 0, 1, "L");
-                    $this->Cell(20, 3, $this->volEntrega['posEntrega']  . ' de ' . $this->volEntrega['totalEntrega'], 0, 1, "C");
+                    $this->Cell(20, 3, $this->etiqueta['posEntrega']  . ' de ' . $this->etiqueta['totalEntrega'], 0, 1, "C");
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     $this->posVolume--;
                     break;
@@ -111,7 +111,7 @@ class EtiquetaSeparacao extends Pdf
                     //Go to 1.5 cm from bottom
                     $this->SetY($this->footerPosition);
                     $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
-                    $this->Cell(20, 10, 'Volume: ' .  $this->volEntrega['posEntrega'], 0, 1, "L");
+                    $this->Cell(20, 10, 'Volume: ' .  $this->etiqueta['posEntrega'], 0, 1, "L");
                     $this->SetFont('Arial','B',7);
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     $this->posVolume--;
@@ -295,19 +295,16 @@ class EtiquetaSeparacao extends Pdf
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
             $etiqueta['contadorClientes'] = $contadorCliente;
-            $this->layoutEtiqueta($etiqueta, $numEtiquetas,false, $modelo,false);
 
+            if ($agroupEtiquetas && empty($etiqueta['posVolume'])) {
 
-            if ($agroupEtiquetas) {
-                $this->volEntrega = [
-                    'posEntrega' => $arrVolsEntrega[$etiqueta['codCliente']]['pos'],
-                    'totalEntrega' => $arrVolsEntrega[$etiqueta['codCliente']]['total']
-                ];
-                if (empty($etiqueta['posVolume'])) {
-                    $EtiquetaRepo->savePosVolumeImpresso($etiqueta['id'], $this->posVolume, $this->volEntrega);
-                }
+                $etiqueta['posEntrega'] = $arrVolsEntrega[$etiqueta['codCliente']]['pos'];
+                $etiqueta['totalEntrega'] = $arrVolsEntrega[$etiqueta['codCliente']]['total'];
+                $EtiquetaRepo->savePosVolumeImpresso($etiqueta['id'], $this->posVolume, $etiqueta['posEntrega'], $etiqueta['totalEntrega']);
                 $arrVolsEntrega[$etiqueta['codCliente']]['pos']--;
             }
+
+            $this->layoutEtiqueta($etiqueta, $numEtiquetas,false, $modelo,false);
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
