@@ -1304,7 +1304,6 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($forcarSairDoPicking) {
-                $qtdReservarPicking = $qtdRestante;
 
                 if(empty($enderecoPicking)) {
                     throw new \Exception("Ocorreram problemas na geração do ressuprimento do produto $codProduto. O ressuprimento precisa sair do picking porém o produto está sem picking definido");
@@ -1371,6 +1370,7 @@ class ExpedicaoRepository extends EntityRepository {
                      ($controlaLote && empty($saldoPicking) && $lote == Lote::LND) ||
                       !$controlaLote ) {
                     foreach ($estoquePicking as $loteReservar => $saldo) {
+                        $qtdReservarPicking = $qtdRestante;
                         $zerouEstoque = false;
                         $ultimoLote = ($loteReservar == $lastKey($estoquePicking));
                         if (!empty($saldo)) {
