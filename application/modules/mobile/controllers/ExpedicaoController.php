@@ -1893,4 +1893,8 @@ class Mobile_ExpedicaoController extends Action {
         }
     }
 
+    public function conferenciaCarregamentoAction()
+    {
+        echo "Checkout";
+    }
 }

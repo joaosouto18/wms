@@ -49,13 +49,14 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         }
 
         $sql = $this->getEntityManager()->createQueryBuilder()
-                ->select('DISTINCT nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome')
+                ->select('DISTINCT nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id', 'nfs.chaveAcesso', 'pj.cnpj', 'pf.cpf', 'pes.nome')
                 ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
                 ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
                 ->innerJoin('nfsp.pedido', 'p')
                 ->innerJoin('p.carga', 'c')
                 ->innerJoin('nfs.pessoa', 'pes')
-                ->innerJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pes.id');
+                ->leftJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pes.id')
+                ->leftJoin('wms:Pessoa\Fisica', 'pf', 'WITH', 'pf.id = pes.id');
 
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf IN (".$data['notaFiscal'].")");
@@ -68,7 +69,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
             $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'p.id = etq.pedido');
             $sql->andWhere("etq.id = $codBarras");
         }
-        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome');
+        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'nfs.chaveAcesso', 'pj.cnpj', 'pf.cpf', 'pes.nome');
 
         $result = $sql->getQuery()->getResult();
 

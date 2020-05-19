@@ -180,6 +180,11 @@ class ModeloSeparacao
     protected $usaSequenciaRotaPraca;
 
     /**
+     * @Column(name="IND_USA_CONF_CARREG", type="string", nullable=true)
+     */
+    protected $usaConferenciaCarregamento;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -625,6 +630,22 @@ class ModeloSeparacao
     public function setUsaSequenciaRotaPraca($usaSequenciaRotaPraca)
     {
         $this->usaSequenciaRotaPraca = $usaSequenciaRotaPraca;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsaConferenciaCarregamento()
+    {
+        return $this->usaConferenciaCarregamento;
+    }
+
+    /**
+     * @param mixed $usaConferenciaCarregamento
+     */
+    public function setUsaConferenciaCarregamento($usaConferenciaCarregamento)
+    {
+        $this->usaConferenciaCarregamento = $usaConferenciaCarregamento;
     }
 
 }

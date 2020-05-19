@@ -30,6 +30,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'utilizaVolumePatrimonio', array(
             'label' => 'Utiliza Volume Patrimônio',
             'checkedValue' => 'S'
+        ))->addElement('checkbox', 'usaConferenciaCarregamento', array(
+            'label' => 'Executar Conferência de Carregamento pela DANFE',
+            'checkedValue' => 'S',
         ))->addElement('checkbox', 'agrupContEtiquetas', array(
             'label' => 'Agrupar sequenciamento de etiquetas de não embalados e embalados',
             'checkedValue' => 'S',
@@ -153,6 +156,7 @@ class ModeloSeparacao extends Form
             'utilizaQuebraColetor',
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
+            'usaConferenciaCarregamento',
             'agrupContEtiquetas',
             'tipoAgroupSeqEtiquetas',
             'usaCaixaPadrao',

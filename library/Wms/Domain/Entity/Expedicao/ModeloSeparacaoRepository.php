@@ -15,6 +15,7 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setUtilizaCaixaMaster($params['utilizaCaixaMaster']);
         $entity->setUtilizaQuebraColetor($params['utilizaQuebraColetor']);
         $entity->setUtilizaEtiquetaMae($params['utilizaEtiquetaMae']);
+        $entity->setUsaConferenciaCarregamento($params['usaConferenciaCarregamento']);
         $entity->setUsaSequenciaRotaPraca($params['usaSequenciaRotaPraca']);
         $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
         $entity->setAgrupContEtiquetas($params['agrupContEtiquetas']);
