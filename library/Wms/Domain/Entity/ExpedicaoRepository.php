@@ -5005,25 +5005,39 @@ class ExpedicaoRepository extends EntityRepository {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
 
-            $args = [
-                'mapaSeparacao' => $mapa,
-                'codProduto' => $codProduto,
-                'dscGrade' => $grade
-            ];
-
+            $sqlFiltro = "";
             if (!empty($quebraConsolidado)) {
-                $args["pedidoProduto"] = $pedidoProdutoEn;
+                $agrupamentoConsolidado = "CLIENTE";
+                if ($agrupamentoConsolidado == "CLIENTE") {
+                    $sqlFiltro .= " AND P.COD_PESSOA = " . $pedidoEn->getPessoa()->getId();
+                } else {
+                    $sqlFiltro .= " AND MSP.COD_PEDIDO_PRODUTO = " . $pedidoProdutoEn->getId();
+                }
             }
 
             if (!empty($idEndereco)) {
-                $args["depositoEndereco"] = $idEndereco;
+                $sqlFiltro .= " AND MSP.COD_DEPOSITO_ENDERECO = '$idEndereco'";
             }
 
             if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
-                $args['produtoEmbalagem'] = $idEmbalagem;
+                $sqlFiltro .= " AND MSP.COD_PRODUTO_EMBALAGEM = '$idEmbalagem'";
             }
 
-            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy($args);
+            $sql = "SELECT COD_MAPA_SEPARACAO_PRODUTO 
+                      FROM MAPA_SEPARACAO_PRODUTO MSP
+                      LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                      LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                     WHERE MSP.COD_MAPA_SEPARACAO = '$mapa'
+                       AND MSP.COD_PRODUTO = '$codProduto'
+                       AND MSP.DSC_GRADE = '$grade' $sqlFiltro ";
+            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+            $idMapaSeparacaoProduto = 0;
+            if (count($result) >0) {
+                $idMapaSeparacaoProduto = $result[0]['COD_MAPA_SEPARACAO_PRODUTO'];
+            }
+
+            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array ('id' => $idMapaSeparacaoProduto));
 
             if (!empty($entidadeMapaProduto)) {
 
