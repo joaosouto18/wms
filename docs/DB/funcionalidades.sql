@@ -726,3 +726,4 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Inclusão da opção para o sistema considerar todas as embalagens como itens de checkout', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Possibilidade de devolver o numero do embalado do produto na integração', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correção: Correção no corte de produtos para mapas embalados', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correção: Correção da troca de foco ao apertar a tecla F2', null, SYSDATE);
