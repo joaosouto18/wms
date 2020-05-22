@@ -1550,7 +1550,7 @@ class EtiquetaSeparacao extends Pdf
             $this->SetFont('Arial', 'B', 13);
             $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[quantidade] PÇS/CX\n");
             $this->MultiCell(100, 5, $impressao, 0, 'L');
-            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 45.5, 57, 51,17);
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 53,57,47,17);
         } else {
             $this->SetFont('Arial', 'B', 20);
             $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
