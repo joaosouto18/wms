@@ -1548,7 +1548,7 @@ class EtiquetaSeparacao extends Pdf
             $this->Line(0,55,100,55);
             $this->SetY(57);
             $this->SetFont('Arial', 'B', 13);
-            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[quantidade] \ $etiqueta[tipoComercializacao]\n");
+            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[quantidade]/$etiqueta[tipoComercializacao]\n");
             $this->MultiCell(100, 5, $impressao, 0, 'L');
             $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 45.5, 57, 51,17);
         } else {
