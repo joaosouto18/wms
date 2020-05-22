@@ -1530,11 +1530,7 @@ class EtiquetaSeparacao extends Pdf
         if (strlen(utf8_encode("$etiqueta[cliente]")) > 55) {
             $this->SetFont('Arial', 'B', 10);
         }
-        $estadoEntrega = '';
-        if (isset($etiqueta['siglaEstado'])) {
-            $estadoEntrega = $etiqueta['siglaEstado'];
-        }
-        $impressao = utf8_encode("$etiqueta[cliente]").' - ('.$estadoEntrega.')'."\n";
+        $impressao = utf8_encode("$etiqueta[cliente] - $etiqueta[cidadeEntrega] - $etiqueta[siglaEstado]")."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
         $this->Line(0,42,100,42);
@@ -1543,7 +1539,7 @@ class EtiquetaSeparacao extends Pdf
         if ($etiqueta['codProduto'] . ' - ' . utf8_decode(trim($etiqueta['produto'])) > 55) {
             $this->SetFont('Arial', 'B', 10);
         }
-        $impressao = 'PRODUTO: '.$etiqueta['codProduto'] . ' - ' . utf8_decode(trim($etiqueta['produto']))."\n";
+        $impressao = 'PRODUTO: '.$etiqueta['codProduto'] . ' - ' . utf8_decode(trim(substr($etiqueta['produto'],0,35)))."\n";
         $this->MultiCell(100, 5, $impressao, 0, 'L');
 
         $this->InFooter = true;
@@ -1552,7 +1548,7 @@ class EtiquetaSeparacao extends Pdf
             $this->Line(0,55,100,55);
             $this->SetY(57);
             $this->SetFont('Arial', 'B', 13);
-            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[tipoComercializacao]($etiqueta[quantidade])\n");
+            $impressao = utf8_decode("$etiqueta[endereco] - $etiqueta[quantidade] - $etiqueta[tipoComercializacao]\n");
             $this->MultiCell(100, 5, $impressao, 0, 'L');
             $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 45.5, 57, 51,17);
         } else {
