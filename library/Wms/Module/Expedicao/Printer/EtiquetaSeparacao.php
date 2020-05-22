@@ -99,7 +99,7 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetX(0);
                     $this->Cell(20, 3,"", 0, 1, "L");
                     $this->SetFont('Arial','B',12);
-                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['contadorClientes'][$this->etiqueta['codClienteExterno']] . '/' . $this->etiqueta['qtdEtiquetaCliente'], 0, 1, "L");
+                    $this->Cell(20, 4, 'VOLUME ' . $this->etiqueta['posEntrega'], 0, 1, "L");
                     $this->SetFont('Arial','B',7);
                     $this->Cell(20, 4, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     $this->SetFont('Arial','B',7);
@@ -1510,6 +1510,7 @@ class EtiquetaSeparacao extends Pdf
         $this->AddPage();
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
+        $this->etiqueta = $etiqueta;
         $this->strReimpressao = $strReimpressao;
         $this->SetY(0.5);
         $this->SetFont('Arial', 'B', 15);
