@@ -2965,11 +2965,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
                 if ($etiqueta->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
-                    if ($corteTodosVolumes == true) {
-                        $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
-                    } else {
+        //            if ($corteTodosVolumes == true) {
+        //                $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
+        //            } else {
                         $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
-                    }
+        //            }
                 }
             }
         }
@@ -3019,7 +3019,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $produto['qtd'] = 1;
         $produtos[] = $produto;
 
-        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque(NULL,$produtos,"S","E", array('expedicao' => $idExpedicao));
+        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque($etiquetaEntity->getDepositoEndereco(),$produtos,"S","E", array('expedicao' => $idExpedicao, 'pedido'=> $etiquetaEntity->getPedido()->getId()));
         $maiorQtd = null;
         if ($reservaEstoque != NULL) {
             $produtosReserva = $reservaEstoque->getProdutos();
@@ -3047,7 +3047,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             if ($reservaZerada == true) {
-                $reservaEstoqueRepo->cancelaReservaEstoque(null,$produtos,"S","E", array('expedicao' => $idExpedicao));
+                $reservaEstoqueRepo->cancelaReservaEstoque($etiquetaEntity->getDepositoEndereco(),$produtos,"S","E", array('expedicao' => $idExpedicao, 'pedido'=> $etiquetaEntity->getPedido()->getId()));
             }
             $this->_em->flush();
 
