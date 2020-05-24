@@ -454,15 +454,7 @@ class EtiquetaEmbalados extends eFPDF
         $filialEntity = $em->getReference('wms:Filial', (int) $deposito->getFilial()->getId());
         $pessoaEntity = $em->getReference('wms:Pessoa', (int) $filialEntity->getId());
 
-        $totalEtiquetas = count($volumes);
-
         foreach ($volumes as $volume) {
-
-            $existeItensPendentes = true;
-            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S'));
-            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
-                $existeItensPendentes = false;
-            }
 
             $this->AddPage();
             //monta o restante dos dados da etiqueta
@@ -484,14 +476,8 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 7.5, $impressao, 0, 'L');
 
             $this->SetFont('Arial', '', 14);
-            if ($fechaEmbaladosNoFinal)
-                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
-            else if ($existeItensPendentes == false)
-                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
-            else
-                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
-
-            $this->MultiCell(110, 10, $impressao, 0, 'L');
+            $dscSeq = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
+            $this->MultiCell(110, 10, "VOLUME: $dscSeq", 0, 'L');
 
             $this->SetFont('Arial', 'B', 14);
             $impressao = utf8_decode($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']."\n");
