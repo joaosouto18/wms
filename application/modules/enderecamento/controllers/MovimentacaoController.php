@@ -534,6 +534,9 @@ class Enderecamento_MovimentacaoController extends Action
 
         $params = $this->_getAllParams();
 
+        ini_set('max_execution_time', 900);
+        ini_set('memory_limit', '-1');
+
         if ((isset($params['tipo'])) && ($params['tipo'] == 'C')) {
             /** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
             $SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
@@ -545,7 +548,6 @@ class Enderecamento_MovimentacaoController extends Action
         }
 
         $file = '';
-
         foreach($saldo as $produto) {
             $linha = $produto['codProduto'].';'.$produto['grade'].';'.$produto['dscLinhaSeparacao'].';'.$produto['qtd'].';'.$produto['dscEndereco'].';'.$produto['unitizador'].';'.$produto['descricao'].';'.$produto['volume'].';'.utf8_decode($produto['tipoComercializacao'].';'.$produto['caracteristica']);
             $file .= $linha . PHP_EOL;

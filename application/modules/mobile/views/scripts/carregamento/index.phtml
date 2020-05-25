@@ -33,19 +33,6 @@
         margin-top: 5px;
     }
 
-    .list-area {
-        overflow-y: auto;
-        max-height: inherit
-    }
-
-    .list-item {
-        width: 100%!important;
-        margin: 3px 0px !important;
-        padding: 0px !important;
-        text-align: center!important;
-        font-weight: bold;
-    }
-
     .div-loader {
         float:left;
         z-index: 99999;
@@ -125,13 +112,7 @@
 <div id="messenger"></div>
 
 <div id="headers" style="padding-top: 5px; display: none">
-    <div class="lbl-headers" id="lbl-info"></div>
-    <div id="list-clients" style="padding-top: 5px; display: none">
-    </div>
-</div>
-
-<div id="btn-row" style="padding-top: 6px; display: none">
-    <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
+    <div class="lbl-headers" id="lbl-expedicao"></div>
 </div>
 
 <div id="form-danfe" style="display: none;">
@@ -144,6 +125,11 @@
             </div>
         </form>
         <button id="btn-consultar-danfe" class="btn gradientBtn btn-spacing">Buscar</button>
+    </div>
+    <div id="list-clients" style="padding-top: 5px; display: none">
+    </div>
+    <div id="btn-row" style="padding-top: 6px; display: none">
+        <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
     </div>
 </div>
 
@@ -163,6 +149,18 @@
 <script>
     $(function () {
 
+        $(".accordion-title").click( function () {
+            toggleAccordionActive($(this));
+        })
+
+        var toggleAccordionActive = function (accHeader) {
+            var active = $(".accordion-title.active");
+            if (!isEmpty(active) && active.attr("id") !== accHeader.attr("id")) {
+                active.toggleClass("active");
+            }
+            accHeader.toggleClass("active");
+        }
+
         $(".enter-active").keypress(function( event ) {
             if (event.which === 13 || event.keyCode === 13) {
                 disarmEvent(event);
@@ -181,10 +179,11 @@
             clientes: []
         };
 
+        var danfeInfo = null;
+
         var showing = 0;
         var views = ["loader","form-danfe","bipagem-volume"];
-        var headersArr = ["lbl-info", "lbl-contagem", "lbl-endereco", "lbl-produto, #lbl-embvol, #lbl-picking"];
-        var onErrRedirectTo = {4000: "form-danfe", 4001: "bipagem-endereco", 4002: "bipagem-produto" };
+        var headersArr = ["lbl-expedicao"];
         var msgShowed = true;
 
         function myIndexOf(collection, target) {
@@ -248,6 +247,9 @@
 
             if (type === "error") alert(msg);
             msgShowed = instantShowed;
+
+            focusOnInput()
+            return (type === "success");
         };
 
         $(".fmBtnClose").live("click", function () {
@@ -265,39 +267,10 @@
 
             showing = myIndexOf(views, changeTo);
 
-            $.each(headersArr, function (k,v) {
-                var element = $("#" + v);
-                if ( k > (showing - 2)) {
-                    element.hide();
-                } else {
-                    element.show();
-                }
-            });
-
-            var divHeaders = $("#headers");
-            var divActiveHeader = $("#header-active");
             if (showing > 1) {
                 $("#divBtnBack").show();
-                if ((showing - 2) > divHeaders.children("div").length) {
-                    var active = divActiveHeader.children("div:first");
-                    divHeaders.append(active);
-                } else {
-                    var newActive = divHeaders.children("div:last");
-                    divActiveHeader.prepend(newActive);
-                }
-
-                divActiveHeader.show();
-
-                if (showing > 2) {
-                    $("#btn-row").show();
-                }
-                if (divHeaders.children("div").length && !$("#toggleInfo").hasClass('hiddingInfo'))
-                    divHeaders.show();
             } else {
                 $("#divBtnBack").hide();
-                divHeaders.hide();
-                divActiveHeader.hide();
-                $("#btn-row").hide();
             }
 
             if (changeTo !== "loader") {
@@ -308,29 +281,20 @@
                 }
             }
 
-            $("#"+changeTo).show();
+            $("#" + changeTo).show();
 
-            $("#" + changeTo + " div.input-area form div:visible:first input").val("").focus();
+            focusOnInput();
 
             if ($("#messenger > ul > li.warning_message, #messenger > ul >li.error_message").length > 0)
                 $("#anchorMsg")[0].click();
         };
 
+        var focusOnInput = function () {
+            $("div.input-area form div:visible:first input").val("").focus();
+        }
+
         $("#btn-back-action").click(function () {
-            switch ((showing - 1)) {
-                case 1:
-                    changeViewer('form-danfe');
-                    break;
-                case 2:
-                    getContagens();
-                    break;
-                case 3:
-                    getEnderecos();
-                    break;
-                case 4:
-                    openEndereco();
-                    break;
-            }
+            changeViewer('form-danfe');
         });
 
         $("#toggleInfo").click(function () {
@@ -338,8 +302,7 @@
             if ($(this).hasClass("hiddingInfo")) {
                 $("#headers").show(350);
                 $(this).children("span").text("Ocultar Info");
-            }
-            else {
+            } else {
                 $("#headers").hide(350);
                 $(this).children("span").text("Exibir Info");
             }
@@ -353,498 +316,108 @@
 
         var validateDanfe = function (inpt) {
             if (inpt.val().length !== 44) {
-                notificar("error", "O código de barras bipado não tem a quantidade de dígitos exigidos");
-                inpt.select();
-                return;
+                return notificar("error", "O código de barras bipado não tem a quantidade correta de dígitos exigidos");
             }
 
+            changeViewer("loader");
             if (isEmpty(expConf.codExpedicao)) {
-                startConf(inpt.val())
+                getInfoDanfe(inpt.val());
             } else {
-                checkToInclude(inpt.val());
+                checkOrInclude(inpt.val());
             }
+            changeViewer("form-danfe");
         }
 
-        var startConf = function (keypass) {
-            changeViewer("loader");
+        var getInfoDanfe = function (keypass) {
             $.ajax({url: "/mobile/carregamento/get-info-danfe/keypass/" + keypass,
                 success: function(result){
                     if (result.status === "ok") {
-                        expConf = result.response;
-                        checkToInclude(keypass);
+                        danfeInfo = result.response;
                     } else {
-                        notificar("error", result.exception);
-                        window.location.href = "/mobile"
+                        return notificar("error", result.exception);
+                    }
+                }, complete: function() {
+                    if (!isEmpty(danfeInfo)) {
+                        checkOrInclude(keypass);
+                        danfeInfo = null;
                     }
                 }
             });
         }
 
-        var checkToInclude = function (keypass) {
+        var prepareInfoConf = function () {
+            if (!isEmpty(expConf.codExpedicao)) {
+                $("#lbl-expedicao").text("Carregamento da Expedição: " + expConf.codExpedicao).show();
+                $("#headers").show();
+                $("#list-clients").show();
+            }
+        }
+
+        var checkOrInclude = function (keypass) {
+            if (!isEmpty(danfeInfo)) {
+                if (isEmpty(expConf.codExpedicao)) {
+                    expConf = danfeInfo;
+                    prepareInfoConf();
+                } else {
+                    if (expConf.codExpedicao === danfeInfo.codExpedicao) {
+                        $.each(danfeInfo.clientes, function (i, cliente) {
+                            expConf.clientes[i] = cliente;
+                        });
+                    } else {
+                        return notificar("error", "Esta DANFE não está relacionada à expedição inicial desta conferência");
+                    }
+                }
+                addNewClienteInfo(danfeInfo);
+            }
+            var forceExit = false;
+            var findded = false;
             $.each(expConf.clientes, function (i, cliente) {
-                $.each(cliente.danfes, function (key, status) {
+                $.each(cliente.danfes, function (key, danfe) {
                     if (key === keypass) {
-                        if (!status)
-                            expConf.clientes[i].danfes[key] = true;
-                        else
-                            notificar("error", "DANFE já incluída")
-                    } else {
-                        tryIncludeNewClient(keypass);
+                        if (!danfe.status) {
+                            expConf.clientes[i].danfes[key].status = true;
+                            notificar("success", "DANFE incluída com sucesso")
+                        }
+                        else {
+                            notificar("error", "DANFE já incluída");
+                        }
+                        forceExit = true;
+                        findded = true;
                     }
+                    if (forceExit) return false;
                 })
+                if (forceExit) return false;
             })
-            changeViewer("bipagem-volume");
+            if (!findded) {
+                getInfoDanfe(keypass);
+            }
+            checkClienteLiberado();
         }
 
-        var tryIncludeNewClient = function (keypass) {
-            console.log("cliente incluido");
+        var checkClienteLiberado = function () {
+            $.each(expConf.clientes, function (i, cliente) {
+                var nfsOk = 0;
+                $.each(cliente.danfes, function (danfe) {
+                    if (danfe.status) nfsOk++;
+                })
+                expConf.clientes[i].checked = nfsOk;
+                expConf.clientes[i].liberado = (cliente.totalDanfes === nfsOk);
+            })
         }
 
-        var getContagens = function () {
-            changeViewer("loader");
-            $.ajax({url: "/mobile/inventario-novo/get-contagens/id/" + invSelecioando.id,
-                success: function(result){
-                    if (result.status === "ok") {
-                        contagens = result.response;
-                        prepareListContagens();
-                    } else {
-                        notificar("error", result.exception);
-                        getInventarios();
-                    }
-                }
-            });
-        };
-
-        var prepareListContagens = function () {
-            var rowsDivg = [];
-            var rowsNor = [];
-
-            $("#list-contagens").empty();
-
-            $.each(contagens, function (k, v) {
-
-                var dsc = v.contagem + "ª Contagem";
-                var classe = "gradientBtn";
-
-                if (v.divergencia === 'S'){
-                    dsc += " de Divergência";
-                    classe = "gradientBtnDanger"
-                }
-                contagens[k].dsc = dsc;
-                var newRow = $('<div class="row"><button class="btn '+ classe +' selectCont" data-key="'+ k +'" title="'+ v.contagem +'">'+ dsc +'</button></div>');
-
-                if (v.divergencia === 'S') {
-                    rowsDivg.push(newRow);
-                } else {
-                    rowsNor.push(newRow)
-                }
-
-            });
-
-            $.each($.merge(rowsNor, rowsDivg), function (k,v) {
-                $("#list-contagens").append(v);
-            });
-
-            changeViewer("contagens-by-inventario");
-        };
-
-        $(".selectCont").live("click",function () {
-            contSelecioando = contagens[$(this).data("key")];
-            $("#lbl-contagem").text(contSelecioando.dsc);
-            getEnderecos();
-        });
-
-        var getEnderecos = function () {
-            changeViewer("loader");
-            $.ajax({url: "/mobile/inventario-novo/get-enderecos/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia,
-                success: function(result){
-                    if (result.status === "ok") {
-                        enderecos = result.response;
-                        prepareListEnderecos()
-                    } else {
-                        notificar("error", result.exception);
-                        if (result.errorCode === 4000) {
-                            getInventarios();
-                        } else {
-                            getContagens();
-                        }
-                    }
-                }
-            });
-        };
-
-        var prepareListEnderecos = function () {
-            var list = $("#list-enderecos");
-            list.empty();
-            if (!$.isEmptyObject(enderecos)) {
-                for (var i in enderecos){
-                    list.append('<div class="list-item">' + i + '</div>')
-                }
-                changeViewer("bipagem-endereco");
-            } else {
-                notificar("warning", "A " + contSelecioando.dsc + " não tem mais endereços! Selecione outra.");
-                getContagens();
-            }
-        };
-
-        $("#cod-barras-end").keypress(function( event ) {
-            if ( event.which === 13  || event.keyCode === 13 ) {
-                disarmEvent(event);
-                if (!isEmpty($(this).val())) {
-                    processEndereco($(this));
-                    $(this).val("")
-                }
-            }
-        });
-
-        $("#btn-consultar-endereco").click(function( event ) {
-            var input = $("#cod-barras-end");
-            disarmEvent(event);
-            if (!isEmpty(input.val())) {
-                processEndereco(input);
-                input.val("")
-            }
-        });
-
-        var processEndereco = function (input) {
-
-            var endFormated = formatEndereco(input.val());
-
-            if (!endFormated) {
-                notificar("warning", "O código de barras não corresponde à um endereço", true);
-            } else if ((enderecos[endFormated] !== undefined)) {
-                contEndSelecionado = enderecos[endFormated];
-                $("#lbl-endereco").text("End. Atual: " + endFormated);
-                openEndereco()
-            } else {
-                notificar("warning", "O endereço "+endFormated+" não está nesta contagem", true);
-                input.focus();
-            }
-
-            input.val("");
-        };
-
-        var openEndereco = function () {
-            changeViewer("loader");
-            var paramsUrl = ["id", invSelecioando.id, "sq", contSelecioando.sequencia, "divrg", contSelecioando.divergencia, "end", contEndSelecionado.idEnd, "isPicking", contEndSelecionado.isPicking];
-            $.ajax({
-                url: "/mobile/inventario-novo/get-info-endereco/" + paramsUrl.join("/")  ,
-                success: function (result) {
-                    produtos = [];
-                    pickingOf = [];
-                    if (result.status === "ok") {
-                        for (var index in result.response.listItens) {
-                            produtos.push(result.response.listItens[index]);
-                        }
-                        pickingOf = result.response.pickingOf;
-                        if (contEndSelecionado.isPicking && !isEmpty(pickingOf.itens)) {
-                            var strProd = "Picking de:<br>";
-                            $.each(pickingOf.itens, function(k, v){
-                                strProd = strProd + v.idProduto + " - " + v.dscProduto;
-                                if (usaGrade) {
-                                    strProd = strProd + " - " + v.grade;
-                                }
-                                if (k < (pickingOf.itens.length - 1)) {
-                                    strProd = strProd + "<br>";
-                                }
-                            });
-                            $("#lbl-pickingOf").html(strProd).show();
-                        } else {
-                            $("#lbl-pickingOf").hide();
-                        }
-                        prepareListProdutos();
-                    } else {
-                        notificar("error", result.exception);
-                        if (result.errorCode === 4000) {
-                            getInventarios();
-                        } else if (result.errorCode === 4001) {
-                            getEnderecos();
-                        }
-                    }
-                }
+        var addNewClienteInfo = function (danfe) {
+            $.each(danfe.clientes, function (i, cliente) {
+                var group = $("<div class='accordionn-body'>");
+                $.each(cliente.danfes, function (keypass, danfe) {
+                    group.append($("<div class='accordion-item' id='danfe-info-"+keypass+"'>" +danfe.nota+"</div>"))
+                })
+                var newClient = $("<div class='accordion-title' id='div-accordion-" + i + "' data-client='" + i + "'>" + cliente.nome + "<div id='span-nfs'></div></div>");
+                var spanNfs = $("<span id='span-notas-ok-" + i + "'>"+ cliente.checked + "</span> de <span id='span-notas-total-" + cliente.i + "'>"+ cliente.totalDanfes + "</span>");
+                newClient.find("div#span-nfs").append(spanNfs);
+                newClient.append(group);
+                $("#list-clients").append(newClient);
+                toggleAccordionActive(newClient);
             })
-        };
-
-        var prepareListProdutos = function () {
-            var list = $("#list-produtos");
-            list.empty();
-            if (produtos.length) {
-                $.each(produtos , function (k,v) {
-                    var dscProd = v.idProduto;
-                    if (usaGrade) {
-                        dscProd += " - " + v.grade;
-                    }
-
-                    dscProd += " - " + v.descricao + " - " + "****" + v.codBarras.toString().slice(v.codBarras.toString().length -6);
-                    //dscProd += " - " + v.descricao + " - " + v.codBarras;
-                    if (!isEmpty(v.lote)) {
-                        dscProd += " Lote: " + v.lote;
-                    }
-                    if (!isEmpty(v.idVolume)) {
-                        dscProd += " Volume: " + v.dscVolume;
-                    }
-                    if(v.zerado) {
-                        dscProd += ' <a href="" data-key="' + k + '" class="btn-zerarProduto">Zerar Produto</a>';
-                    }
-
-                    list.append('<div class="list-item">' + dscProd + '</div>');
-                });
-            }
-
-            if (contEndSelecionado.vazio) {
-                $("#btn-finalizar").text("Finalizar Endereço Vazio")
-            } else {
-                $("#btn-finalizar").text("Finalizar Endereço")
-            }
-
-            changeViewer("bipagem-produto");
-        };
-
-        $(".btn-zerarProduto").live("click", function (event) {
-            disarmEvent(event);
-            var produto = produtos[$(this).data("key")];
-            var descricao = produto.idProduto + " - " + produto.descricao + " " + produto.grade;
-            if (!isEmpty(produto.idVol)) {
-                descricao += " - " + produto.dscVol;
-            }
-            if (confirm("Esta ação irá zerar neste endereço o produto " + descricao+ ". Deseja realmente prosseguir?")) {
-                confirmarProdutoZerado(produto);
-            }
-        });
-
-        var confirmarProdutoZerado = function (produto) {
-            changeViewer("loader");
-            $.post(
-                "/mobile/inventario-novo/confirmar-produto-zerado",
-                {
-                    inventario: invSelecioando,
-                    contEnd: contEndSelecionado,
-                    produto: produto
-                }
-            ).done(function( result ) {
-                if (result.status === "ok") {
-                    notificar("success", result.response);
-                    openEndereco();
-                } else {
-                    notificar("error", result.exception);
-                    if (result.errorCode === 4000) {
-                        getInventarios();
-                    } else if (result.errorCode === 4001) {
-                        getEnderecos();
-                    } else {
-                        openEndereco();
-                    }
-                }
-            })
-        };
-
-        $("#cod-barras-prod").keypress(function( event ) {
-            if (event.which === 13 || event.keyCode === 13) {
-                disarmEvent(event);
-                if (!isEmpty($(this).val())) {
-                    getInfoProduto($(this).val());
-                    $(this).val("");
-                }
-            }
-        });
-
-        $("#btn-consultar-produto").click(function( event ) {
-            var input = $("#cod-barras-prod");
-            disarmEvent(event);
-            if (!isEmpty(input.val())) {
-                getInfoProduto(input.val());
-                input.val("");
-            }
-        });
-
-        var getInfoProduto = function (codBarras) {
-            changeViewer("loader");
-            var paramsUrl = ["codbarras", encodeURIComponent(codBarras), "id", invSelecioando.id, "end", contEndSelecionado.idEnd];
-            $.ajax({
-                url: "/mobile/inventario-novo/get-info-produto/" + paramsUrl.join("/") ,
-                success: function (result) {
-                    if (result.status === "ok") {
-                        elemBipado = result.response.produto;
-                        if (elemBipado.idVolume === null) {
-                            elemBipado.idVolume = "";
-                        }
-
-                        if (contEndSelecionado.isPicking && myIndexOf(pickingOf.uniKey, elemBipado.idProduto + "--" + elemBipado.grade + "--" + elemBipado.norma) < 0)
-                        {
-                            notificar("warning", "Este produto não está vinculado à esse picking!");
-                        }
-
-                        prepareElement();
-                    } else {
-                        notificar("error", result.exception);
-                        if (result.errorCode === 4000) {
-                            getInventarios();
-                        } else if (result.errorCode === 4001) {
-                            getEnderecos();
-                        } else {
-                            openEndereco();
-                        }
-                    }
-                }
-            })
-        };
-
-        var prepareElement = function () {
-            $("#lbl-produto").text([
-                elemBipado.idProduto,
-                elemBipado.descricao,
-                ((usaGrade) ? elemBipado.grade : ""),
-            ].join(" "));
-
-            $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
-            $("#lbl-picking").text( "Picking: " + elemBipado.picking);
-            $("#qtd").val("");
-
-            if (controlaLote()) {
-                $("#lote").val("");
-                $("#div-lote").show();
-            } else {
-                $("#div-lote").hide();
-            }
-
-            if (controlaValidade()) {
-                $("#validade").val("");
-                $("#div-validade").show();
-            } else {
-                $("#div-validade").hide();
-            }
-
-            changeViewer("conferencia");
-        };
-
-        $("#qtd, #validade, #lote").keypress(function( event ) {
-            if ( event.which === 13  || event.keyCode === 13 ) {
-                disarmEvent(event);
-                if ( checkInputs(true) ) {
-                    registrar();
-                }
-            }
-        });
-
-        $("#btn-registrar").click(function( event ) {
-            disarmEvent(event);
-            if ( checkInputs() ) {
-                registrar();
-            }
-        });
-
-        var checkInputs = function (toNext) {
-
-            var inputQtd = $("#qtd");
-            var inputVal = $("#validade");
-            var inputLote = $("#lote");
-
-            if ( controlaValidade()) {
-                if (isEmpty(inputVal.val())) {
-                    if (!toNext) notificar("warning", "A validade não foi informada", true);
-                    inputVal.focus();
-                    return false;
-                }
-                if (!isValidDate(inputVal.val())){
-                    notificar("warning", "Esta data " + inputVal.val() + " não é válida" , true);
-                    inputVal.focus();
-                    return false;
-                }
-            }
-
-            if ( controlaLote() && isEmpty(inputLote.val())) {
-                if (!toNext) notificar("warning", "O Lote não foi informado", true);
-                inputLote.focus();
-                return false;
-            }
-
-            if (isEmpty(inputQtd.val())) {
-                if (!toNext) notificar("warning", "A quantidade não foi informada", true);
-                inputQtd.focus();
-                return false;
-            }
-
-            return true;
-        };
-
-        $("#qtd").keyup(function () {
-            var data = $(this).val().replace(/[^\d.]/,"");
-            $(this).val(data);
-        });
-
-        function isValidDate(s) {
-            var bits = s.split('/');
-            var milenium = ((new Date()).getFullYear()).toString().substring(0, 2);
-            var d = new Date(milenium +''+ bits[2] + '/' + bits[1] + '/' + bits[0]);
-            return !!(d && (d.getMonth() + 1) == bits[1] && d.getDate() == Number(bits[0]));
         }
-
-        var registrar = function () {
-            changeViewer("loader");
-
-            var validade = $("#validade").val();
-            if (!isEmpty(validade)) {
-                var bits = validade.split('/');
-                var milenium = ((new Date()).getFullYear()).toString().substring(0, 2);
-                validade = bits[0] + '/' + bits[1] + '/' + milenium + '' + bits[2];
-            }
-            $.post(
-                "/mobile/inventario-novo/contagem-produto",
-                {
-                    inventario: invSelecioando,
-                    contEnd: contEndSelecionado,
-                    produto: elemBipado,
-                    conferencia: {
-                        qtd: $("#qtd").val(),
-                        validade: validade,
-                        lote: $("#lote").val()
-                    }
-                }
-            ).done(function( result ) {
-                if (result.status === "ok") {
-                    contEndSelecionado.vazio = false;
-                    notificar("success", result.response);
-                    openEndereco();
-                } else {
-                    notificar("error", result.exception);
-                    if (result.errorCode === 4000) {
-                        getInventarios();
-                    } else if (result.errorCode === 4001) {
-                        getEnderecos();
-                    } else {
-                        openEndereco();
-                    }
-                }
-            })
-        };
-
-        $("#btn-finalizar").click(function () {
-            changeViewer("loader");
-            $.post(
-                "/mobile/inventario-novo/finalizar-contagem-os",
-                {
-                    inventario: invSelecioando,
-                    contEnd: contEndSelecionado
-                }
-            ).done(function( result ) {
-                if (result.status === "ok") {
-                    notificar("success", result.response.msg);
-                    if (result.response.code !== 4) {
-                        getEnderecos();
-                    } else if (result.response.code === 4) {
-                        getInventarios();
-                    }
-                } else {
-                    notificar("error", result.exception);
-                    if (result.errorCode === 4000) {
-                        getInventarios();
-                    } else if (result.errorCode === 4001) {
-                        getEnderecos();
-                    } else {
-                        openEndereco();
-                    }
-                }
-            })
-        });
     })
 </script>
