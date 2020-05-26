@@ -288,7 +288,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae, es.posVolume, es.posEntrega, es.totalEntrega,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica,
-                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox, uf.sigla siglaEstado, pedEnd.localidade as cidadeEntrega
+                    cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox, uf.referencia siglaEstado, 
+                    pedEnd.localidade as cidadeEntrega
                 ")
             ->addSelect("
                         (
@@ -399,7 +400,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
-                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
+                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega, etq.codStatus,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, 
                     etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, pedEnd.localidade as cidadeEntrega')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
@@ -433,7 +434,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(" es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
-                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega, pedEnd.localidade as cidadeEntrega,
+                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega, pedEnd.localidade as cidadeEntrega, uf.referencia siglaEstado,
                     exp.id as reentregaExpedicao,
                     r.id as codReentrega,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
@@ -445,6 +446,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
             ->leftJoin('etq.reentrega','r')
             ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = etq.pedido')
+            ->leftJoin('wms:Util\Sigla', 'uf', 'WITH', 'uf.id = pedEnd.uf')
             ->leftJoin('r.carga','c')
             ->leftJoin('c.expedicao','exp')
             ->leftJoin('etq.produtoEmbalagem','emb')
@@ -2939,6 +2941,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
     {
+        if ($etiquetaEntity->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) {
+            throw new \Exception("Etiqueta " . $etiquetaEntity->getId() . " ja se encontra cortada");
+        }
 
         if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
             return true;
@@ -2965,11 +2970,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
                 if ($etiqueta->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
-                    if ($corteTodosVolumes == true) {
-                        $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
-                    } else {
+        //            if ($corteTodosVolumes == true) {
+        //                $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
+        //            } else {
                         $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
-                    }
+        //            }
                 }
             }
         }
@@ -3019,7 +3024,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $produto['qtd'] = 1;
         $produtos[] = $produto;
 
-        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque(NULL,$produtos,"S","E", array('expedicao' => $idExpedicao));
+        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque($etiquetaEntity->getDepositoEndereco(),$produtos,"S","E", array('expedicao' => $idExpedicao, 'pedido'=> $etiquetaEntity->getPedido()->getId()));
         $maiorQtd = null;
         if ($reservaEstoque != NULL) {
             $produtosReserva = $reservaEstoque->getProdutos();
@@ -3047,7 +3052,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             if ($reservaZerada == true) {
-                $reservaEstoqueRepo->cancelaReservaEstoque(null,$produtos,"S","E", array('expedicao' => $idExpedicao));
+                $reservaEstoqueRepo->cancelaReservaEstoque($etiquetaEntity->getDepositoEndereco(),$produtos,"S","E", array('expedicao' => $idExpedicao, 'pedido'=> $etiquetaEntity->getPedido()->getId()));
             }
             $this->_em->flush();
 

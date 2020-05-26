@@ -66,6 +66,8 @@ class produto {
     public $fatorEmbalagemVenda;
     /** @var string */
     public $proprietario;
+    /** @var string */
+    public $embalado;
 }
 
 class pedido {
@@ -806,6 +808,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                             $produto->quantidadeAtendida = 0;
                         }
                     }
+                    $produto->embalado = $item['EMBALADO'];
                     $pedido->produtos[] = $produto;
                 }
             }
@@ -894,6 +897,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $produto->quantidadeAtendida = 0;
                 }
             }
+            $produto->embalado = $item['EMBALADO'];
             $result->produtos[] = $produto;
         }
 

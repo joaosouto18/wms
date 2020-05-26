@@ -299,8 +299,9 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?6 - Quantidade Pedida (Em função da embalagem vendida)
                  * ?7 - Quantidade Atendida (Em função da embalagem vendida)
                  * ?8 - Fator da Embalagem de Venda
-                 * ?9 - Fator da Embalagem de Venda
+                 * ?9 - LOTE
                  * ?10 - Status expedição
+                 * ?11 - NUMERO DO EMBALADO, caso tenha retorno por embalado
                  */
                 $idTipoAcao = $acaoEn->getTipoAcao()->getId();
                 if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
@@ -328,6 +329,7 @@ class ExpedicaoRepository extends EntityRepository {
                                 $options[$index][] = str_replace(',', '.', $item['FATOR_EMBALAGEM_VENDA']);
                                 $options[$index][] = $item['DSC_LOTE'];
                                 $options[$index][] = $expedicaoEn->getStatus()->getId();
+                                $options[$index][] = $item['EMBALADO'];
                             }
                             $options[$index][] = 2;
                         }
@@ -2415,10 +2417,120 @@ class ExpedicaoRepository extends EntityRepository {
             $andamentoRepo->save("Expedição Parcialmente Finalizada com Sucesso", $expedicaoEntity->getId());
         }
 
+        if ($novoStatus == Expedicao::STATUS_FINALIZADO) $this->rateiaEmbCliente($idExpedicao);
+
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
         return true;
+    }
+
+    public function rateiaEmbCliente ($idExpedicao) {
+
+        $ncl = Lote::NCL;
+
+        /*
+         * Passo 01 - Montar um array com as quantidades totais de cada caixa - ordenando pela maior quantidade decrescete
+         */
+        $SQL = "SELECT MS.COD_MAPA_SEPARACAO,
+                       MSC.COD_PESSOA,
+                       msc.cod_mapa_separacao_embalado as COD_EMBALADO,
+                       MSC.COD_PRODUTO,
+                       MSC.DSC_GRADE,
+                       SUM(MSC.QTD_CONFERIDA * MSC.QTD_EMBALAGEM) as QTD,
+                       NVL(MSC.DSC_LOTE, '$ncl') DSC_LOTE
+                  FROM mapa_separacao_emb_cliente MSE
+                 INNER JOIN MAPA_SEPARACAO MS ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                 INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON msc.cod_mapa_separacao_embalado = mse.cod_mapa_separacao_emb_cliente
+                 WHERE MS.COD_EXPEDICAO = $idExpedicao
+                 GROUP BY MS.COD_MAPA_SEPARACAO, msc.cod_mapa_separacao_embalado, MSC.COD_PESSOA, MSC.COD_PRODUTO, MSC.DSC_GRADE, NVL(MSC.DSC_LOTE, '$ncl')
+                 ORDER BY COD_MAPA_SEPARACAO, COD_PESSOA, QTD DESC";
+        $arrEmbalados = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        /*
+         * Passo 02 - Montar array com a quantidade de cada pedido - ordenando pela maior quantidade decrescente
+         */
+        $SQL = " SELECT MS.COD_MAPA_SEPARACAO,
+                        P.COD_PESSOA,
+                        PP.COD_PEDIDO,
+                        PP.COD_PRODUTO,
+                        PP.DSC_GRADE,
+                        NVL(PPL.DSC_LOTE, '$ncl') DSC_LOTE,
+                        SUM(MSP.QTD - MSP.QTD_CORTADA) as QTD
+                   FROM MAPA_SEPARACAO_PEDIDO MSP
+                  INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                   LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                  INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  WHERE MS.COD_MAPA_SEPARACAO IN (
+                        SELECT MS.COD_MAPA_SEPARACAO
+                          FROM MAPA_SEPARACAO MS
+                         INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
+                         WHERE MS.COD_EXPEDICAO = $idExpedicao
+                           AND MSQ.IND_TIPO_QUEBRA = 'T')
+                  GROUP BY MS.COD_MAPA_SEPARACAO, P.COD_PESSOA, PP.COD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PPL.DSC_LOTE, '$ncl')
+                  ORDER BY COD_MAPA_SEPARACAO, COD_PESSOA, QTD DESC";
+        $arrPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        /*
+         * Passo 03 - Montagem do array por quantidade
+         */
+        $arrEmbaladoPP = array();
+
+        foreach ($arrPedidos as $keyPedido => $pedido) {
+            foreach ($arrEmbalados as $keyEmbalado => $embalado) {
+
+                $qtdPedidoRestante = $arrPedidos[$keyPedido]['QTD'];
+                $qtdEmbaladoRestante = $arrEmbalados[$keyEmbalado]['QTD'];
+                if (($pedido['COD_MAPA_SEPARACAO'] == $embalado['COD_MAPA_SEPARACAO'])
+                    && ($pedido['COD_PESSOA'] == $embalado['COD_PESSOA'])
+                    && ($pedido['COD_PRODUTO'] == $embalado['COD_PRODUTO'])
+                    && ($pedido['DSC_GRADE'] == $embalado['DSC_GRADE'])
+                    && ($pedido['DSC_LOTE'] == $embalado['DSC_LOTE'])
+                    && ($qtdPedidoRestante >0)
+                    && ($qtdEmbaladoRestante >0)) {
+
+                    $qtdPedidoNaCaixa = $qtdEmbaladoRestante;
+                    if ($qtdPedidoRestante < $qtdEmbaladoRestante) {
+                        $qtdPedidoNaCaixa = $qtdPedidoRestante;
+                    }
+
+                    $arrEmbaladoPP[] = array(
+                        'codPedido' => $pedido['COD_PEDIDO'],
+                        'codProduto' => $pedido['COD_PRODUTO'],
+                        'grade' => $pedido['DSC_GRADE'],
+                        'embalado' => $embalado['COD_EMBALADO'],
+                        'lote' => $embalado['DSC_LOTE'],
+                        'qtd' => $qtdPedidoNaCaixa
+                    );
+
+                    $arrEmbalados[$keyEmbalado]['QTD'] = $qtdEmbaladoRestante - $qtdPedidoNaCaixa;
+                    $arrPedidos[$keyPedido]['QTD'] = $qtdPedidoRestante - $qtdPedidoNaCaixa;
+
+                }
+            }
+        }
+
+        foreach ($arrEmbaladoPP as $embalado) {
+            /** @var Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+            $pedidoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+            /** @var Expedicao\PedidoProduto $pedidoProdutoEn */
+            $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
+                'codPedido' => $embalado['codPedido'],
+                'codProduto' => $embalado['codProduto'],
+                'grade' => $embalado['grade'])
+            );
+
+            $ppEmbalado = new Expedicao\PedidoProdutoEmbCliente();
+                $ppEmbalado->setCodMapaSeparacaoEmbalado($embalado['embalado']);
+                $ppEmbalado->setCodPedidoProduto($pedidoProdutoEn->getId());
+                $ppEmbalado->setPedidoProduto($pedidoProdutoEn);
+                $ppEmbalado->setQuantidade($embalado['qtd']);
+                $ppEmbalado->setLote($embalado['lote']);
+            $this->getEntityManager()->persist($ppEmbalado);
+        }
+
+        $this->getEntityManager()->flush();
     }
 
     public function efetivaReservaEstoqueByExpedicao($idExpedicao) {
@@ -4893,25 +5005,39 @@ class ExpedicaoRepository extends EntityRepository {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
 
-            $args = [
-                'mapaSeparacao' => $mapa,
-                'codProduto' => $codProduto,
-                'dscGrade' => $grade
-            ];
-
+            $sqlFiltro = "";
             if (!empty($quebraConsolidado)) {
-                $args["pedidoProduto"] = $pedidoProdutoEn;
+                $agrupamentoConsolidado = "CLIENTE";
+                if ($agrupamentoConsolidado == "CLIENTE") {
+                    $sqlFiltro .= " AND P.COD_PESSOA = " . $pedidoEn->getPessoa()->getId();
+                } else {
+                    $sqlFiltro .= " AND MSP.COD_PEDIDO_PRODUTO = " . $pedidoProdutoEn->getId();
+                }
             }
 
             if (!empty($idEndereco)) {
-                $args["depositoEndereco"] = $idEndereco;
+                $sqlFiltro .= " AND MSP.COD_DEPOSITO_ENDERECO = '$idEndereco'";
             }
 
             if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
-                $args['produtoEmbalagem'] = $idEmbalagem;
+                $sqlFiltro .= " AND MSP.COD_PRODUTO_EMBALAGEM = '$idEmbalagem'";
             }
 
-            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy($args);
+            $sql = "SELECT COD_MAPA_SEPARACAO_PRODUTO 
+                      FROM MAPA_SEPARACAO_PRODUTO MSP
+                      LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                      LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                     WHERE MSP.COD_MAPA_SEPARACAO = '$mapa'
+                       AND MSP.COD_PRODUTO = '$codProduto'
+                       AND MSP.DSC_GRADE = '$grade' $sqlFiltro ";
+            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+            $idMapaSeparacaoProduto = 0;
+            if (count($result) >0) {
+                $idMapaSeparacaoProduto = $result[0]['COD_MAPA_SEPARACAO_PRODUTO'];
+            }
+
+            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array ('id' => $idMapaSeparacaoProduto));
 
             if (!empty($entidadeMapaProduto)) {
 
