@@ -31,6 +31,12 @@ class Expedicao_ReimpressaoFaixaController  extends Action
                 $etiquetas = $EtiquetaRepo->getEtiquetasReimpressaoByFaixa($codBarrasInicial,$codBarrasFinal);
                 if (count($etiquetas) >0) {
                     try {
+                        foreach ($etiquetas as $etiqueta) {
+                            if ($etiqueta['codStatus'] == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
+                                throw new \Exception('Existem etiquetas cortadas na faixa de etiquetas selecionada (' . $etiqueta['codBarras'] . ')');
+                            }
+                        }
+
                         $Etiqueta->reimprimirFaixa  ($etiquetas, $motivo, $modelo);
                     } catch(\Exception $e) {
                         $msg = "Falha na reimpressao. Motivo:" . $e->getMessage();

@@ -400,7 +400,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
-                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
+                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega, etq.codStatus,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, 
                     etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, pedEnd.localidade as cidadeEntrega')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
@@ -2941,6 +2941,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
     {
+        if ($etiquetaEntity->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) {
+            throw new \Exception("Etiqueta " . $etiquetaEntity->getId() . " ja se encontra cortada");
+        }
 
         if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
             return true;
@@ -2967,11 +2970,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
                 if ($etiqueta->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
-                    if ($corteTodosVolumes == true) {
-                        $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
-                    } else {
+        //            if ($corteTodosVolumes == true) {
+        //                $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
+        //            } else {
                         $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
-                    }
+        //            }
                 }
             }
         }
@@ -3021,7 +3024,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $produto['qtd'] = 1;
         $produtos[] = $produto;
 
-        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque(NULL,$produtos,"S","E", array('expedicao' => $idExpedicao));
+        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque($etiquetaEntity->getDepositoEndereco(),$produtos,"S","E", array('expedicao' => $idExpedicao, 'pedido'=> $etiquetaEntity->getPedido()->getId()));
         $maiorQtd = null;
         if ($reservaEstoque != NULL) {
             $produtosReserva = $reservaEstoque->getProdutos();
@@ -3049,7 +3052,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             if ($reservaZerada == true) {
-                $reservaEstoqueRepo->cancelaReservaEstoque(null,$produtos,"S","E", array('expedicao' => $idExpedicao));
+                $reservaEstoqueRepo->cancelaReservaEstoque($etiquetaEntity->getDepositoEndereco(),$produtos,"S","E", array('expedicao' => $idExpedicao, 'pedido'=> $etiquetaEntity->getPedido()->getId()));
             }
             $this->_em->flush();
 

@@ -438,6 +438,11 @@ class Expedicao_EtiquetaController  extends Action
                             $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
                         }
 
+                        if ($etiquetaEntity->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
+                            $this->addFlashMessage('info', "Etiqueta $etq ja está cortada e não pode ser reimpressa");
+                            $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
+                        }
+
                         if ($Etiqueta->jaReimpressa($etiquetaEntity)) {
                             $this->addFlashMessage('info', "Etiqueta $etq não pode ser reimpressa mais de uma vez");
                             $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
