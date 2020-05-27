@@ -58,7 +58,7 @@ class Expedicao_IndexController extends Action {
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
 
-        //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
+            //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
         if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
             $acaoEn = $acaoIntRepo->find(24);
             $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');

@@ -48,32 +48,32 @@ class Ressuprimento extends Pdf {
         $this->SetMargins(7, 0, 0);
         $this->AddPage();
         $this->SetFont('Arial','B',8);
-        $this->Cell(15, 5, 'ONDA', 1, 0);
-        $this->Cell(30, 5, 'DT. CRIACAO', 1, 0);
-        $this->Cell(20, 5, 'COD.', 1, 0);
-        $this->Cell(20, 5, 'GRADE', 1, 0);
-        $this->Cell(60, 5, 'PRODUTO', 1, 0);
-        $this->Cell(40, 5, 'VOLUMES', 1, 0);
-        $this->Cell(20, 5, 'QTD', 1, 0);
-        $this->Cell(20, 5, 'PULMAO', 1, 0);
-        $this->Cell(20, 5, 'PICKING', 1, 0);
-        $this->Cell(20, 5, 'STATUS', 1, 0);
-        $this->Cell(20, 5, 'COD_BARRAS', 1, 1);
+        $this->Cell(15, 5, 'Onda', 1, 0);
+        $this->Cell(30, 5, 'Dt.Criacao', 1, 0);
+        $this->Cell(20, 5, 'Codigo', 1, 0);
+        $this->Cell(20, 5, 'Grade', 1, 0);
+        $this->Cell(60, 5, 'Produto', 1, 0);
+        $this->Cell(40, 5, 'Volumes', 1, 0);
+        $this->Cell(20, 5, 'Qtd.', 1, 0);
+        $this->Cell(20, 5, 'Pulmao', 1, 0);
+        $this->Cell(20, 5, 'Picking', 1, 0);
+        $this->Cell(20, 5, 'Status', 1, 0);
+        $this->Cell(20, 5, 'Cod.Barras', 1, 1);
 
         foreach ($array as $linha)
         {
             $data = new \DateTime($linha['DT. CRIACAO']);
-            $this->Cell(15, 5, $linha['ONDA'], 1, 0);
+            $this->Cell(15, 5, substr($linha['ONDA'] ,0,8), 1, 0);
             $this->Cell(30, 5, $data->format('d/m/Y H:i:s'), 1, 0);
-            $this->Cell(20, 5, $linha['COD.'], 1, 0);
-            $this->Cell(20, 5, $linha['GRADE'], 1, 0);
+            $this->Cell(20, 5, substr($linha['COD.'],0,12), 1, 0);
+            $this->Cell(20, 5, substr($linha['GRADE'],0,11), 1, 0);
             $this->Cell(60, 5, $linha['PRODUTO'], 1, 0);
-            $this->Cell(40, 5, substr($linha['VOLUMES'],0,23).'<br/>'.substr($linha['VOLUMES'],23,-1), 1, 0);
+            $this->Cell(40, 5, substr($linha['VOLUMES'],0,23) .substr($linha['VOLUMES'],23,-1), 1, 0);
             $this->Cell(20, 5, $linha['QTD'], 1, 0);
             $this->Cell(20, 5, $linha['PULMAO'], 1, 0);
             $this->Cell(20, 5, $linha['PICKING'], 1, 0);
-            $this->Cell(20, 5, $linha['STATUS'], 1, 0);
-            $this->Cell(20, 5, $linha['COD_BARRAS'], 1, 1);
+            $this->Cell(20, 5, substr($linha['STATUS'],0,10), 1, 0);
+            $this->Cell(20, 5, '...' . substr($linha['COD_BARRAS'], strlen($linha['COD_BARRAS']) -6) , 1, 1);
         }
 
         $this->Output($filename.'.pdf','D');
