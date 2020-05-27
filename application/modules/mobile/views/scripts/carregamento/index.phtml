@@ -93,6 +93,18 @@
     .flip {
         transform: rotate(-180deg);
     }
+
+    .accordion-title {
+
+    }
+
+    .accordion-item {
+
+    }
+
+    .accordion-row {
+
+    }
 </style>
 
 <div id="dummy"></div>
@@ -105,7 +117,7 @@
 
 <div id="divBtnBack" style="display: none; margin-bottom: 5px">
     <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
-    <button class="btn gradientBtnSuccess btn-spacing" id="btn-back-action">Finalizar</button>
+    <button class="btn gradientBtnSuccess btn-spacing" id="btn-start-action">Iniciar Conferência</button>
 </div>
 
 <a href="#messenger" style="display: none" id="anchorMsg"></a>
@@ -127,6 +139,9 @@
         <button id="btn-consultar-danfe" class="btn gradientBtn btn-spacing">Buscar</button>
     </div>
     <div id="list-clients" style="padding-top: 5px; display: none">
+        <div id="accordion">
+
+        </div>
     </div>
     <div id="btn-row" style="padding-top: 6px; display: none">
         <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
@@ -148,7 +163,6 @@
 
 <script>
     $(function () {
-
         $(".accordion-title").click( function () {
             toggleAccordionActive($(this));
         })
@@ -183,7 +197,6 @@
 
         var showing = 0;
         var views = ["loader","form-danfe","bipagem-volume"];
-        var headersArr = ["lbl-expedicao"];
         var msgShowed = true;
 
         function myIndexOf(collection, target) {
@@ -406,18 +419,31 @@
         }
 
         var addNewClienteInfo = function (danfe) {
+            var listClients = $("#list-clients");
+            listClients.html("");
+            /*
+                <div class='accordion-row'>
+                    <h5 class='accordion-tittle'></h5>
+                    <div class='accordion-content'></div>
+                </div>
+             */
             $.each(danfe.clientes, function (i, cliente) {
-                var group = $("<div class='accordionn-body'>");
+                var content = $("<div class='accordion-content'>");
                 $.each(cliente.danfes, function (keypass, danfe) {
-                    group.append($("<div class='accordion-item' id='danfe-info-"+keypass+"'>" +danfe.nota+"</div>"))
+                    content.append($("<p class='accordion-item' id='danfe-info-"+keypass+"'>" +danfe.nota+"</p>"))
                 })
-                var newClient = $("<div class='accordion-title' id='div-accordion-" + i + "' data-client='" + i + "'>" + cliente.nome + "<div id='span-nfs'></div></div>");
+                var title = $("<h5 class='accordion-title' id='div-accordion-" + i + "' data-client='" + i + "'>" + cliente.nome + "<span id='span-nfs'></span></h5>");
                 var spanNfs = $("<span id='span-notas-ok-" + i + "'>"+ cliente.checked + "</span> de <span id='span-notas-total-" + cliente.i + "'>"+ cliente.totalDanfes + "</span>");
-                newClient.find("div#span-nfs").append(spanNfs);
-                newClient.append(group);
-                $("#list-clients").append(newClient);
-                toggleAccordionActive(newClient);
+                title.find("div#span-nfs").append(spanNfs);
+                var newAccordionRow = $("<div class='accordion-row'>")
+                newAccordionRow.append(title).append(content);
+                $("#list-clients").append(newAccordionRow);
             })
+            var divAccordion = $("<div id='accordion'>")
+            $("#accordion").accordion({
+                header: "> div > h5",
+                collapsible: true
+            });
         }
     })
 </script>
