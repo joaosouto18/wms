@@ -15,9 +15,25 @@ class Expedicao_Relatorio_SaidaController extends \Wms\Controller\Action
         if ($params) {
             ini_set('memory_limit', '-1');
             $form->populate($params);
-            $Report = new ExpedicaoForm\SaidaProduto();
-            if ($Report->init($params) == false) {
-                $this->addFlashMessage('error', 'Produto não encontrado');
+            $Report = new \Wms\Module\Expedicao\Report\SaidaProduto();
+
+            $report = "S";
+            if (!(isset($params['dataInicial']) && (!empty($params['dataInicial'])))) {
+                $this->addFlashMessage('info', 'É necessário que se especifique um intervalo de datas para o relatório');
+                $report = "N";
+            }
+
+            if ($report == "S") {
+                if (!(isset($params['dataFinal']) && (!empty($params['dataFinal'])))) {
+                    $this->addFlashMessage('info', 'É necessário que se especifique um intervalo de datas para o relatório');
+                    $report = "N";
+                }
+            }
+
+            if ($report == "S") {
+                if ($Report->init($params) == false) {
+                    $this->addFlashMessage('error', 'Nenhuma informação encontrada');
+                }
             }
         }
 

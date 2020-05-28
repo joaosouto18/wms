@@ -2100,7 +2100,7 @@ class RecebimentoRepository extends EntityRepository
                    OS2.COD_OS AS idOrdemServicoColetor,
                    'S' AS indImprimirCB,
                    ST.DSC_SIGLA AS siglaTipoNota,
-                   
+                   REPLACE(REPLACE(NVL(RA.DSC_OBSERVACAO,''),'Recebimento iniciado pelo Usuário. ',''),'<br />','') as DSC_OBSERVACAO,
                    (
                         SELECT 
                         LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_FORNECEDOR) AS fornecedor
@@ -2145,6 +2145,7 @@ class RecebimentoRepository extends EntityRepository
                     NVL(DE.IND_USA_ENDERECAMENTO, 'S') ENDERECA
                  FROM NOTA_FISCAL NF
            RIGHT JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+           LEFT JOIN RECEBIMENTO_ANDAMENTO RA ON (RA.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 456) 
            INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
             LEFT JOIN FILIAL FL ON FL.COD_FILIAL = NF.COD_FILIAL
             LEFT JOIN DEPOSITO DE ON DE.COD_FILIAL = FL.COD_FILIAL

@@ -405,7 +405,7 @@ class ExpedicaoRepository extends EntityRepository {
                     $arrayClientes = $mapaSeparacaoRepository->getCaixasByExpedicao($expedicaoEn->getId());
 
                     foreach ($cargasEn as $cargaEn) {
-                        $pedidos = $cargaEn->getPedido();
+                        $pedidos = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()), array('codTipoPedido' => 'ASC'));
                         foreach ($pedidos as $pedidoEn) {
                             $qtdCaixas = 0;
                             if (isset($arrayClientes[$pedidoEn->getPessoa()->getId()])) {

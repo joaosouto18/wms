@@ -34,6 +34,7 @@ class PedidoRepository extends EntityRepository
             $numSequencial = $this->getMaxCodPedidoByCodExterno($pedido['codPedido'], true);
             $enPedido->setCodExterno($pedido['codPedido']);
             $enPedido->setTipoPedido($tipoPedEn);
+            $enPedido->setCodTipoPedido($tipoPedEn->getId());
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
             $enPedido->setCentralEntrega($pedido['centralEntrega']);
             $enPedido->setCarga($pedido['carga']);

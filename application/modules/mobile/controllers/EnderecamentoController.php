@@ -1531,6 +1531,17 @@ class Mobile_EnderecamentoController extends Action
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
+            } else {
+                if (!empty($codBarras)) {
+                    if (empty($capacidadePicking)) {
+                        $this->addFlashMessage('info', "Capacidade de picking não informada ou preenchido como 0");
+                    }
+                    if (empty($codigoBarrasEndereco)) {
+                        $this->addFlashMessage('info', "Endereço de picking não informado");
+                    }
+                    $this->addFlashMessage('info', "Nenhuma informação foi alterada");
+                }
+
             }
         } catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
