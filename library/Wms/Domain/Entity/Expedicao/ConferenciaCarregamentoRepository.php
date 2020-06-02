@@ -124,8 +124,24 @@ class ConferenciaCarregamentoRepository extends EntityRepository
         return $expInfo;
     }
 
-    public function validaVolumeConfCarreg($confCarreg, $volumeEn)
+    public function validaVolumeConfCarreg($confCarreg, $idVolume)
     {
-        $sql = "SELECT ";
+        $sql = "SELECT *
+                FROM CONFERENCIA_CARREGAMENTO CC
+                INNER JOIN CONF_CARREG_CLIENTE CCC on CC.COD_CONF_CARREG = CCC.COD_CONF_CARREG
+                INNER JOIN (
+                    SELECT EM.COD_EXPEDICAO, ES.COD_ETIQUETA_SEPARACAO AS ID_VOLUME, PED2.COD_PESSOA
+                    FROM ETIQUETA_MAE EM
+                    INNER JOIN ETIQUETA_SEPARACAO ES on EM.COD_ETIQUETA_MAE = ES.COD_ETIQUETA_MAE
+                    INNER JOIN PEDIDO PED2 ON PED2.COD_PEDIDO = ES.COD_PEDIDO
+                    UNION
+                    SELECT MS.COD_EXPEDICAO, MSEC.COD_MAPA_SEPARACAO_EMB_CLIENTE AS ID_VOLUME, MSEC.COD_PESSOA
+                    FROM MAPA_SEPARACAO MS
+                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC on MS.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
+                ) VOLS ON VOLS.COD_PESSOA = CCC.COD_CLIENTE AND VOLS.COD_EXPEDICAO = CC.COD_EXPEDICAO
+                WHERE CC.COD_CONF_CARREG = $confCarreg AND VOLS.ID_VOLUME = $idVolume";
+
+        return !empty($this->_em->getConnection()->query($sql)->fetchAll());
+
     }
 }
