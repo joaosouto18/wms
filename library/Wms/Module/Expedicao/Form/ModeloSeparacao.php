@@ -30,9 +30,6 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'utilizaVolumePatrimonio', array(
             'label' => 'Utiliza Volume Patrimônio',
             'checkedValue' => 'S'
-        ))->addElement('checkbox', 'usaConferenciaCarregamento', array(
-            'label' => 'Executar Conferência de Carregamento pela DANFE',
-            'checkedValue' => 'S',
         ))->addElement('checkbox', 'agrupContEtiquetas', array(
             'label' => 'Agrupar sequenciamento de etiquetas de não embalados e embalados',
             'checkedValue' => 'S',
@@ -60,6 +57,13 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'quebraUnidFracionavel', array(
             'label' => 'Quebrar em mapa exclusivo e não agrupar unidades fracionáveis',
             'checkedValue' => 'S',
+        ))->addElement('select', 'tipoConfCarregamento', array(
+            'label' => 'Conferência de Carregamento',
+            'multiOptions' => array(
+                'N' => 'Não utiliza',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_CONF_CARREG_EXP => 'Por Expedição',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_CONF_CARREG_DANFE => 'Por Danfe',
+            )
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
             'class' => 'disableSequenciaPraca',
@@ -156,7 +160,6 @@ class ModeloSeparacao extends Form
             'utilizaQuebraColetor',
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
-            'usaConferenciaCarregamento',
             'agrupContEtiquetas',
             'tipoAgroupSeqEtiquetas',
             'usaCaixaPadrao',
@@ -168,6 +171,7 @@ class ModeloSeparacao extends Form
             'quebraPulmaDoca',
             'tipoQuebraVolume',
             'separacaoPc',
+            'tipoConfCarregamento',
             'tipoDefaultEmbalado',
             'tipoConferenciaEmbalado',
             'tipoConferenciaNaoEmbalado',

@@ -33,6 +33,9 @@ class ModeloSeparacao
     const TIPO_SEPARACAO_ETIQUETA = "E";
     const TIPO_SEPARACAO_MAPA = "M";
 
+    const TIPO_CONF_CARREG_EXP = 'E';
+    const TIPO_CONF_CARREG_DANFE = 'D';
+
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
@@ -180,9 +183,9 @@ class ModeloSeparacao
     protected $usaSequenciaRotaPraca;
 
     /**
-     * @Column(name="IND_USA_CONF_CARREG", type="string", nullable=true)
+     * @Column(name="TIPO_CONF_CARREG", type="string", nullable=false)
      */
-    protected $usaConferenciaCarregamento;
+    protected $tipoConfCarregamento;
 
     /**
      * @return mixed
@@ -635,17 +638,17 @@ class ModeloSeparacao
     /**
      * @return mixed
      */
-    public function getUsaConferenciaCarregamento()
+    public function getTipoConfCarregamento()
     {
-        return $this->usaConferenciaCarregamento;
+        return $this->tipoConfCarregamento;
     }
 
     /**
-     * @param mixed $usaConferenciaCarregamento
+     * @param mixed $tipoConfCarregamento
      */
-    public function setUsaConferenciaCarregamento($usaConferenciaCarregamento)
+    public function setTipoConfCarregamento($tipoConfCarregamento)
     {
-        $this->usaConferenciaCarregamento = $usaConferenciaCarregamento;
+        $this->tipoConfCarregamento = $tipoConfCarregamento;
     }
 
 }

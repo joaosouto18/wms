@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\OrdemServico;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
+use Wms\Domain\Entity\Usuario;
 
 /**
  * @Table(name="CONFERENCIA_CARREGAMENTO")
@@ -12,9 +13,9 @@ use Wms\Domain\Entity\Pessoa\Papel\Cliente;
  */
 class ConferenciaCarregamento
 {
-
-    const VOL_TIPO_EMBALADO = 'VE';
-    const VOL_TIPO_ETIQ_SEP = 'ES';
+    const STATUS_GERADO = 0;
+    const STATUS_EM_ANDAMENTO = 1;
+    const STATUS_FINALIZADO = 2;
 
     /**
      * @var int
@@ -26,19 +27,6 @@ class ConferenciaCarregamento
     protected $id;
 
     /**
-     * @var Cliente
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Cliente")
-     * @JoinColumn(name="COD_CLIENTE", referencedColumnName="COD_PESSOA")
-     */
-    protected $cliente;
-
-    /**
-     * @var int
-     * @Column(name="COD_CLIENTE", type="integer")
-     */
-    protected $codCliente;
-
-    /**
      * @var Expedicao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao")
      * @JoinColumn(name="COD_EXPEDICAO", referencedColumnName="COD_EXPEDICAO")
@@ -46,41 +34,41 @@ class ConferenciaCarregamento
     protected $expedicao;
 
     /**
-     * @var int
-     * @Column(name="COD_EXPEDICAO", type="integer")
-     */
-    protected $codExpedicao;
-
-    /**
-     * @var int
-     * @Column(name="COD_VOLUME", type="integer", nullable=false)
-     */
-    protected $codVolume;
-
-    /**
      * @var string
-     * @Column(name="IND_TIPO_VOLUME", type="string", nullable=false)
+     * @Column(name="TIPO_CONF_CARREG", type="string", nullable=false)
      */
-    protected $tipoVolume;
+    protected $tipoConferencia;
 
     /**
-     * @var OrdemServico
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
-     * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
+     * @var integer
+     * @Column(name="COD_STATUS", type="integer", nullable=false)
      */
-    protected $ordemServico;
+    protected $status;
 
     /**
-     * @var int
-     * @Column(name="COD_OS", type="integer")
+     * @var Usuario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
+     * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
      */
-    protected $codOS;
+    protected $usuarioAbertura;
 
     /**
      * @var \DateTime
-     * @Column(name="DTH_CONFERENCIA", type="datetime", nullable=true)
+     * @Column(name="DTH_INICIO", type="datetime", nullable=false)
      */
-    protected $dthConferencia;
+    protected $dthInicio;
+
+    /**
+     * @var \DateTime
+     * @Column(name="DTH_FIM", type="datetime")
+     */
+    protected $dthFim;
+
+    public function __construct()
+    {
+        $this->dthInicio = new \DateTime();
+        $this->status = self::STATUS_GERADO;
+    }
 
     /**
      * @return int
@@ -96,38 +84,6 @@ class ConferenciaCarregamento
     public function setId($id)
     {
         $this->id = $id;
-    }
-
-    /**
-     * @return Cliente
-     */
-    public function getCliente()
-    {
-        return $this->cliente;
-    }
-
-    /**
-     * @param Cliente $cliente
-     */
-    public function setCliente($cliente)
-    {
-        $this->cliente = $cliente;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCodCliente()
-    {
-        return $this->codCliente;
-    }
-
-    /**
-     * @param int $codCliente
-     */
-    public function setCodCliente($codCliente)
-    {
-        $this->codCliente = $codCliente;
     }
 
     /**
@@ -147,99 +103,107 @@ class ConferenciaCarregamento
     }
 
     /**
-     * @return int
-     */
-    public function getCodExpedicao()
-    {
-        return $this->codExpedicao;
-    }
-
-    /**
-     * @param int $codExpedicao
-     */
-    public function setCodExpedicao($codExpedicao)
-    {
-        $this->codExpedicao = $codExpedicao;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCodVolume()
-    {
-        return $this->codVolume;
-    }
-
-    /**
-     * @param int $codVolume
-     */
-    public function setCodVolume($codVolume)
-    {
-        $this->codVolume = $codVolume;
-    }
-
-    /**
      * @return string
      */
-    public function getTipoVolume()
+    public function getTipoConferencia()
     {
-        return $this->tipoVolume;
+        return $this->tipoConferencia;
     }
 
     /**
-     * @param string $tipoVolume
+     * @param string $tipoConferencia
      */
-    public function setTipoVolume($tipoVolume)
+    public function setTipoConferencia($tipoConferencia)
     {
-        $this->tipoVolume = $tipoVolume;
-    }
-
-    /**
-     * @return OrdemServico
-     */
-    public function getOrdemServico()
-    {
-        return $this->ordemServico;
-    }
-
-    /**
-     * @param OrdemServico $ordemServico
-     */
-    public function setOrdemServico($ordemServico)
-    {
-        $this->ordemServico = $ordemServico;
+        $this->tipoConferencia = $tipoConferencia;
     }
 
     /**
      * @return int
      */
-    public function getCodOS()
+    public function getStatus()
     {
-        return $this->codOS;
+        return $this->status;
     }
 
     /**
-     * @param int $codOS
+     * @return bool
      */
-    public function setCodOS($codOS)
+    public function isGerado()
     {
-        $this->codOS = $codOS;
+        return ($this->status == self::STATUS_GERADO);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmAndamento()
+    {
+        return ($this->status == self::STATUS_EM_ANDAMENTO);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFinalizado()
+    {
+        return ($this->status == self::STATUS_FINALIZADO);
+    }
+
+    /**
+     * @param int $status
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    /**
+     * @return Usuario
+     */
+    public function getUsuarioAbertura()
+    {
+        return $this->usuarioAbertura;
+    }
+
+    /**
+     * @param Usuario $usuarioAbertura
+     */
+    public function setUsuarioAbertura($usuarioAbertura)
+    {
+        $this->usuarioAbertura = $usuarioAbertura;
     }
 
     /**
      * @return \DateTime
      */
-    public function getDthConferencia()
+    public function getDthInicio()
     {
-        return $this->dthConferencia;
+        return $this->dthInicio;
     }
 
     /**
-     * @param \DateTime $dthConferencia
+     * @param \DateTime $dthInicio
      */
-    public function setDthConferencia($dthConferencia)
+    public function setDthInicio($dthInicio)
     {
-        $this->dthConferencia = $dthConferencia;
+        $this->dthInicio = $dthInicio;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDthFim()
+    {
+        return $this->dthFim;
+    }
+
+    /**
+     * @param \DateTime $dthFim
+     */
+    public function setDthFim($dthFim)
+    {
+        $this->dthFim = $dthFim;
     }
 
 }

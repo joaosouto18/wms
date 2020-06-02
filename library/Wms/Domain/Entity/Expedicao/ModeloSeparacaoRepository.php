@@ -15,7 +15,6 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setUtilizaCaixaMaster($params['utilizaCaixaMaster']);
         $entity->setUtilizaQuebraColetor($params['utilizaQuebraColetor']);
         $entity->setUtilizaEtiquetaMae($params['utilizaEtiquetaMae']);
-        $entity->setUsaConferenciaCarregamento($params['usaConferenciaCarregamento']);
         $entity->setUsaSequenciaRotaPraca($params['usaSequenciaRotaPraca']);
         $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
         $entity->setAgrupContEtiquetas($params['agrupContEtiquetas']);
@@ -28,6 +27,7 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setForcarEmbVenda($params['forcarEmbVenda']);
         $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
         $entity->setSeparacaoPC($params['separacaoPc']);
+        $entity->setTipoConfCarregamento($params['tipoConfCarregamento']);
         $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
         $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
         $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);

@@ -1,0 +1,16 @@
+<style>
+    .btn-spacing {
+        margin-top: 5px;
+    }
+</style>
+<h3>Expedições para carregamento</h3>
+<?php
+foreach ($this->expedicoes as $exp) {
+    echo "<button class='btn gradientBtn btn-spacing' data-id='$exp[id]'>$exp[id] - $exp[placa]</button>";
+}
+?>
+<script>
+    $(".gradientBtn").click(function () {
+        alert("Conferência iniciada");
+    })
+</script>

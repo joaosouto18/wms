@@ -94,16 +94,67 @@
         transform: rotate(-180deg);
     }
 
-    .accordion-title {
+    .accordion-row {
+        margin: 5px;
+        border: 1px #d5620b solid;
+        padding: 2px;
+        line-height: normal;
+        border-radius: 6px;
+        background: #2222;
+    }
 
+    .accordion-row.all-nfs-checked {
+        background: rgba(210, 245, 188, 0.87);
+    }
+
+    .accordion-row > .accordion-title.active {
+        background-color: rgba(213, 98, 11, 0.45);
+        border-radius: 5px;
+    }
+
+    .accordion-title {
+        height: 30px;
+        padding-top: 5px;
+    }
+
+    .accordion-title > .span-name {
+        text-align: left;
+        padding-left: 10px;
+        max-width: 75%;
+        float: left;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .accordion-title > .span-nfs {
+        margin-bottom: 6px;
+        float: right;
+        padding-right: 10px;
+    }
+
+    .accordion-title > span {
+        font-size: 18px !important;
+    }
+
+    .accordion-content {
+        margin-top: 6px ;
     }
 
     .accordion-item {
-
+        margin: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: rgba(255, 0, 0, 0.58);
+        border: 2px #6b0000 solid;
+        border-radius: 5px;
     }
 
-    .accordion-row {
-
+    .accordion-item.checked {
+        background-color: rgba(158,221,83,0.76);
+        border: 2px #106b00 solid;
+        border-radius: 5px;
     }
 </style>
 
@@ -117,7 +168,6 @@
 
 <div id="divBtnBack" style="display: none; margin-bottom: 5px">
     <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
-    <button class="btn gradientBtnSuccess btn-spacing" id="btn-start-action">Iniciar Conferência</button>
 </div>
 
 <a href="#messenger" style="display: none" id="anchorMsg"></a>
@@ -133,57 +183,28 @@
         <form>
             <div class="field">
                 <label for="cod-barras-danfe" class="field required"><div class="lbl-headers">Chave de acesso da DANFE</div></label>
-                <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" data-destine="danfe" class="required focus enter-active" size="40" maxlength="100" style="width: 99%" alt="number">
+                <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" class="required focus enter-active" size="40" maxlength="100" style="width: 99%" alt="number">
             </div>
         </form>
         <button id="btn-consultar-danfe" class="btn gradientBtn btn-spacing">Buscar</button>
+        <button class="btn gradientBtnSuccess btn-spacing" id="btn-start-action">Iniciar Conferência</button>
     </div>
     <div id="list-clients" style="padding-top: 5px; display: none">
-        <div id="accordion">
-
-        </div>
-    </div>
-    <div id="btn-row" style="padding-top: 6px; display: none">
-        <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
-    </div>
-</div>
-
-<div id="bipagem-volume" style="display: none">
-    <div class="input-area">
-        <form>
-            <div class="field">
-                <label for="cod-barras-vol" class="field required"><div class="lbl-headers">Conferir Volume</div></label>
-                <input type="text" name="cod-barras-vol" id="cod-barras-vol" data-destine="vol" class="required focus enter-active" size="40" maxlength="100" style="width: 99%" alt="number">
-            </div>
-        </form>
-        <button id="btn-consultar-vol" class="btn gradientBtn btn-spacing">Buscar</button>
     </div>
 </div>
 
 
 <script>
     $(function () {
-        $(".accordion-title").click( function () {
-            toggleAccordionActive($(this));
-        })
+        $("#btn-start-action").click(function () {
 
-        var toggleAccordionActive = function (accHeader) {
-            var active = $(".accordion-title.active");
-            if (!isEmpty(active) && active.attr("id") !== accHeader.attr("id")) {
-                active.toggleClass("active");
-            }
-            accHeader.toggleClass("active");
-        }
+        }).hide();
 
-        $(".enter-active").keypress(function( event ) {
+        $("#cod-barras-danfe").keypress(function( event ) {
             if (event.which === 13 || event.keyCode === 13) {
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
-                    if ($(this).data('destine') === 'danfe') {
-                        validateDanfe($(this));
-                    } else if ($(this).data('destine') === 'vol') {
-                        //validateDanfe($(this));
-                    }
+                    validateDanfe($(this));
                 }
             }
         });
@@ -338,7 +359,6 @@
             } else {
                 checkOrInclude(inpt.val());
             }
-            changeViewer("form-danfe");
         }
 
         var getInfoDanfe = function (keypass) {
@@ -405,45 +425,70 @@
                 getInfoDanfe(keypass);
             }
             checkClienteLiberado();
+            changeViewer("form-danfe");
         }
 
         var checkClienteLiberado = function () {
+            var clientsOk = 0;
+            var numClients = 0;
             $.each(expConf.clientes, function (i, cliente) {
                 var nfsOk = 0;
-                $.each(cliente.danfes, function (danfe) {
-                    if (danfe.status) nfsOk++;
+                $.each(cliente.danfes, function (keypass, danfe) {
+                    if (danfe.status) {
+                        nfsOk++;
+                        var accDanfe = $("#danfe-info-"+keypass);
+                        if (!accDanfe.hasClass('checked'))
+                            accDanfe.addClass('checked');
+                    }
                 })
-                expConf.clientes[i].checked = nfsOk;
-                expConf.clientes[i].liberado = (cliente.totalDanfes === nfsOk);
-            })
+                cliente.checked = nfsOk;
+                cliente.liberado = (cliente.totalDanfes === nfsOk);
+                $("#span-nfs-"+i).text(cliente.checked + " de "+ cliente.totalDanfes);
+                if (cliente.liberado) {
+                    clientsOk++
+                    var clientAccordionRow = $("#acc-title-client-" + i).parent();
+                    if (!clientAccordionRow.hasClass('all-nfs-checked'))
+                        clientAccordionRow.addClass('all-nfs-checked');
+                }
+                numClients++;
+            });
+
+            if (clientsOk === numClients) {
+                $("#btn-start-action").show();
+            } else {
+                $("#btn-start-action").hide();
+            }
         }
 
         var addNewClienteInfo = function (danfe) {
-            var listClients = $("#list-clients");
-            listClients.html("");
-            /*
-                <div class='accordion-row'>
-                    <h5 class='accordion-tittle'></h5>
-                    <div class='accordion-content'></div>
-                </div>
-             */
             $.each(danfe.clientes, function (i, cliente) {
                 var content = $("<div class='accordion-content'>");
                 $.each(cliente.danfes, function (keypass, danfe) {
-                    content.append($("<p class='accordion-item' id='danfe-info-"+keypass+"'>" +danfe.nota+"</p>"))
+                    content.append($("<div class='accordion-item' id='danfe-info-"+keypass+"'>" +danfe.nota+"</div>"))
                 })
-                var title = $("<h5 class='accordion-title' id='div-accordion-" + i + "' data-client='" + i + "'>" + cliente.nome + "<span id='span-nfs'></span></h5>");
-                var spanNfs = $("<span id='span-notas-ok-" + i + "'>"+ cliente.checked + "</span> de <span id='span-notas-total-" + cliente.i + "'>"+ cliente.totalDanfes + "</span>");
-                title.find("div#span-nfs").append(spanNfs);
+                var title = $("<div class='accordion-title' id='acc-title-client-" + i + "' data-client='" + i + "'><span class='span-name'>" + cliente.nome + "</span><span class='span-nfs' id='span-nfs-"+i+"'>"+ cliente.checked + " de "+ cliente.totalDanfes + "</span></div>");
                 var newAccordionRow = $("<div class='accordion-row'>")
                 newAccordionRow.append(title).append(content);
                 $("#list-clients").append(newAccordionRow);
+                toggleAccordionActive(title);
             })
-            var divAccordion = $("<div id='accordion'>")
-            $("#accordion").accordion({
-                header: "> div > h5",
-                collapsible: true
-            });
+        }
+
+        $(".accordion-title").live('click', function () {
+            toggleAccordionActive($(this));
+        })
+
+        var toggleAccordionActive = function (accHeader) {
+            var active = $(".accordion-title.active");
+            if (!isEmpty(active)) {
+                active.toggleClass("active");
+                active.parent().find(".accordion-content").hide(350);
+
+                if (active.attr("id") === accHeader.attr("id")) return false;
+            }
+
+            accHeader.toggleClass("active");
+            accHeader.parent().find(".accordion-content").show(350);
         }
     })
 </script>

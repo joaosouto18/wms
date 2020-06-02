@@ -125,7 +125,6 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $dados['utilizaCaixaMaster'] = $entity->getUtilizaCaixaMaster();
                 $dados['utilizaQuebraColetor'] = $entity->getUtilizaQuebraColetor();
                 $dados['utilizaEtiquetaMae'] = $entity->getUtilizaEtiquetaMae();
-                $dados['usaConferenciaCarregamento'] = $entity->getUsaConferenciaCarregamento();
                 $dados['usaSequenciaRotaPraca'] = $entity->getUsaSequenciaRotaPraca();
                 $dados['utilizaVolumePatrimonio'] = $entity->getUtilizaVolumePatrimonio();
                 $dados['agrupContEtiquetas'] = $entity->getAgrupContEtiquetas();
@@ -139,6 +138,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $dados['produtoInventario'] = $entity->getProdutoInventario();
                 $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
                 $dados['separacaoPc'] = $entity->getSeparacaoPC();
+                $dados['tipoConfCarregamento'] = $entity->getTipoConfCarregamento();
                 $dados['tipoDefaultEmbalado'] = $entity->getTipoDefaultEmbalado();
                 $dados['tipoConferenciaEmbalado'] = $entity->getTipoConferenciaEmbalado();
                 $dados['tipoConferenciaNaoEmbalado'] = $entity->getTipoConferenciaNaoEmbalado();
