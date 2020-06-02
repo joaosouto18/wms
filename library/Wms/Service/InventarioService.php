@@ -1424,7 +1424,7 @@ class InventarioService extends AbstractService
         $file = fopen($filename, 'w');
 
 
-        $SQL = "SELECT P.COD_PRODUTO, NVL(ESTQ.QTD,0) as QTD
+        $SQL = "SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(ESTQ.QTD,0) as QTD
                   FROM PRODUTO P
                   LEFT JOIN (SELECT E.COD_PRODUTO,
                                     E.DSC_GRADE, 
