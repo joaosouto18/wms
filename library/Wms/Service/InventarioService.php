@@ -1424,7 +1424,7 @@ class InventarioService extends AbstractService
         $file = fopen($filename, 'w');
 
 
-        $SQL = "SELECT P.COD_PRODUTO, NVL(ESTQ.QTD,0) as QTD
+        $SQL = "SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(ESTQ.QTD,0) as QTD
                   FROM PRODUTO P
                   LEFT JOIN (SELECT E.COD_PRODUTO,
                                     E.DSC_GRADE, 
@@ -1467,7 +1467,7 @@ class InventarioService extends AbstractService
 
             $txtCodBarras = str_pad($embalagemEntity->getCodigoBarras(), 14, '0', STR_PAD_LEFT);
 
-            $txtQtd = str_pad(number_format($produto["QTD"] / $embalagemEntity->getQuantidade(), 3, ',', ''), 9, '0', STR_PAD_LEFT);
+            $txtQtd = str_pad($produto["QTD"] / $embalagemEntity->getQuantidade(), 9, '0', STR_PAD_LEFT);
             $txtCodProduto = str_pad($produto['COD_PRODUTO'], 6, '0', STR_PAD_LEFT);
 
             $linha = $txtCodInventario.$txtContagem.$txtLocal.$txtCodBarras.$txtQtd.$txtCodProduto."\r\n";
