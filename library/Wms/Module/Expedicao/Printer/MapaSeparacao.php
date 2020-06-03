@@ -1844,6 +1844,11 @@ class MapaSeparacao extends eFPDF {
         $strSeqRota = $seqRotaPraca[0]['SEQ_ROTA'].".".$seqRotaPraca[0]['SEQ_PRACA'];
         $itinerarios = array();
         $ultimaLinha = '';
+
+        $pessoaEntity = $this->pedidoRepo->getClienteByMapa($mapa->getId());
+        $pessoaEntity = reset($pessoaEntity);
+
+
         foreach ($pedidosEntities as $key => $pedidosEntity) {
 
             if ($ultimaLinha != $pedidosEntity->getLinhaEntrega()) {
@@ -1875,6 +1880,11 @@ class MapaSeparacao extends eFPDF {
         $this->Cell(34, 4, utf8_decode("SEQ-ROTA.PRACA:"), 0, 0);
         $this->SetFont('Arial', null, 10);
         $this->Cell(20, 4, $strSeqRota, 0, 1);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(32, 4, utf8_decode("DADOS CLIENTE: "), 0, 0);
+        $this->SetFont('Arial', null, 10);
+        $this->Cell(20, 4, $pessoaEntity['nome']. ' - ' .$pessoaEntity['documento'], 0, 1);
+
 
 
         $this->Cell(20, 4, "", 0, 1);
@@ -1975,8 +1985,24 @@ class MapaSeparacao extends eFPDF {
         $pesoTotal = 0.0;
         $cubagemTotal = 0.0;
         /** @var Expedicao\MapaSeparacaoProduto $produto */
+
+        $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
+
+        $this->Cell(20, 1, "", 0, 1);
+        $contadorPg = 0;
+        $limitPg = 42;
+        $pgAtual = 1;
+
         foreach ($produtos as $produto) {
             $produto = reset($produto);
+
+            $contadorPg++;
+            if ($contadorPg == $limitPg) {
+                $contadorPg = 0;
+                $pgAtual++;
+//                $this->currentPage += 1;
+            }
+
             $dscEndereco = "";
             $embalagem = $produto->getProdutoEmbalagem();
             $codProduto = $produto->getCodProduto();
@@ -2049,7 +2075,6 @@ class MapaSeparacao extends eFPDF {
 //Go to 1.5 cm from bottom
         $this->Cell(20, 3, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1, "L");
 
-        $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
         $this->Image($imgCodBarras, 150, 280, 50);
 
         $this->InFooter = true;
@@ -2057,6 +2082,7 @@ class MapaSeparacao extends eFPDF {
         $wPage = $pageSizeA4[0] / 12;
 
         $this->SetY(-30);
+        $this->currentPage += 1;
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
         $this->SetFont('Arial', null, 10);
@@ -2076,7 +2102,9 @@ class MapaSeparacao extends eFPDF {
         $this->SetFont('Arial', 'B', 9);
         $this->Cell(15, 6, utf8_decode("$arrDataCargas[txt]: "), 0, 0);
         $this->SetFont('Arial', null, 10);
-        $this->Cell($wPage * 4, 6, $arrDataCargas['str'], 0, 1);
+        $this->Cell($wPage * 4, 6, $arrDataCargas['str'], 0, 0);
+        $this->SetFont('Arial', 'B', 11.5);
+        $this->Cell($wPage * 3, 5, $this->currentPage . "/" . $this->countPages, 0, 1);
         $this->SetFont('Arial', 'B', 9);
         $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 0);
         $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
