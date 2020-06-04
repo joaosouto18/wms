@@ -2390,16 +2390,12 @@ class MapaSeparacao extends eFPDF {
             $codigoBarras = '';
             if ($endereco != null)
                 $dscEndereco = $endereco->getDescricao();
-            if (isset($embalagemEn) && !empty($embalagemEn)) {
-                $codigoBarras = $embalagemEn->getCodigoBarras();
-            } elseif (isset($volumeEn) && !empty($volumeEn)) {
-                $codigoBarras = $volumeEn->getDescricao();
-            }
 
             if ($produto->getProdutoEmbalagem() != null) {
                 $peso = $produto->getProdutoEmbalagem()->getPeso();
                 $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
-                $dscEmbalagem = $produto->getProdutoEmbalagem()->getDescricao();
+                $dscEmbalagem = $produto->getProdutoEmbalagem()->getDescricao().' ('.$produto->getProdutoEmbalagem()->getQuantidade().')';
+                $codigoBarras = $produto->getProdutoEmbalagem()->getCodigoBarras();
             }
             if ($produto->getProdutoVolume() != null) {
                 $peso = $produto->getProdutoVolume()->getPeso();
