@@ -798,16 +798,16 @@
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
             $("#lbl-picking").text( "Picking: " + elemBipado.picking);
             $("#qtd").val("");
+            $("#lote").val("");
+            $("#validade").val("");
 
             if (controlaLote()) {
-                $("#lote").val("");
                 $("#div-lote").show();
             } else {
                 $("#div-lote").hide();
             }
 
             if (controlaValidade()) {
-                $("#validade").val("");
                 $("#div-validade").show();
             } else {
                 $("#div-validade").hide();
