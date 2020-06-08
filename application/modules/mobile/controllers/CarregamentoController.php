@@ -6,32 +6,12 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
 {
     public function indexAction()
     {
-        $param = 'E';
-        if ($param === 'D') {
-            $this->redirect('conf-by-danfe');
-        } else {
-            $this->redirect('conf-by-exp');
-        }
-    }
-
-    public function confEmAndamentoAction()
-    {
-
+        $this->view->confCarregs = $this->em->getRepository(ConferenciaCarregamento::class)->getConfsAndamento();
     }
 
     public function confByDanfeAction()
     {
         $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
-    }
-
-    public function confByExpAction()
-    {
-        $this->view->expedicoes = [
-            ['id' => 508, 'placa' => 'PCU-1212'],
-            ['id' => 502, 'placa' => 'JGX-4521'],
-            ['id' => 500, 'placa' => 'QSP-3255'],
-        ];
-        $this->renderScript('carregamento'.DIRECTORY_SEPARATOR.'conf-by-exp.phtml');
     }
 
     public function getInfoDanfeAction()
@@ -95,9 +75,62 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
 
             $response = ['status' => 'ok', 'response' => $clienteDanfes];
         } catch (Exception $e) {
-            $response = ['status' => 'error', 'exception' => $e->getMessage()];
+            $result = ['status' => 'error', 'exception' => $e->getMessage(), 'errorCode' => $e->getCode()];
         }
 
         $this->_helper->json($response);
+    }
+
+    public function confByExpAction()
+    {
+        $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
+        $this->view->expedicoes =  $this->em->getRepository(ConferenciaCarregamento::class)->getExpedicoesToConf();
+    }
+
+    public function newConfAction()
+    {
+        try {
+            $expedicao = $this->getRequest()->getParam('expedicao');
+            $expedicao['tipoConferencia'] = $this->getRequest()->getParam('criterio');
+            $conf = $this->getServiceLocator()->getService('ConferenciaCarregamento')->registrarNovaConferencia($expedicao);
+
+            $response = ['status' => 'ok', 'response' => $conf->toArray()];
+        } catch (Exception $e) {
+            $result = ['status' => 'error', 'exception' => $e->getMessage(), 'errorCode' => $e->getCode()];
+        }
+
+        $this->_helper->json($response);
+    }
+
+    public function confVolumeAction()
+    {
+        $codConf = $this->getRequest()->getParam('codConf');
+        if ($this->getRequest()->isGet()) {
+            $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
+            $this->view->confEn = $this->em->find(ConferenciaCarregamento::class, $codConf);
+
+        } elseif ($this->getRequest()->isPost()) {
+            try {
+                $codBarras = \Wms\Util\Coletor::retiraDigitoIdentificador($this->getRequest()->getParam('codBarras'));
+                $this->getServiceLocator()->getService('ConferenciaCarregamento')->conferirVolume($codConf, $codBarras);
+                $result = ['status' => 'ok'];
+            } catch (Exception $e) {
+                $result = ['status' => 'error', 'exception' => $e->getMessage(), 'errorCode' => $e->getCode()];
+            }
+            $this->_helper->json($result);
+        }
+    }
+
+    public function finalizarOsConfAction()
+    {
+        $codConf = $this->getRequest()->getParam('codConf');
+        try {
+            $this->getServiceLocator()->getService('ConferenciaCarregamento')->finalizarOs($codConf);
+            $this->addFlashMessage("success", "Conferência finalizada com sucesso, carregamento liberado!");
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+            if ($e->getCode() !== 403) $this->redirect('conf-volume', null, null, ['codConf' => $codConf]);
+        }
+        $this->redirect('index');
     }
 }

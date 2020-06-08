@@ -59,6 +59,7 @@ class ModeloSeparacao extends Form
             'checkedValue' => 'S',
         ))->addElement('select', 'tipoConfCarregamento', array(
             'label' => 'Conferência de Carregamento',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 'N' => 'Não utiliza',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_CONF_CARREG_EXP => 'Por Expedição',
@@ -67,6 +68,7 @@ class ModeloSeparacao extends Form
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
             'class' => 'disableSequenciaPraca',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 'N' => 'Não utiliza',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => 'Por Expedição',
@@ -84,40 +86,48 @@ class ModeloSeparacao extends Form
         ))->addElement('select', 'separacaoPc', array(
             'label' => 'Separação com carrinho',
             'id' => 'separacaoPc',
+            'mostrarSelecione' => false,
             'multiOptions' => array('S' => 'Sim', 'N' => 'Não'),
         ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO => 'Por Embalagem de Produto',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_TODAS_EMBALAGENS => 'Todas as Embalagens',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_FRACIONADOS => 'Todos os fracionados'),
         ))->addElement('select', 'tipoConferenciaEmbalado', array(
             'label' => 'Tipo de Conferência para Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM => 'Item a Item',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE => 'Informando a quantidade'),
         ))->addElement('select', 'tipoConferenciaNaoEmbalado', array(
             'label' => 'Tipo de Conferência para Não Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM => 'Item a Item',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE => 'Informando a quantidade'),
         ))->addElement('select', 'tipoSeparacaoFracionado', array(
             'label' => 'Não Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoSeparacaoFracionadoEmbalado', array(
             'label' => 'Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoSeparacaoNaoFracionado', array(
             'label' => 'Não Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoSeparacaoNaoFracionadoEmbalado', array(
             'label' => 'Embalados',
+            'mostrarSelecione' => false,
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
@@ -130,6 +140,7 @@ class ModeloSeparacao extends Form
             )
         ))->addElement('multiCheckbox', 'quebraFracionados', array(
             'class' => 'disableSequenciaPraca',
+            'mostrarSelecione' => false,
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
                 MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
@@ -139,6 +150,7 @@ class ModeloSeparacao extends Form
             ]
         ))->addElement('multiCheckbox', 'quebraNaoFracionados', array(
             'class' => 'disableSequenciaPraca',
+            'mostrarSelecione' => false,
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
                 MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
@@ -148,6 +160,7 @@ class ModeloSeparacao extends Form
             ]
         ))->addElement('multiCheckbox', 'quebraEmbalados', array(
             'class' => 'disableSequenciaPraca',
+            'mostrarSelecione' => false,
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
                 MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota',

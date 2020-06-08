@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\OrdemServico;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
@@ -145,7 +146,7 @@ class ConferenciaCarregamento
     /**
      * @return bool
      */
-    public function isFinalizado()
+    public function isFinalizada()
     {
         return ($this->status == self::STATUS_FINALIZADO);
     }
@@ -206,4 +207,8 @@ class ConferenciaCarregamento
         $this->dthFim = $dthFim;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

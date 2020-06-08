@@ -183,7 +183,7 @@
         <form>
             <div class="field">
                 <label for="cod-barras-danfe" class="field required"><div class="lbl-headers">Chave de acesso da DANFE</div></label>
-                <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" class="required focus enter-active" size="40" maxlength="100" style="width: 99%" alt="number">
+                <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" class="required focus enter-active" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </div>
         </form>
         <button id="btn-consultar-danfe" class="btn gradientBtn btn-spacing">Buscar</button>
@@ -196,11 +196,7 @@
 
 <script>
     $(function () {
-        $("#btn-start-action").click(function () {
-
-        }).hide();
-
-        $("#cod-barras-danfe").keypress(function( event ) {
+        $("#cod-barras-danfe").keyup(function( event ) {
             if (event.which === 13 || event.keyCode === 13) {
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
@@ -490,5 +486,23 @@
             accHeader.toggleClass("active");
             accHeader.parent().find(".accordion-content").show(350);
         }
+
+        $("#btn-start-action").click(function () {
+            $.ajax({
+                url: 'new-conf',
+                type: 'post',
+                data: {criterio: 'D', expedicao: expConf},
+                success: function (data) {
+                    if (data.status === 'ok') {
+                        location.href = 'conf-volume/codConf/' + data.response.id;
+                    } else {
+                        alert(data.exception)
+                        if (data.errorCode === 403) {
+                            location.href = '/mobile/carregamento/index'
+                        }
+                    }
+                }
+            })
+        }).hide();
     })
 </script>

@@ -183,7 +183,7 @@ class ModeloSeparacao
     protected $usaSequenciaRotaPraca;
 
     /**
-     * @Column(name="TIPO_CONF_CARREG", type="string", nullable=false)
+     * @Column(name="TIPO_CONF_CARREG", type="string")
      */
     protected $tipoConfCarregamento;
 

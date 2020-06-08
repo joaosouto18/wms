@@ -1,13 +1,15 @@
 <?php
 namespace Wms\Service;
 
+use mysql_xdevapi\Exception;
 use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\ConfCarregOs;
 use Wms\Domain\Entity\Expedicao\ConferenciaCarregamento;
 use Wms\Domain\Entity\OrdemServico;
-use Wms\Domain\Entity\Pessoa;
+use Wms\Domain\Entity\OrdemServicoRepository;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
+use Wms\Domain\Entity\Usuario;
 
 class ConferenciaCarregamentoService extends AbstractService
 {
@@ -21,7 +23,8 @@ class ConferenciaCarregamentoService extends AbstractService
         try {
             $this->em->beginTransaction();
 
-            $this->getRepository()->verifyConditionNewConfCarreg($params);
+            $confCarregRepo = $this->em->getRepository(ConferenciaCarregamento::class);
+            $confCarregRepo->verifyConditionNewConfCarreg($params);
 
             $args = [
                 'expedicao' => $this->em->getReference(Expedicao::class, $params['codExpedicao']),
@@ -30,7 +33,7 @@ class ConferenciaCarregamentoService extends AbstractService
             ];
 
             /** @var ConferenciaCarregamento $confCarreg */
-            $confCarreg = self::save($args, false);
+            $confCarreg = $confCarregRepo->save($args, false);
 
             /** @var Expedicao\ConfCarregClienteRepository $confClienteRepo */
             $confClienteRepo = $this->em->getRepository(Expedicao\ConfCarregCliente::class);
@@ -52,35 +55,61 @@ class ConferenciaCarregamentoService extends AbstractService
         }
     }
 
+    public function validaConfCarreg($confCarreg)
+    {
+        /** @var ConferenciaCarregamento $confCarregEn */
+        $confCarregEn = $this->em->find(ConferenciaCarregamento::class, $confCarreg);
+
+        if (empty($confCarregEn)) throw new \Exception("Conferência de carregamento não encontrada", 403);
+
+        if ($confCarregEn->isFinalizada()) throw new \Exception("Esta conferência já foi finalizada", 403);
+
+        if ($confCarregEn->getExpedicao()->getCodStatus() !== Expedicao::STATUS_FINALIZADO)
+            throw new \Exception("A expedição desta conferência não está mais em condições de carregamento", 403);
+    }
+
     private function createNewOsConfCarreg($confCarreg, $userId, $executeFlush = false)
     {
         try {
             $newOs = $this->em->getRepository(OrdemServico::class)->addNewOs([
                 "dataInicial" => new \DateTime(),
-                "pessoa" => $this->em->getReference(Pessoa::class, $userId)->getPessoa(),
+                "pessoa" => $this->em->getReference(Usuario::class, $userId)->getPessoa(),
                 "atividade" => $this->em->getReference('wms:Atividade', Atividade::CONFERENCIA_CARREGAMENTO),
                 "formaConferencia" => 'C',
                 "dscObservacao" => "Inclusão de novo usuário na conferência"
             ], $executeFlush);
 
             return $this->em->getRepository(ConfCarregOs::class)->save([
-                'conferenciaCarregamento' => $this->getReference($confCarreg),
-                'os' => $newOs
+                'conferenciaCarregamento' => $this->em->getReference(ConferenciaCarregamento::class, $confCarreg),
+                'ordemServico' => $newOs
             ], $executeFlush);
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
-    private function getOsConfCarreg($confCarreg, $cine = false)
+    /**
+     * @param $confCarreg
+     * @param bool $cine
+     * @return ConfCarregOs
+     * @throws \Exception
+     */
+    private function getOsConfCarreg($confCarreg, $cine = false, $allUsers = false)
     {
         try{
-            $userId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $userId = ($allUsers)? null : \Zend_Auth::getInstance()->getIdentity()->getId();
 
             $osConfCarreg = $this->em->getRepository(ConfCarregOs::class)->getOsConf($confCarreg, $userId);
 
-            if (empty($osConfCarreg) && $cine) {
-                $osConfCarreg = self::createNewOsConfCarreg($confCarreg, $userId, false);
+            if (!$allUsers) {
+                if (!empty($osConfCarreg)) {
+                    $osConfCarreg = $osConfCarreg[0];
+                }
+                elseif (empty($osConfCarreg) && $cine) {
+                    $osConfCarreg = self::createNewOsConfCarreg($confCarreg, $userId, false);
+                } elseif (empty($osConfCarreg) && !$cine) {
+                    throw new \Exception("Nenhuma ordem de serviço aberta foi encontrada para este usuário");
+                }
             }
 
             return $osConfCarreg;
@@ -89,28 +118,35 @@ class ConferenciaCarregamentoService extends AbstractService
         }
     }
 
-    public function conferirVolume($confCarreg, $idVol)
+    public function conferirVolume($confCarreg, $codBarras)
     {
         try {
             $this->em->beginTransaction();
+            self::validaConfCarreg($confCarreg);
 
-            if ($this->em->getRepository(Expedicao\ConfCarregVolume::class)->checkConferido($confCarreg, $idVol))
-                throw new \Exception("Este volume já foi conferido!");
+            $confCarregVolRepo = $this->em->getRepository(Expedicao\ConfCarregVolume::class);
 
-            list($type, $className, $strType) = self::getTypeVol($idVol);
+            if ($confCarregVolRepo->checkVolumeInvalidoConfCarreg($confCarreg, $codBarras))
+                throw new \Exception("Este código de barras $codBarras não pertence à este carregamento!");
 
-            $volumeEn = $this->em->find($className, $idVol);
+            if ($confCarregVolRepo->checkConferido($confCarreg, $codBarras))
+                throw new \Exception("Este volume $codBarras já foi conferido!");
 
-            if (empty($volumeEn))
-                throw new \Exception("O Volume ($strType) $idVol não foi encontrado");
+            $type = self::getTypeVol($codBarras);
 
             $osConfCarreg = self::getOsConfCarreg($confCarreg, true);
 
-            $confCarregVol = $this->em->getRepository(Expedicao\ConfCarregVolume::class)->save([
+            $confCarregVol = $confCarregVolRepo->save([
                 'confCarregOs' => $osConfCarreg,
-                'codVolume' => $idVol,
+                'codVolume' => $codBarras,
                 'tipoVolume' => $type,
             ]);
+
+            $confCarregEn = $osConfCarreg->getConferenciaCarregamento();
+            if ($confCarregEn->isGerado()) {
+                $confCarregEn->setStatus(ConferenciaCarregamento::STATUS_EM_ANDAMENTO);
+                $this->em->persist($confCarregEn);
+            }
 
             $this->em->flush();
             $this->em->commit();
@@ -126,23 +162,50 @@ class ConferenciaCarregamentoService extends AbstractService
         switch (substr($volume, 0, 2)){
             case Expedicao\EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO:
                 $type = Expedicao\ConfCarregVolume::VOL_TIPO_ETIQ_SEP;
-                $className = Expedicao\EtiquetaSeparacao::class;
-                $strType = "Etiqueta Separação";
                 break;
             case Expedicao\EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO:
                 $type = Expedicao\ConfCarregVolume::VOL_TIPO_EMBALADO;
-                $className = Expedicao\MapaSeparacaoEmbalado::class;
-                $strType = "Embalado";
                 break;
             case Expedicao\EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME:
                 $type = Expedicao\ConfCarregVolume::VOL_TIPO_PATRIMONIO;
-                $className = Expedicao\VolumePatrimonio::class;
-                $strType = "Patrimônio";
                 break;
             default:
                 throw new \Exception("Tipo de volume inválido para conferência");
         }
 
-        return [$type, $className, $strType];
+        return $type;
+    }
+
+    public function finalizarOs($confCarreg)
+    {
+        try {
+            $this->em->beginTransaction();
+            self::validaConfCarreg($confCarreg);
+
+            if (!$this->em->getRepository(Expedicao\ConfCarregVolume::class)->checkVolumagemConferida($confCarreg))
+                throw new \Exception("Existem volumes pendentes de conferência");
+
+            $osConfCarreg = self::getOsConfCarreg($confCarreg, false, true);
+            if (!empty($osConfCarreg)) {
+                /** @var OrdemServicoRepository $ordemServicoRepo */
+                $ordemServicoRepo = $this->em->getRepository(OrdemServico::class);
+                foreach ($osConfCarreg as $osConf) {
+                    $os = $osConf->getOrdemServico();
+                    $ordemServicoRepo->finalizar($os->getId(), 'OS de conferência de carregamento finalizada', $os, false);
+                }
+            }
+
+            $confCarregEn = $this->em->find(ConferenciaCarregamento::class, $confCarreg);
+            if ($confCarregEn->isEmAndamento()) {
+                $confCarregEn->setStatus(ConferenciaCarregamento::STATUS_FINALIZADO);
+                $this->em->persist($confCarregEn);
+            }
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
     }
 }

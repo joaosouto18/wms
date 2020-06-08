@@ -25,6 +25,7 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
         $entity->setQuebraUnidFracionavel($params['quebraUnidFracionavel']);
         $entity->setForcarEmbVenda($params['forcarEmbVenda']);
+        $entity->setProdutoInventario($params['produtoInventario']);
         $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
         $entity->setSeparacaoPC($params['separacaoPc']);
         $entity->setTipoConfCarregamento($params['tipoConfCarregamento']);

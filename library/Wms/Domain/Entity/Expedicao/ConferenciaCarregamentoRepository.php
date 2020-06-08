@@ -3,6 +3,7 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Expedicao;
 
 class ConferenciaCarregamentoRepository extends EntityRepository
 {
@@ -26,6 +27,62 @@ class ConferenciaCarregamentoRepository extends EntityRepository
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    public function getConfsAndamento()
+    {
+        $statusGerado = ConferenciaCarregamento::STATUS_GERADO;
+        $statusPendente = ConferenciaCarregamento::STATUS_EM_ANDAMENTO;
+
+        $sql = "SELECT 
+                    CONF_CARREG.COD_CONF_CARREG ID_CONF, 
+                    CONF_CARREG.COD_EXPEDICAO,
+                    COUNT(DISTINCT CCC.COD_CLIENTE) N_CLIENTES
+                FROM CONFERENCIA_CARREGAMENTO CONF_CARREG
+                INNER JOIN CONF_CARREG_CLIENTE CCC on CONF_CARREG.COD_CONF_CARREG = CCC.COD_CONF_CARREG
+                WHERE CONF_CARREG.COD_STATUS IN ($statusGerado, $statusPendente)
+                GROUP BY CONF_CARREG.COD_CONF_CARREG, CONF_CARREG.COD_EXPEDICAO";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function getExpedicoesToConf()
+    {
+        $tipoConfExp = ModeloSeparacao::TIPO_CONF_CARREG_EXP;
+        $expFinalizada = Expedicao::STATUS_FINALIZADO;
+
+        $sql = "SELECT DISTINCT
+                    E.COD_EXPEDICAO,
+                    P.COD_PESSOA 
+                 FROM EXPEDICAO E
+                 INNER JOIN MODELO_SEPARACAO MS ON MS.COD_MODELO_SEPARACAO = E.COD_MODELO_SEPARACAO
+                 INNER JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                 INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                 WHERE PP.QUANTIDADE > NVL(PP.QTD_CORTADA, 0) AND MS.TIPO_CONF_CARREG = '$tipoConfExp' AND E.COD_STATUS = $expFinalizada
+                 AND E.COD_EXPEDICAO NOT IN (SELECT COD_EXPEDICAO FROM CONFERENCIA_CARREGAMENTO)";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+        $return = [];
+        foreach ($result as $row) {
+            if (empty($return[$row['COD_EXPEDICAO']])) {
+                $return[$row['COD_EXPEDICAO']] = [
+                    'codExpedicao' => $row['COD_EXPEDICAO'],
+                    'clientes' => [$row['COD_PESSOA'] => [
+                        'id' => $row['COD_PESSOA']
+                    ]]
+                ];
+            } else {
+                if (empty($return[$row['COD_EXPEDICAO']]['clientes'][$row['COD_PESSOA']])) {
+                    $return[$row['COD_EXPEDICAO']]['clientes'][$row['COD_PESSOA']] = [
+                        'id' => $row['COD_PESSOA']
+                    ];
+                }
+            }
+            $return[$row['COD_EXPEDICAO']]['nClientes'] = count($return[$row['COD_EXPEDICAO']]['clientes']);
+        }
+
+        return $return;
     }
 
     public function checkConferenciaAberta($idConf)
@@ -122,26 +179,5 @@ class ConferenciaCarregamentoRepository extends EntityRepository
         }
 
         return $expInfo;
-    }
-
-    public function validaVolumeConfCarreg($confCarreg, $idVolume)
-    {
-        $sql = "SELECT *
-                FROM CONFERENCIA_CARREGAMENTO CC
-                INNER JOIN CONF_CARREG_CLIENTE CCC on CC.COD_CONF_CARREG = CCC.COD_CONF_CARREG
-                INNER JOIN (
-                    SELECT EM.COD_EXPEDICAO, ES.COD_ETIQUETA_SEPARACAO AS ID_VOLUME, PED2.COD_PESSOA
-                    FROM ETIQUETA_MAE EM
-                    INNER JOIN ETIQUETA_SEPARACAO ES on EM.COD_ETIQUETA_MAE = ES.COD_ETIQUETA_MAE
-                    INNER JOIN PEDIDO PED2 ON PED2.COD_PEDIDO = ES.COD_PEDIDO
-                    UNION
-                    SELECT MS.COD_EXPEDICAO, MSEC.COD_MAPA_SEPARACAO_EMB_CLIENTE AS ID_VOLUME, MSEC.COD_PESSOA
-                    FROM MAPA_SEPARACAO MS
-                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC on MS.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
-                ) VOLS ON VOLS.COD_PESSOA = CCC.COD_CLIENTE AND VOLS.COD_EXPEDICAO = CC.COD_EXPEDICAO
-                WHERE CC.COD_CONF_CARREG = $confCarreg AND VOLS.ID_VOLUME = $idVolume";
-
-        return !empty($this->_em->getConnection()->query($sql)->fetchAll());
-
     }
 }

@@ -120,4 +120,20 @@ class ConfCarregVolume
         $this->dthConferencia = $dthConferencia;
     }
 
+    /**
+     * @return ConfCarregOs
+     */
+    public function getConfCarregOs()
+    {
+        return $this->confCarregOs;
+    }
+
+    /**
+     * @param ConfCarregOs $confCarregOs
+     */
+    public function setConfCarregOs($confCarregOs)
+    {
+        $this->confCarregOs = $confCarregOs;
+    }
+
 }

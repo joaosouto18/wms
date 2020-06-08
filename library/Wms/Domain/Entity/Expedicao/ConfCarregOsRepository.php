@@ -28,19 +28,22 @@ class ConfCarregOsRepository extends EntityRepository
         }
     }
 
-    public function getOsConf($confCarreg, $userId)
+    public function getOsConf($confCarreg, $userId = null)
     {
         $dql = $this->_em->createQueryBuilder();
         $dql->select("cco")
             ->from(ConfCarregOs::class, 'cco')
             ->innerJoin("cco.conferenciaCarregamento", "cc")
-            ->innerJoin("cco.os", "os")
+            ->innerJoin("cco.ordemServico", "os")
             ->innerJoin("os.pessoa", "us")
             ->where("os.dataFinal IS NULL")
-            ->andWhere("us.id = :idUser")
             ->andWhere("cc.id = :idConfCarreg")
-            ->setParameter("idConfCarreg", $confCarreg)
-            ->setParameter("idUser", $userId);
+            ->setParameter("idConfCarreg", $confCarreg);
+
+        if (!empty($userId)) {
+            $dql->andWhere("us.id = :idUser")
+                ->setParameter("idUser", $userId);
+        }
 
         return $dql->getQuery()->getResult();
     }
