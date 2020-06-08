@@ -568,7 +568,8 @@ class InventarioNovoRepository extends EntityRepository
                        NVL(I.DSC_LOTE, E.DSC_LOTE) DSC_LOTE,
                        I.COD_DEPOSITO_ENDERECO,
                        $colunas
-                       NVL(I.DTH_VALIDADE, E.DTH_VALIDADE) DTH_VALIDADE,
+                       NVL(I.DTH_VALIDADE, 0) DTH_VALIDADE,
+                       CASE WHEN NVL(I.DTH_VALIDADE,0) != NVL(E.DTH_VALIDADE, 0) THEN 1 ELSE 0 END AS VALIDADE_DIVERGENTE, 
                        NVL(I.QTD, 0) QTD_INVENTARIADA,
                        NVL(I.QTD, 0) $sumCondition QTD,
                        NVL(E.QTD, 0) POSSUI_SALDO
