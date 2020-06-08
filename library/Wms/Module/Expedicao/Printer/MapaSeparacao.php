@@ -17,7 +17,7 @@ class MapaSeparacao extends eFPDF {
     private $idMapa;
     private $idExpedicao;
     private $quebrasEtiqueta;
-    private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total, $pesoCarga;
+    private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total, $pesoCarga, $cubagemCarga;
     private $itinerarios;
 
     /** @var $em EntityManager */
@@ -72,6 +72,7 @@ class MapaSeparacao extends eFPDF {
 
         $qtdProdPorMapa = array();
         $peso = 0;
+        $cubagem = 0;
         foreach ($mapaSeparacao as $mapa) {
             $qtdProdutos = $this->mapaSeparacaoProdRepo->findBy(array('mapaSeparacao' => $mapa->getId()));
             $qtdProdPorMapa[] = array('idMapa' => $mapa->getId(), 'qtdProd' => count($qtdProdutos));
@@ -84,12 +85,17 @@ class MapaSeparacao extends eFPDF {
 
                 $pesoProduto = $this->pesoProdutoRepo->findOneBy(array('produto' => $codProduto, 'grade' => $grade));
 
-                if (isset($pesoProduto) && !empty($pesoProduto))
-                    $peso += ($pesoProduto->getPeso() * $quantidade * $qtdEmbalagem);
+                if (isset($pesoProduto) && !empty($pesoProduto)) {
+                    $peso    += ($pesoProduto->getPeso() * $quantidade * $qtdEmbalagem);
+                    $cubagem += ($pesoProduto->getCubagem() * $quantidade * $qtdEmbalagem);
+                }
+
+
             }
         }
 
         $this->pesoCarga = $peso;
+        $this->cubagemCarga = $cubagem;
 
         if (($modelo == 11) || ($modelo == 5) || $modelo == 14){
             if ($modelo == 11) $limitPg = 30;
@@ -1877,7 +1883,23 @@ class MapaSeparacao extends eFPDF {
         $this->SetFont('Arial', null, 10);
         $this->Cell(20, 4, $strSeqRota, 0, 1);
 
+        $pesoTotal = 0.0;
+        $cubagemTotal = 0.0;
+        /** @var Expedicao\MapaSeparacaoProduto $produto */
 
+//        foreach ($produtos as $produto) {
+//            $produto = reset($produto);
+//            $quantidade = $produto->getQtdSeparar();
+//            if ($produto->getProdutoEmbalagem() != null) {
+//                $peso = $produto->getProdutoEmbalagem()->getPeso();
+//                $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
+//            } elseif ($produto->getProdutoVolume() != null) {
+//                $peso = $produto->getProdutoVolume()->getPeso();
+//                $cubagem = $produto->getProdutoVolume()->getCubagem();
+//            }
+//            $pesoTotal += ($quantidade * str_replace(",",".",$peso));
+//            $cubagemTotal += ($quantidade * str_replace(",",".",$cubagem));
+//        }
 
         $this->Cell(20, 4, "", 0, 1);
 
@@ -1974,10 +1996,6 @@ class MapaSeparacao extends eFPDF {
             return $arr;
         };
 
-        $pesoTotal = 0.0;
-        $cubagemTotal = 0.0;
-        /** @var Expedicao\MapaSeparacaoProduto $produto */
-
         $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
 
         foreach ($produtos as $produto) {
@@ -2000,17 +2018,6 @@ class MapaSeparacao extends eFPDF {
             $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
             if ($endereco != null)
                 $dscEndereco = $endereco->getDescricao();
-
-            if ($produto->getProdutoEmbalagem() != null) {
-                $peso = $produto->getProdutoEmbalagem()->getPeso();
-                $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
-            }
-            if ($produto->getProdutoVolume() != null) {
-                $peso = $produto->getProdutoVolume()->getPeso();
-                $cubagem = $produto->getProdutoVolume()->getCubagem();
-            }
-            $pesoTotal += ($quantidade * str_replace(",",".",$peso));
-            $cubagemTotal += ($quantidade * str_replace(",",".",$cubagem));
 
             $this->SetFont('Arial', null, 9);
 
@@ -2083,8 +2090,8 @@ class MapaSeparacao extends eFPDF {
         $this->SetFont('Arial', null, 10);
         $this->Cell($wPage * 4, 6, $arrDataCargas['str'], 0, 1);
         $this->SetFont('Arial', 'B', 9);
-        $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 0);
-        $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
+        $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . number_format($this->cubagemCarga,2,',','')), 0, 0);
+        $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . number_format($this->pesoCarga,2,',','')), 0, 0);
         $this->Cell($wPage * 2, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
         $this->InFooter = false;
     }
