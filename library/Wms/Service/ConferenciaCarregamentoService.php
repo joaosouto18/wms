@@ -71,12 +71,15 @@ class ConferenciaCarregamentoService extends AbstractService
     private function createNewOsConfCarreg($confCarreg, $userId, $executeFlush = false)
     {
         try {
+            $confCarregEn = $this->em->find(ConferenciaCarregamento::class, $confCarreg);
+
             $newOs = $this->em->getRepository(OrdemServico::class)->addNewOs([
                 "dataInicial" => new \DateTime(),
                 "pessoa" => $this->em->getReference(Usuario::class, $userId)->getPessoa(),
                 "atividade" => $this->em->getReference('wms:Atividade', Atividade::CONFERENCIA_CARREGAMENTO),
                 "formaConferencia" => 'C',
-                "dscObservacao" => "Inclusão de novo usuário na conferência"
+                "dscObservacao" => "Inclusão de novo usuário na conferência",
+                "expedicao" => $confCarregEn->getExpedicao()
             ], $executeFlush);
 
             return $this->em->getRepository(ConfCarregOs::class)->save([

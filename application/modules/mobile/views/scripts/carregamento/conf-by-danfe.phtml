@@ -156,6 +156,20 @@
         border: 2px #106b00 solid;
         border-radius: 5px;
     }
+
+    .input-form {
+        margin: 0;
+        padding: 0;
+        line-height: 22px;
+        height: 30px!important;
+        border: none;
+        size: 10px!important;
+        font-size: 15px;
+        border-top: 1px solid #999;
+        border-left: 1px solid #999;
+        border-bottom: 2px solid #999;
+        border-right: 2px solid #999;
+    }
 </style>
 
 <div id="dummy"></div>
@@ -180,12 +194,10 @@
 <div id="form-danfe" style="display: none;">
     <h3>Conferência de Carregamento</h3>
     <div class="input-area">
-        <form>
-            <div class="field">
-                <label for="cod-barras-danfe" class="field required"><div class="lbl-headers">Chave de acesso da DANFE</div></label>
-                <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" class="required focus enter-active" size="40" maxlength="100" style="width: 99%" alt="numeric">
-            </div>
-        </form>
+        <div class="field">
+            <label for="cod-barras-danfe" class="field required"><div class="lbl-headers">Chave de acesso da DANFE</div></label>
+            <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" class="required focus enter-active input-form" size="40" maxlength="100" style="width: 99%" alt="numeric">
+        </div>
         <button id="btn-consultar-danfe" class="btn gradientBtn btn-spacing">Buscar</button>
         <button class="btn gradientBtnSuccess btn-spacing" id="btn-start-action">Iniciar Conferência</button>
     </div>
@@ -201,6 +213,7 @@
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
                     validateDanfe($(this));
+                    focusInpt();
                 }
             }
         });
@@ -341,7 +354,8 @@
         });
 
         $("#btn-consultar-danfe").click(function () {
-            validateDanfe($("#cod-barras-danfe"))
+            validateDanfe($("#cod-barras-danfe"));
+            focusInpt();
         });
 
         var validateDanfe = function (inpt) {
@@ -485,6 +499,10 @@
 
             accHeader.toggleClass("active");
             accHeader.parent().find(".accordion-content").show(350);
+        }
+
+        var focusInpt = function () {
+            $("#cod-barras-danfe").val("").focus();
         }
 
         $("#btn-start-action").click(function () {

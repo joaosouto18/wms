@@ -17,8 +17,8 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
     public function getInfoDanfeAction()
     {
         try {
-            /*
-                $clienteDanfes = null;
+            $keyPass = $this->getRequest()->getParam('keypass');
+                /*$clienteDanfes = null;
                 if (in_array($keyPass , ['32158456214511251454188546632548573529185248', '51454188546632548321584562145112573529185248']))
                     $clienteDanfes = [
                         'codExpedicao' => 508,
@@ -65,9 +65,7 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
                                 ]
                             ]
                         ]
-                    ];
-                */
-            $keyPass = $this->getRequest()->getParam('keypass');
+                    ];*/
             $clienteDanfes = $this->_em->getRepository(ConferenciaCarregamento::class)->getInfoToConfCarregByDanfe($keyPass);
 
             if (empty($clienteDanfes))

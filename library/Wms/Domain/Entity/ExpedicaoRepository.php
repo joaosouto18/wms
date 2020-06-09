@@ -3242,7 +3242,8 @@ class ExpedicaoRepository extends EntityRepository {
                        RESUMO.QTD_VOLUMES as "qtdVolumes",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia",
-                       (CASE WHEN NVL(MODSEP.TIPO_CONF_CARREG, \'N\') = \'N\' THEN \'NÃO USA\' ELSE ((CONFCARREG.N_VOLS_CONF * 100) / CONFCARREG.N_VOLS)||\'%\' END) AS "PercConfCarreg"
+                       (CASE WHEN NVL(MODSEP.TIPO_CONF_CARREG, \'N\') = \'N\' THEN \'NÃO USA\' 
+                           ELSE CAST(((CONFCARREG.N_VOLS_CONF * 100) / CONFCARREG.N_VOLS) AS NUMBER(5,2)) || \'%\' END) AS "PercConfCarreg"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,

@@ -82,4 +82,50 @@ class ConfCarregVolumeRepository extends EntityRepository
 
         return empty($this->_em->getConnection()->query($sql)->fetchAll());
     }
+
+    public function getDetalheConfCarreg($idExp)
+    {
+        $etiquetaConferida = EtiquetaSeparacao::STATUS_CONFERIDO;
+        $expedidaTransb = EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
+        $recebidaTransb = EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
+
+        $sql = "SELECT
+                    VOLS.COD_PESSOA,
+                    CLI.NOM_PESSOA,
+                    CASE WHEN VOLS.TIPO = 'ES' THEN 'Etiqueta de Separação'
+                         WHEN VOLS.TIPO = 'VE' THEN 'Volume Embalado'
+                        END AS TIPO_VOL,
+                    VOLS.ID_VOLUME,
+                    CASE WHEN CONF.COD_CONF_CARREG_VOL IS NOT NULL THEN 'OK' ELSE 'PEDENTE' END AS STATUS
+                FROM (
+                         SELECT EM.COD_EXPEDICAO, ES.COD_ETIQUETA_SEPARACAO AS ID_VOLUME, PED2.COD_PESSOA, 'ES' TIPO
+                         FROM ETIQUETA_MAE EM
+                         INNER JOIN ETIQUETA_SEPARACAO ES ON EM.COD_ETIQUETA_MAE = ES.COD_ETIQUETA_MAE AND ES.COD_STATUS IN ($etiquetaConferida, $expedidaTransb, $recebidaTransb)
+                         INNER JOIN PEDIDO PED2 ON PED2.COD_PEDIDO = ES.COD_PEDIDO
+                         UNION
+                         SELECT MS.COD_EXPEDICAO, MSEC.COD_MAPA_SEPARACAO_EMB_CLIENTE AS ID_VOLUME, MSEC.COD_PESSOA, 'VE' TIPO
+                         FROM MAPA_SEPARACAO MS
+                         INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MS.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
+                     ) VOLS
+                INNER JOIN PESSOA CLI ON CLI.COD_PESSOA = VOLS.COD_PESSOA
+                LEFT JOIN ( SELECT
+                                  CC.COD_CONF_CARREG,
+                                  CCV.COD_CONF_CARREG_VOL,
+                                  CC.COD_EXPEDICAO,
+                                  CCC.COD_CLIENTE,
+                                  CCV.IND_TIPO_VOLUME,
+                                  CCV.COD_VOLUME
+                            FROM CONFERENCIA_CARREGAMENTO CC
+                            INNER JOIN CONF_CARREG_CLIENTE CCC ON CC.COD_CONF_CARREG = CCC.COD_CONF_CARREG
+                            INNER JOIN CONF_CARREG_OS CCO ON CC.COD_CONF_CARREG = CCO.COD_CONF_CARREG
+                            LEFT JOIN CONF_CARREG_VOLUME CCV ON CCO.COD_CONF_CARREG_OS = CCV.COD_CONF_CARREG_OS
+                ) CONF ON CONF.IND_TIPO_VOLUME = VOLS.TIPO
+                    AND CONF.COD_VOLUME = VOLS.ID_VOLUME
+                    AND CONF.COD_EXPEDICAO = VOLS.COD_EXPEDICAO
+                    AND CONF.COD_CLIENTE = VOLS.COD_PESSOA
+                WHERE VOLS.COD_EXPEDICAO = $idExp
+                ORDER BY CLI.NOM_PESSOA, TIPO_VOL, ID_VOLUME";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
 }
