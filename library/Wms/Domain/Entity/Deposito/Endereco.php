@@ -512,7 +512,7 @@ class Endereco
             if ($returnStrException) {
                 return $msg;
             }
-            throw new Exception('error', $msg);
+            throw new Exception( $msg);
         }
         return true;
     }
