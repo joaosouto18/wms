@@ -506,8 +506,8 @@ class Endereco
     public function liberadoPraSerPicking($returnStrException = false)
     {
         if (self::isBloqueadaEntrada() || self::isBloqueadaSaida()) {
-            $str[] = (self::isBloqueadaEntrada()) ? "Entrada" : "";
-            $str[] = (self::isBloqueadaSaida()) ? "Saída" : "";
+            if (self::isBloqueadaEntrada()) $str[] = "Entrada";
+            if (self::isBloqueadaSaida()) $str[] = "Saída";
             $msg = "O endereço ".self::getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str);
             if ($returnStrException) {
                 return $msg;

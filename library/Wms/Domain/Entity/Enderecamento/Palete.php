@@ -88,6 +88,17 @@ class Palete
     protected $peso;
 
     /**
+     * @var \DateTime
+     * @Column(name="DTH_CRIACAO", type="datetime")
+     */
+    protected $dthCriacao;
+
+    public function __construct()
+    {
+        self::setDthCriacao(new \DateTime());
+    }
+
+    /**
      * @param mixed $codStatus
      */
     public function setCodStatus($codStatus)
@@ -281,6 +292,22 @@ class Palete
     public function setPeso($peso)
     {
         $this->peso = $peso;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDthCriacao()
+    {
+        return $this->dthCriacao;
+    }
+
+    /**
+     * @param \DateTime $dthCriacao
+     */
+    public function setDthCriacao($dthCriacao)
+    {
+        $this->dthCriacao = $dthCriacao;
     }
 
 }

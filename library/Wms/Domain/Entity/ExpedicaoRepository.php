@@ -4367,7 +4367,7 @@ class ExpedicaoRepository extends EntityRepository {
             } else {
                 switch ($etiquetaSeparacao->getStatus()->getId()) {
                     case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
-                        throw new \Exception("Etiqueta pendente de impresão");
+                        throw new \Exception("Etiqueta pendente de impressão");
                         break;
                     case EtiquetaSeparacao::STATUS_CORTADO:
                         throw new \Exception("Etiqueta Cortada");
