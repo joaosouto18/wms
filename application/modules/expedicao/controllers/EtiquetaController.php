@@ -2,6 +2,7 @@
 
 use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
 use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
+use Wms\Domain\Entity\Usuario;
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Module\Web\Page,
@@ -34,7 +35,7 @@ class Expedicao_EtiquetaController  extends Action
         $em = $this->getEntityManager();
         $arrayRepositorios = array(
             'expedicao'           => $em->getRepository('wms:Expedicao'),
-            'filial'               => $em->getRepository('wms:Filial'),
+            'filial'              => $em->getRepository('wms:Filial'),
             'etiquetaSeparacao'   => $em->getRepository('wms:Expedicao\EtiquetaSeparacao'),
             'depositoEndereco'    => $em->getRepository('wms:Deposito\Endereco'),
             'modeloSeparacao'     => $em->getRepository('wms:Expedicao\ModeloSeparacao'),
@@ -106,6 +107,8 @@ class Expedicao_EtiquetaController  extends Action
             if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
 
+                /** @var Usuario $usuario */
+                $usuario = $this->em->find('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
 
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -121,6 +124,7 @@ class Expedicao_EtiquetaController  extends Action
 
                         if(!is_null($cargas) && is_array($cargas)) {
                             $options[] = implode(',',$cargas);
+                            $options[] = $usuario->getCodErp();
                         } else if (!is_null($cargas)) {
                             $options = $cargas;
                         }

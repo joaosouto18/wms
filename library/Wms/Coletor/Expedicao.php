@@ -295,10 +295,10 @@ class Expedicao
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_PRIMEIRA_CONFERENCIA);
             else
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
-        }
 
-        if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_INICIO_CONFERENCIA') == 'S' ) {
-            $this->_expedicaoRepo->executaIntegracaoBDInicioConferencia($this->_expedicaoEntity);
+            if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_INICIO_CONFERENCIA') == 'S' ) {
+                $this->_expedicaoRepo->executaIntegracaoBDInicioConferencia($this->_expedicaoEntity);
+            }
         }
     }
 

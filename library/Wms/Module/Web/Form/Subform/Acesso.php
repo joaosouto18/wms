@@ -39,10 +39,17 @@ class Acesso extends \Core\Form\SubForm {
             'alt' => 'number',
             'size' => 5
         ));
+
+        $this->addElement('text', 'codErp', array(
+            'label' => 'Código no ERP',
+            'alt' => 'number',
+            'size' => 6
+        ));
         
         $this->addDisplayGroup(array(
             'login',
             'percentReceb',
+            'codErp',
             'perfis',
             'isAtivo',
                 ), 'identificacao', array('legend' => 'Identificação'
@@ -66,6 +73,7 @@ class Acesso extends \Core\Form\SubForm {
             'id' => $usuario->getId(),
             'login' => $usuario->getLogin(),
             'percentReceb' => $usuario->getPercentReceb(),
+            'codErp' => $usuario->getCodErp(),
             'depositos' => $usuario->getIdsDepositos(),
             'perfis' => $usuario->getIdsPerfis(),
             'isAtivo' => $usuario->getIsAtivo(),
