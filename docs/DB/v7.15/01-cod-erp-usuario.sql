@@ -7,11 +7,11 @@
 DECLARE
     CHECK_RESULT VARCHAR2(100);
 BEGIN
-    SELECT FUNC_CHECK_SCRIPT('xx-cod-erp-usuario.sql', '') INTO CHECK_RESULT FROM DUAL;
+    SELECT FUNC_CHECK_SCRIPT('01-cod-erp-usuario.sql', '') INTO CHECK_RESULT FROM DUAL;
     IF (CHECK_RESULT <> 'TRUE') THEN
         DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
     ELSE
-        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.15.0', 'xx-cod-erp-usuario.sql');
+        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.15.0', '01-cod-erp-usuario.sql');
         /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
