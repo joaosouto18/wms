@@ -84,7 +84,7 @@ BEGIN
                             MINVALUE 0
                             NOCYCLE
                             NOCACHE
-                            NOORDER;';
+                            NOORDER';
 
 /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
