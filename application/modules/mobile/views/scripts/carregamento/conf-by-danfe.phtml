@@ -1,0 +1,526 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Tarcísio César
+ * Date: 20/05/2020
+ * Time: 10:51
+ */
+?>
+<style>
+    .btn {
+        width: 95%;
+    }
+
+    .lbl-headers {
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 6px;
+    }
+
+    div.input-area {
+        padding: 10px;
+        margin: 10px 15px;
+        background-color: #f3f3f3;
+        border-radius: 10px;
+    }
+
+    html, body {
+        margin:0;
+        height: 100%;
+    }
+
+    .btn-spacing {
+        margin-top: 5px;
+    }
+
+    .div-loader {
+        float:left;
+        z-index: 99999;
+        padding-top: 30px;
+        position: absolute;
+        background: #FFFFFF;
+        width: 100%;
+        height: inherit;
+    }
+
+    .btn-toggle {
+        -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+        -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+        box-shadow:inset 0px 1px 0px 0px #ffffff;
+        background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffffff), color-stop(1, #f6f6f6));
+        background:-moz-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-webkit-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-o-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-ms-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0);
+        background-color:#ffffff;
+        -webkit-border-radius:6px;
+        -moz-border-radius:6px;
+        border-radius:6px;
+        border:1px solid #dcdcdc;
+        display:inline-block;
+        cursor:pointer;
+        color:#666666;
+        font-size:15px;
+        font-weight:bold;
+        padding:1px 24px 1px 16px;
+        text-decoration:none;
+        text-shadow:0px 1px 0px #ffffff;
+        width: auto;
+    }
+    .btn-toggle:hover {
+        background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f6f6f6), color-stop(1, #ffffff));
+        background:-moz-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-webkit-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-o-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-ms-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f6f6f6', endColorstr='#ffffff',GradientType=0);
+        background-color:#f6f6f6;
+    }
+    .btn-toggle:active {
+        position:relative;
+        top:1px;
+    }
+
+    #arrow-info {
+        -moz-transition: transform 350ms;
+        -webkit-transition: transform 350ms;
+        transition: transform 350ms;
+    }
+
+    .flip {
+        transform: rotate(-180deg);
+    }
+
+    .accordion-row {
+        margin: 5px;
+        border: 1px #d5620b solid;
+        padding: 2px;
+        line-height: normal;
+        border-radius: 6px;
+        background: #2222;
+    }
+
+    .accordion-row.all-nfs-checked {
+        background: rgba(210, 245, 188, 0.87);
+    }
+
+    .accordion-row > .accordion-title.active {
+        background-color: rgba(213, 98, 11, 0.45);
+        border-radius: 5px;
+    }
+
+    .accordion-title {
+        height: 30px;
+        padding-top: 5px;
+    }
+
+    .accordion-title > .span-name {
+        text-align: left;
+        padding-left: 10px;
+        max-width: 75%;
+        float: left;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .accordion-title > .span-nfs {
+        margin-bottom: 6px;
+        float: right;
+        padding-right: 10px;
+    }
+
+    .accordion-title > span {
+        font-size: 18px !important;
+    }
+
+    .accordion-content {
+        margin-top: 6px ;
+    }
+
+    .accordion-item {
+        margin: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: rgba(255, 0, 0, 0.58);
+        border: 2px #6b0000 solid;
+        border-radius: 5px;
+    }
+
+    .accordion-item.checked {
+        background-color: rgba(158,221,83,0.76);
+        border: 2px #106b00 solid;
+        border-radius: 5px;
+    }
+
+    .input-form {
+        margin: 0;
+        padding: 0;
+        line-height: 22px;
+        height: 30px!important;
+        border: none;
+        size: 10px!important;
+        font-size: 15px;
+        border-top: 1px solid #999;
+        border-left: 1px solid #999;
+        border-bottom: 2px solid #999;
+        border-right: 2px solid #999;
+    }
+</style>
+
+<div id="dummy"></div>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
+<div id="loader" class="div-loader">
+    <span style="font-size: 18px">Carregando...</span>
+    <img src="/img/ajax-bar-loader.gif" alt="loading">
+</div>
+
+<div id="divBtnBack" style="display: none; margin-bottom: 5px">
+    <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
+</div>
+
+<a href="#messenger" style="display: none" id="anchorMsg"></a>
+<div id="messenger"></div>
+
+<div id="headers" style="padding-top: 5px; display: none">
+    <div class="lbl-headers" id="lbl-expedicao"></div>
+</div>
+
+<div id="form-danfe" style="display: none;">
+    <h3>Conferência de Carregamento</h3>
+    <div class="input-area">
+        <div class="field">
+            <label for="cod-barras-danfe" class="field required"><div class="lbl-headers">Chave de acesso da DANFE</div></label>
+            <input type="number" name="cod-barras-danfe" id="cod-barras-danfe" class="required focus enter-active input-form" size="40" maxlength="100" style="width: 99%" alt="numeric">
+        </div>
+        <button id="btn-consultar-danfe" class="btn gradientBtn btn-spacing">Buscar</button>
+        <button class="btn gradientBtnSuccess btn-spacing" id="btn-start-action">Iniciar Conferência</button>
+    </div>
+    <div id="list-clients" style="padding-top: 5px; display: none">
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        $("#cod-barras-danfe").keyup(function( event ) {
+            if (event.which === 13 || event.keyCode === 13) {
+                disarmEvent(event);
+                if (!isEmpty($(this).val())) {
+                    validateDanfe($(this));
+                    focusInpt();
+                }
+            }
+        });
+
+        var expConf = {
+            codExpedicao: null,
+            clientes: []
+        };
+
+        var danfeInfo = null;
+
+        var showing = 0;
+        var views = ["loader","form-danfe","bipagem-volume"];
+        var msgShowed = true;
+
+        function myIndexOf(collection, target) {
+            var index;
+            for(var val in collection){
+                if(collection[val] === target){
+                    index = val;
+                    return index;
+                }
+            }
+            return -1;
+        }
+
+        function playSound(soundfile) {
+            if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+                document.getElementById("bgSoundId").src = soundfile;
+            } else {
+                var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                    '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+                $('#dummy').html(dummy);
+            }
+        }
+
+        $(document).ready(function () {
+            changeViewer('form-danfe');
+        });
+
+        var disarmEvent = function (event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        };
+
+        var dispareSound = function (type) {
+            var songFile = "/alarme_curto.mp3";
+            if (type === "success") {
+                songFile = "/confirm2.mp3";
+            } else if (type === "warning") {
+                songFile = "/warning.mp3";
+            }
+
+            playSound(songFile);
+        };
+
+        var notificar = function (type, msg, instantShowed) {
+            if (type === undefined) type = "success";
+
+            $("#messenger").html(
+                '<ul class="flashMessenger">' +
+                '    <li class="' + type + '_message" id="">' +
+                '        <div style="display:block; float:right;">' +
+                '            <a href="#" class="fmBtnClose">X</a>' +
+                '        </div>' +
+                '        <div style="display: block;" id="msg-text">' + msg + '</div>' +
+                '    </li>' +
+                '</ul>');
+
+            dispareSound(type);
+
+            if (type === "error") alert(msg);
+            msgShowed = instantShowed;
+
+            focusOnInput()
+            return (type === "success");
+        };
+
+        $(".fmBtnClose").live("click", function () {
+            $("#messenger").empty();
+        });
+
+        var changeViewer = function (changeTo) {
+            $.each(views, function (k,v) {
+                $("#"+v).hide();
+            });
+
+            if (changeTo === undefined || myIndexOf(views, changeTo) < 0) {
+                changeTo = views[1];
+            }
+
+            showing = myIndexOf(views, changeTo);
+
+            if (showing > 1) {
+                $("#divBtnBack").show();
+            } else {
+                $("#divBtnBack").hide();
+            }
+
+            if (changeTo !== "loader") {
+                if (msgShowed) {
+                    $("#messenger").empty();
+                } else {
+                    msgShowed = true;
+                }
+            }
+
+            $("#" + changeTo).show();
+
+            focusOnInput();
+
+            if ($("#messenger > ul > li.warning_message, #messenger > ul >li.error_message").length > 0)
+                $("#anchorMsg")[0].click();
+        };
+
+        var focusOnInput = function () {
+            $("div.input-area form div:visible:first input").val("").focus();
+        }
+
+        $("#btn-back-action").click(function () {
+            changeViewer('form-danfe');
+        });
+
+        $("#toggleInfo").click(function () {
+            $(this).blur();
+            if ($(this).hasClass("hiddingInfo")) {
+                $("#headers").show(350);
+                $(this).children("span").text("Ocultar Info");
+            } else {
+                $("#headers").hide(350);
+                $(this).children("span").text("Exibir Info");
+            }
+            $(this).toggleClass("hiddingInfo");
+            $(this).children("img").toggleClass("flip");
+        });
+
+        $("#btn-consultar-danfe").click(function () {
+            validateDanfe($("#cod-barras-danfe"));
+            focusInpt();
+        });
+
+        var validateDanfe = function (inpt) {
+            if (inpt.val().length !== 44) {
+                return notificar("error", "O código de barras bipado não tem a quantidade correta de dígitos exigidos");
+            }
+
+            changeViewer("loader");
+            if (isEmpty(expConf.codExpedicao)) {
+                getInfoDanfe(inpt.val());
+            } else {
+                checkOrInclude(inpt.val());
+            }
+        }
+
+        var getInfoDanfe = function (keypass) {
+            $.ajax({url: "/mobile/carregamento/get-info-danfe/keypass/" + keypass,
+                success: function(result){
+                    if (result.status === "ok") {
+                        danfeInfo = result.response;
+                    } else {
+                        return notificar("error", result.exception);
+                    }
+                }, complete: function() {
+                    if (!isEmpty(danfeInfo)) {
+                        checkOrInclude(keypass);
+                        danfeInfo = null;
+                    }
+                }
+            });
+        }
+
+        var prepareInfoConf = function () {
+            if (!isEmpty(expConf.codExpedicao)) {
+                $("#lbl-expedicao").text("Carregamento da Expedição: " + expConf.codExpedicao).show();
+                $("#headers").show();
+                $("#list-clients").show();
+            }
+        }
+
+        var checkOrInclude = function (keypass) {
+            if (!isEmpty(danfeInfo)) {
+                if (isEmpty(expConf.codExpedicao)) {
+                    expConf = danfeInfo;
+                    prepareInfoConf();
+                } else {
+                    if (expConf.codExpedicao === danfeInfo.codExpedicao) {
+                        $.each(danfeInfo.clientes, function (i, cliente) {
+                            expConf.clientes[i] = cliente;
+                        });
+                    } else {
+                        return notificar("error", "Esta DANFE não está relacionada à expedição inicial desta conferência");
+                    }
+                }
+                addNewClienteInfo(danfeInfo);
+            }
+            var forceExit = false;
+            var findded = false;
+            $.each(expConf.clientes, function (i, cliente) {
+                $.each(cliente.danfes, function (key, danfe) {
+                    if (key === keypass) {
+                        if (!danfe.status) {
+                            expConf.clientes[i].danfes[key].status = true;
+                            notificar("success", "DANFE incluída com sucesso")
+                        }
+                        else {
+                            notificar("error", "DANFE já incluída");
+                        }
+                        forceExit = true;
+                        findded = true;
+                    }
+                    if (forceExit) return false;
+                })
+                if (forceExit) return false;
+            })
+            if (!findded) {
+                getInfoDanfe(keypass);
+            }
+            checkClienteLiberado();
+            changeViewer("form-danfe");
+        }
+
+        var checkClienteLiberado = function () {
+            var clientsOk = 0;
+            var numClients = 0;
+            $.each(expConf.clientes, function (i, cliente) {
+                var nfsOk = 0;
+                $.each(cliente.danfes, function (keypass, danfe) {
+                    if (danfe.status) {
+                        nfsOk++;
+                        var accDanfe = $("#danfe-info-"+keypass);
+                        if (!accDanfe.hasClass('checked'))
+                            accDanfe.addClass('checked');
+                    }
+                })
+                cliente.checked = nfsOk;
+                cliente.liberado = (cliente.totalDanfes === nfsOk);
+                $("#span-nfs-"+i).text(cliente.checked + " de "+ cliente.totalDanfes);
+                if (cliente.liberado) {
+                    clientsOk++
+                    var clientAccordionRow = $("#acc-title-client-" + i).parent();
+                    if (!clientAccordionRow.hasClass('all-nfs-checked'))
+                        clientAccordionRow.addClass('all-nfs-checked');
+                }
+                numClients++;
+            });
+
+            if (clientsOk === numClients) {
+                $("#btn-start-action").show();
+            } else {
+                $("#btn-start-action").hide();
+            }
+        }
+
+        var addNewClienteInfo = function (danfe) {
+            $.each(danfe.clientes, function (i, cliente) {
+                var content = $("<div class='accordion-content'>");
+                $.each(cliente.danfes, function (keypass, danfe) {
+                    content.append($("<div class='accordion-item' id='danfe-info-"+keypass+"'>" +danfe.nota+"</div>"))
+                })
+                var title = $("<div class='accordion-title' id='acc-title-client-" + i + "' data-client='" + i + "'><span class='span-name'>" + cliente.nome + "</span><span class='span-nfs' id='span-nfs-"+i+"'>"+ cliente.checked + " de "+ cliente.totalDanfes + "</span></div>");
+                var newAccordionRow = $("<div class='accordion-row'>")
+                newAccordionRow.append(title).append(content);
+                $("#list-clients").append(newAccordionRow);
+                toggleAccordionActive(title);
+            })
+        }
+
+        $(".accordion-title").live('click', function () {
+            toggleAccordionActive($(this));
+        })
+
+        var toggleAccordionActive = function (accHeader) {
+            var active = $(".accordion-title.active");
+            if (!isEmpty(active)) {
+                active.toggleClass("active");
+                active.parent().find(".accordion-content").hide(350);
+
+                if (active.attr("id") === accHeader.attr("id")) return false;
+            }
+
+            accHeader.toggleClass("active");
+            accHeader.parent().find(".accordion-content").show(350);
+        }
+
+        var focusInpt = function () {
+            $("#cod-barras-danfe").val("").focus();
+        }
+
+        $("#btn-start-action").click(function () {
+            $.ajax({
+                url: 'new-conf',
+                type: 'post',
+                data: {criterio: 'D', expedicao: expConf},
+                success: function (data) {
+                    if (data.status === 'ok') {
+                        location.href = 'conf-volume/codConf/' + data.response.id;
+                    } else {
+                        alert(data.exception)
+                        if (data.errorCode === 403) {
+                            location.href = '/mobile/carregamento/index'
+                        }
+                    }
+                }
+            })
+        }).hide();
+    })
+</script>

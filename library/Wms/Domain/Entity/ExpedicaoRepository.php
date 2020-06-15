@@ -3261,7 +3261,9 @@ class ExpedicaoRepository extends EntityRepository {
                        RESUMO.QTD_PRODUTOS as "qtdProdutos",
                        RESUMO.QTD_VOLUMES as "qtdVolumes",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) = 0 THEN 0
-                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia",
+                       (CASE WHEN NVL(MODSEP.TIPO_CONF_CARREG, \'N\') = \'N\' THEN \'NÃO USA\' 
+                           ELSE CAST(((CONFCARREG.N_VOLS_CONF * 100) / CONFCARREG.N_VOLS) AS NUMBER(5,2)) || \'%\' END) AS "PercConfCarreg"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -3399,7 +3401,24 @@ class ExpedicaoRepository extends EntityRepository {
                                     ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO AND REENTREGA.COD_CARGA = C.COD_CARGA
                                     GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
                                   ) PED ON PED.COD_TIPO_PEDIDO = TPE.COD_TIPO_PEDIDO_EXPEDICAO
-                                  GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO                                                                
+                                  GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                   LEFT JOIN (SELECT CC.COD_EXPEDICAO, COUNT(DISTINCT VOLS.ID_VOLUME) N_VOLS, COUNT(DISTINCT CCV.COD_CONF_CARREG_VOL) N_VOLS_CONF
+                                FROM CONFERENCIA_CARREGAMENTO CC
+                                INNER JOIN CONF_CARREG_CLIENTE CCC ON CC.COD_CONF_CARREG = CCC.COD_CONF_CARREG
+                                INNER JOIN (
+                                    SELECT EM.COD_EXPEDICAO, ES.COD_ETIQUETA_SEPARACAO AS ID_VOLUME, PED2.COD_PESSOA, \'ES\' TIPO
+                                    FROM ETIQUETA_MAE EM
+                                    INNER JOIN ETIQUETA_SEPARACAO ES ON EM.COD_ETIQUETA_MAE = ES.COD_ETIQUETA_MAE AND ES.COD_STATUS in (526,531,532)
+                                    INNER JOIN PEDIDO PED2 ON PED2.COD_PEDIDO = ES.COD_PEDIDO
+                                    UNION
+                                    SELECT MS.COD_EXPEDICAO, MSEC.COD_MAPA_SEPARACAO_EMB_CLIENTE AS ID_VOLUME, MSEC.COD_PESSOA, \'VE\' TIPO
+                                    FROM MAPA_SEPARACAO MS
+                                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MS.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
+                                ) VOLS ON VOLS.COD_PESSOA = CCC.COD_CLIENTE AND VOLS.COD_EXPEDICAO = CC.COD_EXPEDICAO
+                                INNER JOIN CONF_CARREG_OS CCO ON CC.COD_CONF_CARREG = CCO.COD_CONF_CARREG
+                                LEFT JOIN CONF_CARREG_VOLUME CCV ON CCO.COD_CONF_CARREG_OS = CCV.COD_CONF_CARREG_OS AND CCV.IND_TIPO_VOLUME = VOLS.TIPO AND CCV.COD_VOLUME = VOLS.ID_VOLUME
+                                GROUP BY CC.COD_EXPEDICAO) CONFCARREG ON CONFCARREG.COD_EXPEDICAO = E.COD_EXPEDICAO
+                   LEFT JOIN MODELO_SEPARACAO MODSEP ON MODSEP.COD_MODELO_SEPARACAO = E.COD_MODELO_SEPARACAO
                  WHERE 1 = 1 AND ((C.CARGAS IS NOT NULL) OR (C.CARGAS IS NULL AND S.COD_SIGLA = 466)) ' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';

@@ -1,0 +1,36 @@
+<style>
+    .btn-spacing {
+        margin-top: 5px;
+    }
+</style>
+<h3>Expedições para conferência de carregamento</h3>
+<div id="buttons"></div>
+<script>
+    var expedicoes = <?php echo json_encode($this->expedicoes)?>;
+    $(document).ready(function () {
+        if (!isEmpty(expedicoes)) {
+            $.each(expedicoes, function (codExpedicao, exp) {
+                $("#buttons").append($("<button class='btn gradientBtn btn-spacing new-conf' data-id='" + codExpedicao + "' >Exp " + codExpedicao + " - [" + exp.nClientes + " Cliente(s)]</button>"));
+            });
+        } else {
+            $("#buttons").append($("<p>Nenhuma nova expedição liberada!</p>"));
+        }
+    });
+    $(".new-conf").live('click', function () {
+        $.ajax({
+            url: 'new-conf',
+            type: 'post',
+            data: {criterio: 'E', expedicao: expedicoes[$(this).data('id')]},
+            success: function (data) {
+                if (data.status === 'ok') {
+                    location.href = 'conf-volume/codConf/' + data.response.id;
+                } else {
+                    alert(data.exception)
+                    if (data.errorCode === 403) {
+                        location.href = '/mobile/carregamento/index'
+                    }
+                }
+            }
+        })
+    });
+</script>

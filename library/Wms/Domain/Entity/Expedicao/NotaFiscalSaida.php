@@ -60,6 +60,12 @@ class NotaFiscalSaida
     protected $status;
 
     /**
+     * @var string
+     * @Column(name="COD_CHAVE_ACESSO", type="string", nullable=true)
+     */
+    protected $chaveAcesso;
+
+    /**
      * @param mixed $id
      */
     public function setId($id)
@@ -169,6 +175,22 @@ class NotaFiscalSaida
     public function getPessoa()
     {
         return $this->pessoa;
+    }
+
+    /**
+     * @return string
+     */
+    public function getChaveAcesso()
+    {
+        return $this->chaveAcesso;
+    }
+
+    /**
+     * @param string $chaveAcesso
+     */
+    public function setChaveAcesso($chaveAcesso)
+    {
+        $this->chaveAcesso = $chaveAcesso;
     }
 
 }

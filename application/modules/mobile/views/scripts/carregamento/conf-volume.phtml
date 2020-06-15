@@ -1,0 +1,149 @@
+<style>
+    .lbl-headers {
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 6px;
+    }
+    div.input-area {
+        padding: 10px;
+        margin: 10px 15px;
+        background-color: #f3f3f3;
+        border-radius: 10px;
+    }
+
+    .btn-spacing {
+        margin-top: 10px;
+    }
+
+    .btn-large-spacing {
+        margin-top: 20px;
+    }
+
+    .input-form {
+        margin: 0;
+        padding: 0;
+        line-height: 22px;
+        height: 30px!important;
+        border: none;
+        size: 10px!important;
+        font-size: 15px;
+        border-top: 1px solid #999;
+        border-left: 1px solid #999;
+        border-bottom: 2px solid #999;
+        border-right: 2px solid #999;
+    }
+</style>
+<div id="dummy"></div>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+<div id="messenger"></div>
+<h3>Conf. Carregamento <?php echo $this->confEn->getId() ?></h3>
+<h4>Expedição <?php echo $this->confEn->getExpedicao()->getId() ?></h4>
+
+<div class="input-area">
+    <div class="field">
+        <label for="cod-barras" class="field required"><span class="lbl-headers">Volume</span></label>
+        <input type="number" name="cod-barras" id="cod-barras" value="" class="required focus input-form" size="40" maxlength="100" style="width: 99%">
+    </div>
+    <button id="btn-conferir" class="btn gradientBtn btn-spacing">Conferir</button>
+    <form method="post" action="/mobile/carregamento/finalizar-os-conf">
+        <input type="hidden" name="codConf" value="<?php echo $this->confEn->getId() ?>">
+        <button id="btn-finalizar" class="btn gradientBtnSuccess btn-large-spacing">Finalizar Conferência</button>
+    </form>
+</div>
+
+<script>
+
+    var codConf = <?php echo $this->confEn->getId() ?>;
+
+    var disarmEvent = function (event) {
+        if (event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+    };
+
+    function playSound(soundfile) {
+        if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+            document.getElementById("bgSoundId").src = soundfile;
+        } else {
+            var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+            $('#dummy').html(dummy);
+        }
+    }
+
+    var dispareSound = function (type) {
+        var songFile = "/alarme_curto.mp3";
+        if (type === "success") {
+            songFile = "/confirm2.mp3";
+        } else if (type === "warning") {
+            songFile = "/warning.mp3";
+        }
+        playSound(songFile);
+    };
+
+    $("#cod-barras").keyup(function( event ) {
+        if (event.which === 13 || event.keyCode === 13) {
+            disarmEvent(event);
+            if (!isEmpty($(this).val())) {
+                confereVolume($(this));
+            }
+        }
+    });
+
+    var notificar = function (type, msg) {
+        if (type === undefined) type = "success";
+        $(".fmBtnClose").click();
+        $("#messenger").html(
+            '<ul class="flashMessenger">' +
+            '    <li class="' + type + '_message" id="">' +
+            '        <div style="display:block; float:right;">' +
+            '            <a href="#" class="fmBtnClose">X</a>' +
+            '        </div>' +
+            '        <div style="display: block;" id="msg-text">' + msg + '</div>' +
+            '    </li>' +
+            '</ul>');
+
+        dispareSound(type);
+
+        if (type === "error") alert(msg);
+    };
+
+    $(".fmBtnClose").live("click", function () {
+        $("#messenger").empty();
+    });
+
+    $("#btn-conferir").click(function (event) {
+        disarmEvent(event);
+        confereVolume($("#cod-barras"))
+    })
+
+    var focusInpt = function () {
+        $("#cod-barras").val("").focus();
+    }
+
+    var confereVolume = function (inpt) {
+        $.ajax({
+            url: '/mobile/carregamento/conf-volume',
+            type: 'post',
+            data: {codConf: codConf, codBarras: inpt.val()},
+            async: false,
+            success: function (data) {
+                focusInpt();
+                if (data.status === 'ok') {
+                    notificar('success', 'Volume conferido com sucesso');
+                } else {
+                    notificar('error', data.exception);
+                    if (data.errorCode === 403) {
+                        location.href = '/mobile/carregamento/index'
+                    }
+                }
+            }
+        })
+    }
+
+    $(document).ready(function () {
+        focusInpt();
+    })
+</script>

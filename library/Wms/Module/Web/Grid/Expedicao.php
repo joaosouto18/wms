@@ -95,6 +95,10 @@ class Expedicao extends Grid
                 'index' => 'PercConferencia',
             ))
             ->addColumn(array(
+                'label' => '% Conf. Carreg',
+                'index' => 'PercConfCarreg',
+            ))
+            ->addColumn(array(
                 'label' => 'Status',
                 'index' => 'status',
             ))

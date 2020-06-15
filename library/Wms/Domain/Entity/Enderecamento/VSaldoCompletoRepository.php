@@ -11,14 +11,15 @@ class VSaldoCompletoRepository extends EntityRepository implements VSaldoInterfa
     {
         $tipoPicking = Endereco::PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
-        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao, MAX(pe.quantidade) quantidade')
+        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao, MAX(pe.quantidade) quantidade, c.descricao caracteristica')
         ->from("wms:Enderecamento\VSaldoCompleto","s")
         ->leftJoin("s.produto","p")
         ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
         ->leftJoin('p.tipoComercializacao','tp')
         ->leftJoin("s.depositoEndereco", "e")
+        ->leftJoin('e.caracteristica', 'c')
         ->leftJoin("wms:Armazenagem\Unitizador","u","WITH","u.id=s.codUnitizador")
-        ->groupBy('s.codProduto, s.grade, s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, e.predio, e.id, s.codUnitizador, s.unitizador, s.volume, tp.descricao, e.rua, e.predio, e.nivel, e.apartamento, s.codProduto, s.grade, s.volume')
+        ->groupBy('s.codProduto, s.grade, s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, e.predio, e.id, s.codUnitizador, s.unitizador, s.volume, tp.descricao, e.rua, e.predio, e.nivel, e.apartamento, s.codProduto, s.grade, s.volume, c.descricao caracteristica')
             ->orderBy("e.rua, lado,  e.nivel, e.predio,  e.apartamento, s.codProduto, s.grade, s.volume");
 
         $query->andWhere('e.ativo <> \'N\' ');

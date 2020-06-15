@@ -138,6 +138,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $dados['produtoInventario'] = $entity->getProdutoInventario();
                 $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
                 $dados['separacaoPc'] = $entity->getSeparacaoPC();
+                $dados['tipoConfCarregamento'] = $entity->getTipoConfCarregamento();
                 $dados['tipoDefaultEmbalado'] = $entity->getTipoDefaultEmbalado();
                 $dados['tipoConferenciaEmbalado'] = $entity->getTipoConferenciaEmbalado();
                 $dados['tipoConferenciaNaoEmbalado'] = $entity->getTipoConferenciaNaoEmbalado();

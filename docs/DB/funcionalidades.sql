@@ -742,3 +742,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correção: Contagens do inventário replicando lote', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Inclusão de data de criação do palete, para orientação do estoque', 'xx-dth-criacao-paletes.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Inclusão de código de identificação do usuário no ERP', 'xx-cod-erp-usuario.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correção: Contagens do inventário replicando lote', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Conferência de Carregamento', 'xx-conf-carregamento.sql', SYSDATE);
