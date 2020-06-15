@@ -278,6 +278,9 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
         $mapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
+        /** @var Usuario $usuario */
+        $usuario = $this->_em->find('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+
         $ids = explode(',', $idsIntegracao);
         sort($ids);
 
@@ -302,6 +305,7 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?9 - LOTE
                  * ?10 - Status expedição
                  * ?11 - NUMERO DO EMBALADO, caso tenha retorno por embalado
+                 * ?12 - Código do usuário no ERP
                  */
                 $idTipoAcao = $acaoEn->getTipoAcao()->getId();
                 if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
@@ -330,6 +334,7 @@ class ExpedicaoRepository extends EntityRepository {
                                 $options[$index][] = $item['DSC_LOTE'];
                                 $options[$index][] = $expedicaoEn->getStatus()->getId();
                                 $options[$index][] = $item['EMBALADO'];
+                                $options[$index][] = $usuario->getCodErp();
                             }
                             $options[$index][] = 2;
                         }
@@ -346,6 +351,7 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  * ?1 - Código das Cargas presentes na Expedição
                  * ?2 - Status expedição
+                 * ?3 - Código do usuário no ERP
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS) {
                     $cargasEn = $expedicaoEn->getCarga();
@@ -359,6 +365,7 @@ class ExpedicaoRepository extends EntityRepository {
                     if (!is_null($cargas)) {
                         $options[] = (is_array($cargas))? implode(',', $cargas) : $cargas;
                         $options[] = $expedicaoEn->getStatus()->getId();
+                        $options[] = $usuario->getCodErp();
                     }
 
                     $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
@@ -372,6 +379,7 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  * ?1 - Código da Carga
                  * ?2 - Status expedição
+                 * ?3 - Código do usuário no ERP
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA) {
                     $cargasEn = $expedicaoEn->getCarga();
@@ -380,6 +388,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $options = array();
                         $options[] = $cargaEn->getCodCargaExterno();
                         $options[] = $expedicaoEn->getStatus()->getId();
+                        $options[] = $usuario->getCodErp();
 
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                         if (!$resultAcao === true) {
@@ -397,6 +406,7 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?3 - Tipo de Pedido
                  * ?4 - Quantidade de volumes(caixas) por pedido
                  * ?5 - Status expedição
+                 * ?6 - Código do usuário no ERP
                  *
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
@@ -418,6 +428,7 @@ class ExpedicaoRepository extends EntityRepository {
                             $options[] = $pedidoEn->getTipoPedido()->getCodExterno();
                             $options[] = $qtdCaixas;
                             $options[] = $expedicaoEn->getStatus()->getId();
+                            $options[] = $usuario->getCodErp();
 
                             $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                             if (!$resultAcao === true) {
@@ -443,6 +454,9 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
+        /** @var Usuario $usuario */
+        $usuario = $this->_em->find('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+
         $ids = explode(',', $idsIntegracao);
         sort($ids);
 
@@ -458,6 +472,7 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  * ?1 - Código das Cargas presentes na Expedição
                  * ?2 - Status expedição
+                 * ?3 - Codigo do usuário no ERP
                  */
                 if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_INICIO_CONFERENCIA_CARGAS) {
                     $cargasEn = $expedicaoEn->getCarga();
@@ -471,6 +486,7 @@ class ExpedicaoRepository extends EntityRepository {
                     if (!is_null($cargas)) {
                         $options[] = (is_array($cargas))? implode(',', $cargas) : $cargas;
                         $options[] = $expedicaoEn->getStatus()->getId();
+                        $options[] = $usuario->getCodErp();
                     }
 
                     $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
@@ -484,6 +500,7 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  * ?1 - Código da Carga
                  * ?2 - Status expedição
+                 * ?3 - Codigo do usuário no ERP
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_INICIO_CONFERENCIA_CARGA) {
                     $cargasEn = $expedicaoEn->getCarga();
@@ -492,6 +509,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $options = array();
                         $options[] = $cargaEn->getCodCargaExterno();
                         $options[] = $expedicaoEn->getStatus()->getId();
+                        $options[] = $usuario->getCodErp();
 
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                         if (!$resultAcao === true) {
@@ -508,6 +526,7 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?2 - Código do Pedido
                  * ?3 - Tipo de Pedido
                  * ?4 - Status expedição
+                 * ?5 - Codigo do usuário no ERP
                  *
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_INICIO_CONFERENCIA_PEDIDO) {
@@ -522,6 +541,7 @@ class ExpedicaoRepository extends EntityRepository {
                             $options[] = $pedidoEn->getCodExterno();
                             $options[] = $pedidoEn->getTipoPedido()->getCodExterno();
                             $options[] = $expedicaoEn->getStatus()->getId();
+                            $options[] = $usuario->getCodErp();
 
                             $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                             if (!$resultAcao === true) {
@@ -3241,7 +3261,9 @@ class ExpedicaoRepository extends EntityRepository {
                        RESUMO.QTD_PRODUTOS as "qtdProdutos",
                        RESUMO.QTD_VOLUMES as "qtdVolumes",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) = 0 THEN 0
-                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia",
+                       (CASE WHEN NVL(MODSEP.TIPO_CONF_CARREG, \'N\') = \'N\' THEN \'NÃO USA\' 
+                           ELSE CAST(((CONFCARREG.N_VOLS_CONF * 100) / CONFCARREG.N_VOLS) AS NUMBER(5,2)) || \'%\' END) AS "PercConfCarreg"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -3379,7 +3401,24 @@ class ExpedicaoRepository extends EntityRepository {
                                     ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO AND REENTREGA.COD_CARGA = C.COD_CARGA
                                     GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
                                   ) PED ON PED.COD_TIPO_PEDIDO = TPE.COD_TIPO_PEDIDO_EXPEDICAO
-                                  GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO                                                                
+                                  GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                   LEFT JOIN (SELECT CC.COD_EXPEDICAO, COUNT(DISTINCT VOLS.ID_VOLUME) N_VOLS, COUNT(DISTINCT CCV.COD_CONF_CARREG_VOL) N_VOLS_CONF
+                                FROM CONFERENCIA_CARREGAMENTO CC
+                                INNER JOIN CONF_CARREG_CLIENTE CCC ON CC.COD_CONF_CARREG = CCC.COD_CONF_CARREG
+                                INNER JOIN (
+                                    SELECT EM.COD_EXPEDICAO, ES.COD_ETIQUETA_SEPARACAO AS ID_VOLUME, PED2.COD_PESSOA, \'ES\' TIPO
+                                    FROM ETIQUETA_MAE EM
+                                    INNER JOIN ETIQUETA_SEPARACAO ES ON EM.COD_ETIQUETA_MAE = ES.COD_ETIQUETA_MAE AND ES.COD_STATUS in (526,531,532)
+                                    INNER JOIN PEDIDO PED2 ON PED2.COD_PEDIDO = ES.COD_PEDIDO
+                                    UNION
+                                    SELECT MS.COD_EXPEDICAO, MSEC.COD_MAPA_SEPARACAO_EMB_CLIENTE AS ID_VOLUME, MSEC.COD_PESSOA, \'VE\' TIPO
+                                    FROM MAPA_SEPARACAO MS
+                                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MS.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
+                                ) VOLS ON VOLS.COD_PESSOA = CCC.COD_CLIENTE AND VOLS.COD_EXPEDICAO = CC.COD_EXPEDICAO
+                                INNER JOIN CONF_CARREG_OS CCO ON CC.COD_CONF_CARREG = CCO.COD_CONF_CARREG
+                                LEFT JOIN CONF_CARREG_VOLUME CCV ON CCO.COD_CONF_CARREG_OS = CCV.COD_CONF_CARREG_OS AND CCV.IND_TIPO_VOLUME = VOLS.TIPO AND CCV.COD_VOLUME = VOLS.ID_VOLUME
+                                GROUP BY CC.COD_EXPEDICAO) CONFCARREG ON CONFCARREG.COD_EXPEDICAO = E.COD_EXPEDICAO
+                   LEFT JOIN MODELO_SEPARACAO MODSEP ON MODSEP.COD_MODELO_SEPARACAO = E.COD_MODELO_SEPARACAO
                  WHERE 1 = 1 AND ((C.CARGAS IS NOT NULL) OR (C.CARGAS IS NULL AND S.COD_SIGLA = 466)) ' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
@@ -4367,7 +4406,7 @@ class ExpedicaoRepository extends EntityRepository {
             } else {
                 switch ($etiquetaSeparacao->getStatus()->getId()) {
                     case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
-                        throw new \Exception("Etiqueta pendente de impresão");
+                        throw new \Exception("Etiqueta pendente de impressão");
                         break;
                     case EtiquetaSeparacao::STATUS_CORTADO:
                         throw new \Exception("Etiqueta Cortada");

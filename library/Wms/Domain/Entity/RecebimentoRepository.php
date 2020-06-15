@@ -1619,13 +1619,15 @@ class RecebimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
         $notaFiscalRepository = $this->getEntityManager()->getRepository('wms:NotaFiscal');
 
+        /** @var Usuario $usuario */
+        $usuario = $this->_em->find('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+
         $idRecebimento = $recebimentoEntity->getId();
         $ids = explode(',', $idsIntegracao);
         sort($ids);
 
         foreach ($ids as $idIntegracao) {
             $acaoEn = $acaoIntRepo->find($idIntegracao);
-            $options = array();
 
             /*
              * Devolve o Retorno a integração a nível de nota fiscal
@@ -1636,6 +1638,7 @@ class RecebimentoRepository extends EntityRepository
              * ?5 - Data de Emissão da Nota Fiscal
              * ?6 - Código do Recebimento no ERP da Nota Fiscal
              * ?7 - Código do Recebimento interno do WMS
+             * ?8 - Código do usuário no ERP
              */
 
             $nfsEntity = $notaFiscalRepository->findBy(array('recebimento' => $idRecebimento));
@@ -1648,7 +1651,8 @@ class RecebimentoRepository extends EntityRepository
                     3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
                     4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                     5 => $notaFiscalEntity->getCodRecebimentoErp(),
-                    6 => $notaFiscalEntity->getRecebimento()->getId()
+                    6 => $notaFiscalEntity->getRecebimento()->getId(),
+                    7 => $usuario->getCodErp()
                 );
                 $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                 if (!$resultAcao === true) {
@@ -1958,7 +1962,7 @@ class RecebimentoRepository extends EntityRepository
                           FROM RECEBIMENTO_CONFERENCIA RC
                           INNER JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                           WHERE R.COD_STATUS = 457 AND R.COD_RECEBIMENTO = $idRecebimento 
-                                  AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)
+                                  AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NULL)
                              ) V ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                 LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
                             FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, PP.DSC_LOTE
@@ -2344,6 +2348,9 @@ class RecebimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
+        /** @var Usuario $usuario */
+        $usuario = $this->_em->find('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+
         /** @var AcaoIntegracao $acaoEn */
         $acaoEn = $acaoIntRepo->find($idIntegracao);
         if (!empty($acaoEn)) {
@@ -2353,6 +2360,7 @@ class RecebimentoRepository extends EntityRepository
                 $options[] = $nota->getNumero();
                 $options[] = $nota->getFornecedor()->getIdExterno();
                 $options[] = date_format($nota->getDataEmissao(), $formatoData);
+                $options[] = $usuario->getCodErp();
 
                 $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
             }

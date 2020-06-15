@@ -154,6 +154,10 @@ class notaFiscal {
     public $valorVenda;
     /** @var notaFiscalProduto[] */
     public $itens;
+    /** @var string */
+    public $cpfEmitente;
+    /** @var string */
+    public $chaveAcesso;
 }
 
 class notaFiscalProduto {
@@ -1496,11 +1500,24 @@ class Wms_WebService_Expedicao extends Wms_WebService
             /* @var notaFiscal $notaFiscal */
             foreach ($nf as $notaFiscal) {
 
-                $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $notaFiscal->cnpjEmitente));
-                $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cnpjEmitente));
+                /** @var \Wms\Domain\Entity\Pessoa $pessoaEn */
+                $pessoaEn = null;
+                if (!empty($notaFiscal->cnpjEmitente)) {
+                    $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $notaFiscal->cnpjEmitente));
+                    $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cnpjEmitente));
 
-                if (is_null($pessoaEn)) {
-                    throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
+                    if (empty($pessoaEn)) {
+                        throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
+                    }
+                } elseif (!empty($notaFiscal->cpfEmitente)) {
+                    $cpfEmitente = trim(str_replace(array(".", "-"), "", $notaFiscal->cpfEmitente));
+                    $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cpfEmitente));
+
+                    if (empty($pessoaEn)) {
+                        throw new \Exception("Emitente não encontrado para o cpf " . $notaFiscal->cpfEmitente);
+                    }
+                } else {
+                    throw new \Exception("Emitente não especificado");
                 }
 
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
@@ -1515,6 +1532,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $nfEntity->setPessoa($pessoaEn);
                     $nfEntity->setSerieNf($notaFiscal->serieNf);
                     $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                    $nfEntity->setChaveAcesso($notaFiscal->chaveAcesso);
                     $nfEntity->setStatus($statusEn);
                     $this->_em->persist($nfEntity);
 

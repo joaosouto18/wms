@@ -68,10 +68,16 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
     protected $perfis;
 
     /**
-     * @var int $percentReceb
+     * @var int
      * @Column(name="PERCENT_RECEB", type="integer", length=3)
      */
     protected $percentReceb;
+
+    /**
+     * @var int
+     * @Column(name="COD_ERP_USUARIO", type="integer")
+     */
+    protected $codErp;
     
 
     public function __construct()
@@ -295,5 +301,21 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
         }
 
         return $maxPercent;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCodErp()
+    {
+        return $this->codErp;
+    }
+
+    /**
+     * @param int $codErp
+     */
+    public function setCodErp($codErp)
+    {
+        $this->codErp = $codErp;
     }
 }

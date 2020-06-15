@@ -1,0 +1,31 @@
+<style>
+    .div-btn-group {
+        display: flex;
+    }
+
+    .div-btn-group > .btn {
+        margin: 5px;
+    }
+
+    .btn-spacing {
+        margin-top: 5px;
+    }
+
+</style>
+<h3>Iniciar nova Conferência</h3>
+<div class="div-btn-group">
+    <a class="btn gradientBtn" href="/mobile/carregamento/conf-by-danfe">Por DANFE</a>
+    <a class="btn gradientBtn" href="/mobile/carregamento/conf-by-exp">Por Expedição</a>
+</div>
+
+<h3>Conferências em Andamento</h3>
+
+<?php
+if (!empty($this->confCarregs)) {
+    foreach ($this->confCarregs as $conf) {
+        echo "<a class='btn gradientBtn btn-spacing' href='/mobile/carregamento/conf-volume/codConf/$conf[ID_CONF]' >$conf[COD_EXPEDICAO] [$conf[N_CLIENTES] Cliente(s)]</a>";
+    }
+} else {
+    echo "<h4>Não há conferências em andamento</h4>";
+}
+?>

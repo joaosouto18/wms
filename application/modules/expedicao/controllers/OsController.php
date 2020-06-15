@@ -217,6 +217,22 @@ class Expedicao_OsController extends Action
         $this->view->gridAndamento = $GridAndamento->init($idExpedicao)
             ->render();
 
+        $expedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
+        if (!empty($expedicaoEntity->getModeloSeparacao())) {
+            $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+        }
+
+        if (empty($modeloSeparacaoEn)) {
+            $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
+            /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+            $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
+        }
+
+        if ($modeloSeparacaoEn->getTipoConfCarregamento() !== 'N') {
+            $gridConf = new \Wms\Module\Web\Grid\Expedicao\ConfCarreg();
+            $this->view->gridConfCarreg = $gridConf->init($idExpedicao);
+        }
+
         $pendencias = $EtiquetaSeparacaoRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_CORTE, "Array");
 
         if (count($pendencias) > 0) {

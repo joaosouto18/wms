@@ -33,7 +33,7 @@ $form = $this->form;
                         <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
                     </td>
                 </tr>
-                <tr class="gTResultSet" ng-repeat="result in results | filter:objectFilter | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                <tr class="gTResultSet" ng-repeat="result in results | queryFilter:objectFilter | orderBy:tbOrderBy:direction:typeSensitiveComparator">
                     <td ng-repeat="column in gridColumns" width="{{column.width}}">
                         <div>{{result[column.name]}}</div>
                     </td>
