@@ -14,8 +14,9 @@ class IntegracaoGrid extends Grid
     {
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('i')
-            ->from(AcaoIntegracao::class, 'i');
+            ->select('i, c.id codConexao')
+            ->from(AcaoIntegracao::class, 'i')
+            ->innerJoin('i.conexao', 'c');
 
         $this->setAttribs(['title' => 'Gerenciamento de Integrações'])
             ->setSource(new \Core\Grid\Source\Doctrine($dql))
@@ -23,6 +24,10 @@ class IntegracaoGrid extends Grid
             ->addColumn([
                 'label' => 'nº',
                 'index' => 'id'
+            ])
+            ->addColumn([
+                'label' => 'Conexão',
+                'index' => 'codConexao'
             ])
             ->addColumn([
                 'label' => 'Descrição',
@@ -37,6 +42,19 @@ class IntegracaoGrid extends Grid
                 'label' => 'Registra LOG',
                 'index' => 'indUtilizaLog',
                 'render' => 'SimOrNao'
+            ])
+            ->addColumn([
+                'label' => 'Em Execução',
+                'index' => 'indExecucao',
+                'render' => 'SimOrNao'
+            ])
+            ->addAction([
+                'label' => 'Visualizar',
+                'moduleName' => 'integracao',
+                'controllerName' => 'gerenciamento',
+                'actionName' => 'view-detail-integracao-ajax',
+                'cssClass' => 'dialogAjax',
+                'pkIndex' => 'id'
             ])
             ;
 
