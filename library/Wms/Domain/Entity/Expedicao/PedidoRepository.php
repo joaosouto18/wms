@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Math;
 use Zend\Stdlib\Configurator;
 
@@ -33,6 +34,7 @@ class PedidoRepository extends EntityRepository
             $numSequencial = $this->getMaxCodPedidoByCodExterno($pedido['codPedido'], true);
             $enPedido->setCodExterno($pedido['codPedido']);
             $enPedido->setTipoPedido($tipoPedEn);
+            $enPedido->setCodTipoPedido($tipoPedEn->getId());
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
             $enPedido->setCentralEntrega($pedido['centralEntrega']);
             $enPedido->setCarga($pedido['carga']);
@@ -56,7 +58,10 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getQtdPedidaAtendidaByPedido ($codPedido) {
-            //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
+
+        $ncl = Lote::NCL;
+
+        //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S'){
             $SQL = "SELECT EP.COD_PESSOA, 
@@ -68,7 +73,10 @@ class PedidoRepository extends EntityRepository
                            PP.QTD_EMBALAGEM_VENDA as QTD_PEDIDO_EMBALAGEM_VENDA,
                            NVL((EP.QTD * -1),0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA,
-                           ETQ_C.QTD_CONFERIDA
+                           ETQ_C.QTD_CONFERIDA,
+                           null as EMBALADO,
+                           PP.COD_PEDIDO_PRODUTO,
+                           '$ncl' as DSC_LOTE
                     FROM PEDIDO_PRODUTO PP 
                     LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
@@ -76,16 +84,16 @@ class PedidoRepository extends EntityRepository
                                       ES.DSC_GRADE, 
                                       MIN(NVL(ESC.QTD,0)) as QTD_CONFERIDA
                                  FROM ETIQUETA_SEPARACAO ES
-                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,0) as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,'$ncl') as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
                                               FROM ETIQUETA_SEPARACAO
                                              WHERE COD_PEDIDO = '$codPedido'
                                                AND COD_STATUS IN (526,531,532)
-                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,0) ) ESC
+                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,'$ncl') ) ESC
                                    ON ES.COD_PRODUTO = ESC.COD_PRODUTO
                                   AND ES.DSC_GRADE = ESC.DSC_GRADE
                                   AND NVL(ES.COD_PRODUTO_VOLUME,0) = ESC.VOLUME
                                 WHERE ES.COD_PEDIDO = '$codPedido'
-                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,0)) ETQ_C
+                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,'$ncl')) ETQ_C
                       ON ETQ_C.COD_PRODUTO = PP.COD_PRODUTO
                      AND ETQ_C.DSC_GRADE = PP.DSC_GRADE
                     WHERE PP.COD_PEDIDO = $codPedido";
@@ -97,37 +105,95 @@ class PedidoRepository extends EntityRepository
                            CASE WHEN (PPL.DSC_LOTE IS NOT NULL ) THEN PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)
                                 ELSE PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) END as ATENDIDA, 
                            '' AS CNPJ,
-                           PPL.DSC_LOTE,
+                           NVL(PPL.DSC_LOTE,'$ncl') as DSC_LOTE,
                            NVL(PPL.QUANTIDADE, PP.QUANTIDADE) / NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as QTD_PEDIDO_EMBALAGEM_VENDA,
                            CASE WHEN (PPL.DSC_LOTE IS NOT NULL ) THEN (PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)
                                 ELSE (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) END as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA,
-                           ETQ_C.QTD_CONFERIDA              
+                           ETQ_C.QTD_CONFERIDA,
+                           null as EMBALADO,
+                           PP.COD_PEDIDO_PRODUTO              
                     FROM PEDIDO_PRODUTO PP
                     LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                     LEFT JOIN (SELECT ES.COD_PRODUTO, 
                                       ES.DSC_GRADE, 
-                                      NVL(ES.DSC_LOTE,0) as LOTE,
+                                      NVL(ES.DSC_LOTE,'$ncl') as LOTE,
                                       MIN(NVL(ESC.QTD,0)) as QTD_CONFERIDA
                                  FROM ETIQUETA_SEPARACAO ES
-                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,0) as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,'$ncl') as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
                                               FROM ETIQUETA_SEPARACAO
                                              WHERE COD_PEDIDO = '$codPedido'
                                                AND COD_STATUS IN (526,531,532)
-                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,0) ) ESC
+                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,'$ncl') ) ESC
                                    ON ES.COD_PRODUTO = ESC.COD_PRODUTO
                                   AND ES.DSC_GRADE = ESC.DSC_GRADE
                                   AND NVL(ES.COD_PRODUTO_VOLUME,0) = ESC.VOLUME
-                                  AND NVL(ES.DSC_LOTE,0) = ESC.LOTE
+                                  AND NVL(ES.DSC_LOTE,'$ncl') = ESC.LOTE
                                 WHERE ES.COD_PEDIDO = '$codPedido'
-                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,0)) ETQ_C
+                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,'$ncl')) ETQ_C
                       ON ETQ_C.COD_PRODUTO = PP.COD_PRODUTO
                      AND ETQ_C.DSC_GRADE = PP.DSC_GRADE
-                     AND ETQ_C.LOTE = NVL(PPL.DSC_LOTE,0) 
+                     AND ETQ_C.LOTE = NVL(PPL.DSC_LOTE,'$ncl') 
                    WHERE PP.COD_PEDIDO = '$codPedido'";
         }
-        $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $array;
+        $arrayPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($this->getSystemParameterValue('RETORNO_PRODUTO_EMBALADO') == 'N') {
+            return $arrayPedidos;
+        }
+
+        $SQL = "SELECT PP.COD_PEDIDO_PRODUTO,
+                       PPEC.COD_MAPA_SEPARACAO_EMBALADO as COD_EMBALADO,
+                       PPEC.DSC_LOTE,
+                       PPEC.QTD
+                  FROM PEDIDO_PRODUTO_EMB_CLIENTE PPEC
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = PPEC.COD_PEDIDO_PRODUTO
+                 WHERE PP.COD_PEDIDO = '$codPedido'";
+        $arrayEmbalados = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $result = array();
+        foreach ($arrayPedidos as $keyPP => $pp) {
+            foreach ($arrayEmbalados as $keyEmb => $embalado) {
+                if (($pp['COD_PEDIDO_PRODUTO'] == $embalado['COD_PEDIDO_PRODUTO'])
+                    && ($pp['DSC_LOTE'] == $embalado['DSC_LOTE'])) {
+                    $result[] = array(
+                        'COD_PESSOA' => $pp['COD_PESSOA'],
+                        'COD_PRODUTO' => $pp['COD_PRODUTO'],
+                        'DSC_GRADE' => $pp['DSC_GRADE'],
+                        'QTD_PEDIDO' => $pp['QTD_PEDIDO'],
+                        'ATENDIDA' => $embalado['QTD'],
+                        'CNPJ' => $pp['CNPJ'],
+                        'DSC_LOTE' => $pp['DSC_LOTE'],
+                        'QTD_PEDIDO_EMBALAGEM_VENDA' => $pp['QTD_PEDIDO_EMBALAGEM_VENDA'],
+                        'QTD_ATENDIDA_EMB_VENDA' => $embalado['QTD'] / $pp['FATOR_EMBALAGEM_VENDA'],
+                        'FATOR_EMBALAGEM_VENDA' => $pp['FATOR_EMBALAGEM_VENDA'],
+                        'QTD_CONFERIDA' => $pp['QTD_CONFERIDA'],
+                        'EMBALADO' => $embalado['COD_EMBALADO']
+                    );
+
+                    $arrayPedidos[$keyPP]['ATENDIDA'] = $arrayPedidos[$keyPP]['ATENDIDA'] - $embalado['QTD'];
+                    unset($arrayEmbalados[$keyEmb]);
+                }
+            }
+
+            if ($arrayPedidos[$keyPP]['ATENDIDA'] >0) {
+                $result[] = array(
+                    'COD_PESSOA' => $pp['COD_PESSOA'],
+                    'COD_PRODUTO' => $pp['COD_PRODUTO'],
+                    'DSC_GRADE' => $pp['DSC_GRADE'],
+                    'QTD_PEDIDO' => $pp['QTD_PEDIDO'],
+                    'ATENDIDA' => $arrayPedidos[$keyPP]['ATENDIDA'] / $pp['FATOR_EMBALAGEM_VENDA'],
+                    'CNPJ' => $pp['CNPJ'],
+                    'DSC_LOTE' => $pp['DSC_LOTE'],
+                    'QTD_PEDIDO_EMBALAGEM_VENDA' => $pp['QTD_PEDIDO_EMBALAGEM_VENDA'],
+                    'QTD_ATENDIDA_EMB_VENDA' => $pp['QTD_PEDIDO_EMBALAGEM_VENDA'],
+                    'FATOR_EMBALAGEM_VENDA' => $pp['FATOR_EMBALAGEM_VENDA'],
+                    'QTD_CONFERIDA' => $pp['QTD_CONFERIDA'],
+                    'EMBALADO' => ''
+                );
+            }
+        }
+        return $result;
     }
 
     public function finalizaPedidosByCentral ($PontoTransbordo, $Expedicao, $carga = null, $flush = true)

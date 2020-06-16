@@ -67,7 +67,8 @@ class Expedicao_CorteController extends Action {
                     $this->_redirect('/expedicao');
                 }
                 if ($etiquetaEntity->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
-                    $this->addFlashMessage('error', "Etiqueta já cortada!");
+                    $idEtiqueta = $etiquetaEntity->getId();
+                    $this->addFlashMessage('error', "Etiqueta $idEtiqueta já cortada!");
                     $this->_redirect('/expedicao');
                 }
 

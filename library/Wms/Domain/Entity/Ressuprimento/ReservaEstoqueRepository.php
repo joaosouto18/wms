@@ -104,6 +104,11 @@ class ReservaEstoqueRepository extends EntityRepository
             if ($reservaEstoqueEn->getAtendida() == 'C' || empty($reservaProdutos)) {
                 continue;
             }
+
+            if (($idEndereco != null) && ($reservaEstoqueEn->getEndereco()->getId() != $idEndereco)) {
+                continue;
+            }
+
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
             foreach ($reservaProdutos as $reservaProduto) {
                 foreach ($produtos as $produto) {

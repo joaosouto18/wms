@@ -196,7 +196,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 break;
             case 7:
                 //LAYOUT MBLED
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100, 175));
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,175));
                 break;
             case 8:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
@@ -299,7 +299,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
              GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
                       PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, SIGLA.DSC_SIGLA, MSE.POS_VOLUME, R.NUM_SEQ, PR.NUM_SEQ, E.COUNT_VOLUMES,
                       NVL(R.NOME_ROTA, ''), NVL(PR.NOME_PRACA, ''), OS.DTH_FINAL_ATIVIDADE, OP.NOM_PESSOA, B.DSC_BOX, MSE.IND_ULTIMO_VOLUME, P.COD_PESSOA
-             ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
+             ORDER BY TO_NUMBER(P.COD_PESSOA), TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

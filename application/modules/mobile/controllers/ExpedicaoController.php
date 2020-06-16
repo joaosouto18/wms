@@ -561,7 +561,7 @@ class Mobile_ExpedicaoController extends Action {
                         $isLast = true;
                     }
                 }
-            } elseif ($agrupaEtiquetas) {
+            } elseif ($agrupaEtiquetas && $usaCaixaPadrao && empty($qtdPendenteConferencia)) {
                 list($posVolume, $isLast, $posEntrega, $totalEntrega) = $checkAgrupamento();
                 if (!empty($posVolume)) {
                     $posVolume += 1;
@@ -570,7 +570,7 @@ class Mobile_ExpedicaoController extends Action {
                     $mapaSeparacaoEmbaladoEn = $criarEmbaladoFechado($idMapa, $idPessoa, $posVolume, $embalados[0], $posEntrega, $totalEntrega);
                 }
             } else {
-                throw new Exception("Não há etiqueta para ser fechada");
+                throw new Exception("Não há volume para ser fechado");
             }
             $this->getEntityManager()->commit();
 

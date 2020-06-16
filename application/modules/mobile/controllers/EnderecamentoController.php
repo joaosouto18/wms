@@ -1329,8 +1329,8 @@ class Mobile_EnderecamentoController extends Action
                             }
                             if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                                 if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                    $str[] = ($endereco->isBloðqueadaEntrada()) ? "Entrada" : "";
-                                    $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
+                                    if ($endereco->isBloqueadaEntrada()) $str[] = "Entrada";
+                                    if ($endereco->isBloqueadaSaida()) $str[] = "Saída";
                                     throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                                 }
                                 $volume->setEndereco($endereco);
@@ -1349,8 +1349,8 @@ class Mobile_EnderecamentoController extends Action
                             if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                                 if (isset($volume) && is_null($volume->getEndereco())) {
                                     if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                        $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
-                                        $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
+                                        if ($endereco->isBloqueadaEntrada()) $str[] = "Entrada";
+                                        if ($endereco->isBloqueadaSaida()) $str[] = "Saída";
                                         throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                                     }
                                     $volume->setEndereco($endereco);
@@ -1506,8 +1506,8 @@ class Mobile_EnderecamentoController extends Action
                 }
 
                 if ($enderecoEn->isBloqueadaEntrada() || $enderecoEn->isBloqueadaSaida()) {
-                    $str[] = ($enderecoEn->isBloqueadaEntrada()) ? "Entrada" : "";
-                    $str[] = ($enderecoEn->isBloqueadaSaida()) ? "Saída" : "";
+                    if ($enderecoEn->isBloqueadaEntrada()) $str[] = "Entrada";
+                    if ($enderecoEn->isBloqueadaSaida()) $str[] = "Saída";
                     throw new Exception('error', "O endereço ".$enderecoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                 }
 
@@ -1531,6 +1531,17 @@ class Mobile_EnderecamentoController extends Action
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
+            } else {
+                if (!empty($codBarras)) {
+                    if (empty($capacidadePicking)) {
+                        $this->addFlashMessage('info', "Capacidade de picking não informada ou preenchido como 0");
+                    }
+                    if (empty($codigoBarrasEndereco)) {
+                        $this->addFlashMessage('info', "Endereço de picking não informado");
+                    }
+                    $this->addFlashMessage('info', "Nenhuma informação foi alterada");
+                }
+
             }
         } catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());

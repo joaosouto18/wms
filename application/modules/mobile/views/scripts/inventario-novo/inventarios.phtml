@@ -136,7 +136,7 @@
     <img src="/img/ajax-bar-loader.gif" alt="loading">
 </div>
 
-<div style="display: none; margin-bottom: 5px" id="divBtnBack">
+<div id="divBtnBack" style="display: none; margin-bottom: 5px">
     <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
 </div>
 
@@ -144,6 +144,11 @@
 <a href="#messenger" style="display: none" id="anchorMsg"></a>
 
 <div id="headers" style="padding-top: 5px; display: none">
+</div>
+<div id="btn-row" style="padding-top: 6px; display: none">
+    <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
+</div>
+<div id="header-active" style="padding-top: 5px; display: none">
     <div class="lbl-headers" id="lbl-inventario"></div>
     <div class="lbl-headers" id="lbl-contagem"></div>
     <div class="lbl-headers" id="lbl-endereco"></div>
@@ -151,9 +156,6 @@
     <div class="lbl-headers" id="lbl-produto"></div>
     <div class="lbl-headers" id="lbl-embvol"></div>
     <div class="lbl-headers" id="lbl-picking"></div>
-</div>
-<div id="btn-row" style="padding-top: 6px; display: none">
-    <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
 </div>
 
 <div id="list-inventarios" style="display: none;">
@@ -345,34 +347,53 @@
             return [rua,predio,nivel,apto].join(".");
         };
 
-        var changeViewer = function (showTo) {
+        var changeViewer = function (changeTo) {
             $.each(views, function (k,v) {
                 $("#"+v).hide();
             });
 
-            if (showTo === undefined || myIndexOf(views, showTo) < 0) {
-                showTo = views[1];
+            if (changeTo === undefined || myIndexOf(views, changeTo) < 0) {
+                changeTo = views[1];
             }
 
-            showing = myIndexOf(views, showTo);
+            showing = myIndexOf(views, changeTo);
 
+            $.each(headersArr, function (k,v) {
+                var element = $("#" + v);
+                if ( k > (showing - 2)) {
+                    element.hide();
+                } else {
+                    element.show();
+                }
+            });
+
+            var divHeaders = $("#headers");
+            var divActiveHeader = $("#header-active");
             if (showing > 1) {
                 $("#divBtnBack").show();
-                if (!$("#toggleInfo").hasClass('hiddingInfo')) $("#headers").show();
-                $("#btn-row").show();
+                if ((showing - 2) > divHeaders.children("div").length) {
+                    var active = divActiveHeader.children("div:first");
+                    divHeaders.append(active);
+                } else {
+                    var newActive = divHeaders.children("div:last");
+                    divActiveHeader.prepend(newActive);
+                }
+
+                divActiveHeader.show();
+
+                if (showing > 2) {
+                    $("#btn-row").show();
+                }
+                if (divHeaders.children("div").length && !$("#toggleInfo").hasClass('hiddingInfo'))
+                    divHeaders.show();
             } else {
                 $("#divBtnBack").hide();
+                divHeaders.hide();
+                divActiveHeader.hide();
                 $("#btn-row").hide();
             }
 
-            $.each(headersArr, function (k,v) {
-                if ( k > (showing - 2))
-                    $("#" + v).hide();
-                else
-                    $("#" + v).show();
-            });
-
-            if (showTo !== "loader") {
+            if (changeTo !== "loader") {
                 if (msgShowed) {
                     $("#messenger").empty();
                 } else {
@@ -380,10 +401,10 @@
                 }
             }
 
-            $("#"+showTo).show();
+            $("#"+changeTo).show();
 
             if (showing > 2) {
-                $("#" + showTo + " div.input-area form div:visible:first input:text").val("").focus();
+                $("#" + changeTo + " div.input-area form div:visible:first input:text").val("").focus();
             }
             if ($("#messenger > ul > li.warning_message, #messenger > ul >li.error_message").length > 0)
                 $("#anchorMsg")[0].click();
@@ -652,8 +673,9 @@
                     if (usaGrade) {
                         dscProd += " - " + v.grade;
                     }
-                    dscProd += " - " + v.descricao;
 
+                    dscProd += " - " + v.descricao + " - " + "****" + v.codBarras.toString().slice(v.codBarras.toString().length -6);
+                    //dscProd += " - " + v.descricao + " - " + v.codBarras;
                     if (!isEmpty(v.lote)) {
                         dscProd += " Lote: " + v.lote;
                     }
@@ -776,16 +798,16 @@
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
             $("#lbl-picking").text( "Picking: " + elemBipado.picking);
             $("#qtd").val("");
+            $("#lote").val("");
+            $("#validade").val("");
 
             if (controlaLote()) {
-                $("#lote").val("");
                 $("#div-lote").show();
             } else {
                 $("#div-lote").hide();
             }
 
             if (controlaValidade()) {
-                $("#validade").val("");
                 $("#div-validade").show();
             } else {
                 $("#div-validade").hide();

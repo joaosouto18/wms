@@ -300,4 +300,9 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 
         return $result;
     }
+
+    public function infoAjaxAction() {
+        $texto = $this->_getParam('info', '');
+        $this->view->texto = $texto;
+    }
 }

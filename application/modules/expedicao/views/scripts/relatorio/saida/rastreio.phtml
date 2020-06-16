@@ -1,0 +1,48 @@
+<?php
+$form = $this->form;
+?>
+<script src="<?php echo $this->baseUrl('angularJS/controllers/relatorio/rastreioExpedicaoCtrl.js') ?>"></script>
+<div id="rastreio-div" ng-controller="rastreioExpedicaoCtrl" ng-init="initForm()" style="font-size: 12px;">
+    <?php echo $form; ?>
+    <fieldset id="fs-grid-selected" ng-show="requestSent">
+        <legend>Resultado</legend>
+        <div class="grid" >
+            <div class="gMassAction">
+                <div class="gAction">
+                    <button ng-show="results.length" type="button" class="btn-grid" ng-click="export('pdf')"><span>PDF</span></button>
+                    <button ng-show="results.length" type="button" class="btn-grid" ng-click="export('csv')"><span>CSV</span></button>
+                </div>
+            </div>
+            <table class="gTable" style="width: 1200px;">
+                <tbody >
+                <tr class="gTTitle">
+                    <td ng-repeat="column in gridColumns" width="{{column.width}}">
+                        <div><a href="" title="" class="sort" ng-click="ordenarPor(column.name)"><span>{{column.label}}</span></a></div>
+                        <div class="field">
+                            <input ng-if="column.filter && column.filter.type == 'text'"
+                                   type="text" ng-model="objectFilter[column.name]"
+                                   ng-attr-ui-mask="{{column.filter.masked && column.filter.maskFilter || ''}}"
+                                   ng-attr-model-view-value="{{column.filter.masked && true || false}}"
+                                   size="{{column.filter.size}}" uppercase="{{column.filter.uppercase}}"
+                            >
+                        </div>
+                    </td>
+                </tr>
+                <tr ng-show="showLoading">
+                    <td colspan="100%" align="center">
+                        <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
+                    </td>
+                </tr>
+                <tr class="gTResultSet" ng-repeat="result in results | queryFilter:objectFilter | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                    <td ng-repeat="column in gridColumns" width="{{column.width}}">
+                        <div>{{result[column.name]}}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%" align="center" ng-show="(noResults && !showLoading)" >Nenhum resultado!</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
+</div>

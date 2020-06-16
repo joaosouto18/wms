@@ -58,7 +58,7 @@ class Expedicao_IndexController extends Action {
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
 
-        //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
+            //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
         if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
             $acaoEn = $acaoIntRepo->find(24);
             $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
@@ -193,11 +193,10 @@ class Expedicao_IndexController extends Action {
             unset($params['control']);
         } else {
             $dataI1 = new \DateTime;
-            $dataI2 = new \DateTime;
 
             $params = array(
                 'dataInicial1' => $dataI1->format('d/m/Y'),
-                'dataInicial2' => $dataI2->format('d/m/Y')
+                'dataInicial2' => $dataI1->format('d/m/Y')
             );
             unset($params['control']);
         }
@@ -206,9 +205,7 @@ class Expedicao_IndexController extends Action {
         $form->populate($params);
 
         $Grid = new ExpedicaoGrid();
-        $this->view->grid = $Grid->init($params)
-                ->render();
-
+        $this->view->grid = $Grid->init($params)->render();
 
         if ($this->getSystemParameterValue('REFRESH_INDEX_EXPEDICAO') == 'S') {
             $this->view->refresh = true;

@@ -35,6 +35,11 @@ class Pedido
     protected $tipoPedido;
 
     /**
+     * @Column(name="COD_TIPO_PEDIDO", type="integer", nullable=false)
+     */
+    protected $codTipoPedido;
+
+    /**
      * @Column(name="DSC_LINHA_ENTREGA", type="string",nullable=false)
      */
     protected $linhaEntrega;
@@ -325,6 +330,22 @@ class Pedido
     public function getIndEtiquetaMapaGerado()
     {
         return $this->indEtiquetaMapaGerado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodTipoPedido()
+    {
+        return $this->codTipoPedido;
+    }
+
+    /**
+     * @param mixed $codTipoPedido
+     */
+    public function setCodTipoPedido($codTipoPedido)
+    {
+        $this->codTipoPedido = $codTipoPedido;
     }
 
 }

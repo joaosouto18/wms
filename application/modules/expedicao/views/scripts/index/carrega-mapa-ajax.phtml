@@ -269,18 +269,20 @@ if ($this->erro) {
     }
 
     <?php  } else { ?>
-    $("#qtd").keydown(function (e) {
-        if (e.which == 13) {
-            $('#codigoBarras').focus();
-            return false;
-        }
-    });
+
     $("#codigoBarras").keydown(function (e) {
         if (e.which == 13) {
             $('#buscar-submit').click();
         }
     });
     <?php  } ?>
+
+    $("#qtd").keydown(function (e) {
+        if (e.which == 13) {
+            $('#codigoBarras').focus();
+            return false;
+        }
+    });
 
     function requestAjax(e, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?>

@@ -222,6 +222,22 @@ class Web_ProdutoController extends Crud {
             /** @var ProdutoEntity $entity */
             if ($this->getRequest()->isPost()) {
 
+                if (isset($params['embalagens'])) {
+                    foreach (($params['embalagens']) as $embalagem) {
+                        if (($embalagem['endereco']) != "" && ($embalagem['capacidadePicking'] == 0)) {
+                            throw new \Exception("A definição da capacidade de picking é obrigatória para produtos separados no picking ");
+                        }
+                    }
+                }
+                if (isset($params['volumes'])) {
+                    foreach (($params['volumes']) as $volume) {
+                        if (($volume['endereco']) != "" && ($volume['capacidadePicking'] == 0)) {
+                            throw new \Exception("A definição da capacidade de picking é obrigatória para produtos separados no picking ");
+                        }
+                    }
+                }
+
+
                 $linhaEn = $entity->getLinhaSeparacao();
 
                 if (($linhaEn == NULL) || ($linhaEn->getId() != $params['produto']['idLinhaSeparacao'])) {

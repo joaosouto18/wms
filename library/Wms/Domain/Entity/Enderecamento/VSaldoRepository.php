@@ -4,7 +4,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Entity\Deposito\Endereco;
 
-class VSaldoRepository extends EntityRepository
+class VSaldoRepository extends EntityRepository implements VSaldoInterface
 {
 
     public function saldo($params)

@@ -29,7 +29,12 @@ class Recebimento extends Grid
                 ->setId('recebimento-index-grid')
                 ->setAttrib('class', 'grid-recebimento')
                 ->addColumn(array(
-                    'label' => 'Código do Recebimento',
+                    'label' => '',
+                    'index' => 'DSC_OBSERVACAO',
+                    'render' => 'info'
+                ))
+                ->addColumn(array(
+                    'label' => 'Código',
                     'index' => 'ID',
                 ))
                 ->addColumn(array(
