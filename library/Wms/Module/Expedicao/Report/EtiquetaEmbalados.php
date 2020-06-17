@@ -801,7 +801,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->Cell(50, 3, $impressao, 0, 1,'L');
 
             $this->SetFont('Arial', '', 7);
-            $impressao  = utf8_decode("$volume[NOM_LOCALIDADE]");
+            $impressao  = utf8_decode("ENTREGA: $volume[COD_PEDIDO] - $volume[DSC_ENDERECO], N $volume[NUM_ENDERECO], $volume[NOM_LOCALIDADE] - $volume[COD_REFERENCIA_SIGLA]");
             $this->Cell(60, 3, $impressao, 0, 1,'L');
 
             $this->SetY(-22);

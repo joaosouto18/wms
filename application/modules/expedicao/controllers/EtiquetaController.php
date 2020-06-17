@@ -717,6 +717,10 @@ class Expedicao_EtiquetaController  extends Action
                     //LAYOUT MOTOARTE
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
+                case 11:
+                    //LAYOUT MACROLUB
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;
