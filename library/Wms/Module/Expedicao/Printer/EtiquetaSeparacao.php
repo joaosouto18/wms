@@ -116,6 +116,16 @@ class EtiquetaSeparacao extends Pdf
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     $this->posVolume--;
                     break;
+                case 18:
+                    // font
+                    $this->SetFont('Arial','B',8);
+                    //Go to 1.5 cm from bottom
+                    $this->SetY($this->footerPosition);
+                    $this->Cell(20, 10, '', 0, 1, "L");
+                    $this->SetFont('Arial','B',9);
+                    $this->Cell(20, 3, 'Volume: ' . $this->etiqueta['posEntrega'], 0, 1, "L");
+                    $this->posVolume--;
+                    break;
             }
         }
     }
@@ -1641,6 +1651,7 @@ class EtiquetaSeparacao extends Pdf
         $this->InFooter = true;
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
+        $this->etiqueta = $etiqueta;
 
         $imgW = 14;
         $imgH = 5.5;
@@ -1667,34 +1678,8 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 8.5);
         $impressao = "COD BARRAS: $etiqueta[codBarras] - END. SEP.: $etiqueta[endereco]";
         $this->Cell(60, 0, $impressao, 0, 1,'L');
-
-
-
-
-
-
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 20, 22,50,12);
+        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 25, 22,50,12);
         $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 2, $imgW - 1, $imgH);
-
-
-
-//        $this->setY(6);
-//        $impressao  = substr(utf8_decode("$etiqueta[tipoPedido]: $etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40);
-//        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
-//        $this->setY(9);
-//        $impressao = substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40);
-//        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
-//        $this->setY(12);
-//        $impressao = "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]";
-//        $this->Cell(100, 3.9, $impressao, 0, 1,'L');
-//        $this->SetFont('Arial', 'B', 10);
-//        $impressao = utf8_decode(substr(trim($etiqueta['produto']),0,70))."\n";
-//        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-//        $this->SetFont('Arial', 'B', 8);
-//
-//        if (!isset($etiqueta['quantidade'])) {
-//            $etiqueta['quantidade'] = '';
-//        }
 
 
     }
