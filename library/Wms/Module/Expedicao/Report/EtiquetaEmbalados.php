@@ -45,7 +45,7 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 7:
                 //LAYOUT MBLED
-                self::bodyExpedicaoModelo7($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
+                self::bodyExpedicaoModelo7($volumePatrimonio);
                 break;
             case 8:
                 self::bodyExpedicaoModelo8($volumePatrimonio);
@@ -467,8 +467,8 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(90, 5, 'CLIENTE: '.$impressao, 0, 'L');
 
             $this->SetY(28);
-            $impressao = utf8_decode($volume['DSC_SIGLA']);
-            $this->MultiCell(110, 5, $impressao, 0, 'L');
+            $impressao = utf8_decode("($volume[COD_REFERENCIA_SIGLA]) - $volume[NOM_LOCALIDADE]");
+            $this->MultiCell(100, 5, $this->SetStringByMaxWidth($impressao, 95), 0, 'L');
 
             $this->SetY(36);
             $x = $this->getX();
@@ -499,27 +499,29 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 35, 50 , 60, 20);
 
-            $y = 47;
-            $this->SetFont('Arial', 'B', 9);
+            if ($this->h == 175) {
+                $y = 47;
+                $this->SetFont('Arial', 'B', 9);
 
-            $volume['produtos'] = $em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->getProdutosByMapaEmbalado($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']);
+                $volume['produtos'] = $em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->getProdutosByMapaEmbalado($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']);
 
-            foreach ($volume['produtos'] as $produto) {
+                foreach ($volume['produtos'] as $produto) {
 
-                $impressao = utf8_decode($produto['codProduto']);
-                $this->SetX(3);
-                $this->SetY($y);
-                $this->MultiCell(150, $y, $impressao, 0, 'L');
+                    $impressao = utf8_decode($produto['codProduto']);
+                    $this->SetX(3);
+                    $this->SetY($y);
+                    $this->MultiCell(150, $y, $impressao, 0, 'L');
 
-                $impressao = utf8_decode(substr($produto['descricao'], 0, 33));
-                $this->SetXY(19,$y);
-                $this->MultiCell(150, $y, $impressao, 0, 'L');
+                    $impressao = utf8_decode(substr($produto['descricao'], 0, 33));
+                    $this->SetXY(19, $y);
+                    $this->MultiCell(150, $y, $impressao, 0, 'L');
 
-                $impressao = $produto['quantidade'];
-                $this->SetXY(85,$y);
-                $this->Cell(75,$y, $impressao, 0, 'L');
+                    $impressao = $produto['quantidade'];
+                    $this->SetXY(85, $y);
+                    $this->Cell(75, $y, $impressao, 0, 'L');
 
-                $y = $y + 3;
+                    $y = $y + 3;
+                }
             }
 
         }
