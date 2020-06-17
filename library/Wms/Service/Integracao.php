@@ -268,7 +268,7 @@ class Integracao {
                     'dtEmissao' => $notaFiscal['DTH'],
                     'itens' => $itens,
                     'pedidos' => $pedidos,
-                    'chaveAcesso' => (!empty($notaFiscal['CHAVE_ACESSO'])) ? $notaFiscal['CHAVE_ACESSO'] ? null
+                    'chaveAcesso' => (!empty($notaFiscal['CHAVE_ACESSO'])) ? $notaFiscal['CHAVE_ACESSO'] : null
                 );
 
                 unset($itens);
