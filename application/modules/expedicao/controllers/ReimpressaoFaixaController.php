@@ -20,6 +20,8 @@ class Expedicao_ReimpressaoFaixaController  extends Action
 
         if ($modelo == '1') {
             $Etiqueta = new Etiqueta("L", 'mm', array(110, 40));
+        } elseif ($modelo == '18') {
+            $Etiqueta = new Etiqueta("L", 'mm', array(100, 35));
         } else {
             $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
         }

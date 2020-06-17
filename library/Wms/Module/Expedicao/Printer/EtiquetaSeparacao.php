@@ -1680,7 +1680,5 @@ class EtiquetaSeparacao extends Pdf
         $this->Cell(60, 0, $impressao, 0, 1,'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 25, 22,50,12);
         $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 2, $imgW - 1, $imgH);
-
-
     }
 }

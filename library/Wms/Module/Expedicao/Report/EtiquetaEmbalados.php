@@ -58,6 +58,9 @@ class EtiquetaEmbalados extends eFPDF
                 //LAYOUT MOTOARTE
                 self::bodyExpedicaoModelo10($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
                 break;
+            case 11:
+                self::bodyExpedicaoModelo11($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
+                break;
             default:
                 self::bodyExpedicaoModelo1($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
@@ -775,6 +778,39 @@ class EtiquetaEmbalados extends eFPDF
             $this->SetxY(67,87);
             $this->SetFont('Arial', 'B', 22);
             $this->MultiCell(20, 10, $impressao, 0, 'C');
+        }
+    }
+
+    private function bodyExpedicaoModelo11($volumes)
+    {
+
+        foreach ($volumes as $volume) {
+
+            $imgW = 14;
+            $imgH = 5.5;
+            $this->AddPage();
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 2, $imgW - 1, $imgH);
+
+            $this->SetFont('Arial', 'B', 8);
+            $impressao = "CARGA: $volume[COD_CARGA_EXTERNO]";
+            $this->Cell(92, 3, $impressao, 0, 1,'R');
+            $this->setX(17.5);
+            $impressao  = utf8_decode("TRANSP.: $volume[DSC_PLACA_CARGA]");
+            $this->Cell(50, 3, $impressao, 0, 1,'L');
+            $impressao = utf8_decode("CLIENTE: $volume[NOM_PESSOA]");
+            $this->Cell(50, 3, $impressao, 0, 1,'L');
+
+            $this->SetFont('Arial', '', 7);
+            $impressao  = utf8_decode("$volume[NOM_LOCALIDADE]");
+            $this->Cell(60, 3, $impressao, 0, 1,'L');
+
+            $this->SetY(-22);
+            $this->Cell(20, 10, '', 0, 1, "L");
+            $this->SetFont('Arial','B',8);
+            $dscSeq = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
+            $this->Cell(20, 3, "Volume: $dscSeq", 0, 1,'L');
+
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 25, 22,50,12);
         }
     }
 }
