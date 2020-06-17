@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Integracao;
 
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Util\Sigla;
 
 /**
  *
@@ -49,6 +50,7 @@ class AcaoIntegracao
     protected $id;
     
     /**
+     * @var ConexaoIntegracao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Integracao\ConexaoIntegracao")
      * @JoinColumn(name="COD_CONEXAO_INTEGRACAO", referencedColumnName="COD_CONEXAO_INTEGRACAO")
      */
@@ -148,7 +150,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @param mixed $conexao
+     * @param ConexaoIntegracao $conexao
      */
     public function setConexao($conexao)
     {
@@ -172,7 +174,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @return mixed
+     * @return Sigla
      */
     public function getTipoAcao()
     {
@@ -180,7 +182,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @param mixed $tipoAcao
+     * @param Sigla $tipoAcao
      */
     public function setTipoAcao($tipoAcao)
     {

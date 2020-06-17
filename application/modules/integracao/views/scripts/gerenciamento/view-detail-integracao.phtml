@@ -7,6 +7,15 @@ $conexao = $integracao->getConexao();
     #show-pass {
         cursor: pointer;
         margin-right: 6px;
+        padding: 0 6px;
+    }
+
+    .hidded {
+        display: none;
+    }
+
+    .line-row {
+        margin: 10px 0;
     }
 </style>
 <fieldset>
@@ -19,27 +28,41 @@ $conexao = $integracao->getConexao();
             <td colspan="2">Servidor:</td>
             <td>Porta:</td>
             <td>Usuário:</td>
-            <td>Senha: <img id="show-pass"src="/img/icons/lock_open.png" alt="show-pass" title="Clique para exibir a senha!"></td>
+            <td>Senha: <img id="show-pass" src="/img/icons/lock_open.png" alt="show-pass" title="Clique para exibir a senha!"></td>
         </tr>
         <tr>
             <td><?php echo $conexao->getId(); ?></td>
             <td colspan="2"><?php echo $conexao->getDescricao(); ?></td>
-            <td ><?php echo $conexao->getProvedor(); ?></td>
+            <td><?php echo $conexao->getProvedor(); ?></td>
             <td colspan="2"><?php echo $conexao->getServidor(); ?></td>
             <td><?php echo $conexao->getPorta(); ?></td>
             <td><?php echo $conexao->getUsuario(); ?></td>
             <td>
-                <span id="span-hide-pass">********</span>
-                <span id="span-show-pass"></span>
+                <span class="span-pass"><?php echo str_repeat('*', strlen($conexao->getSenha())).'*****'; ?></span>
+                <span class="span-pass hidded"><?php echo $conexao->getSenha(); ?></span>
             </td>
         </tr>
     </table>
 </fieldset>
 
 <script>
-    $("#show-pass").mouseenter(function () {
+    var down = false;
 
-    })
+    $("#show-pass").mousedown(function () {
+        $(".span-pass").toggleClass("hidded");
+        down = true;
+        return false;
+    }).mouseup(function () {
+        $(".span-pass").toggleClass("hidded");
+        down = false;
+        return false;
+    }).mouseout(function () {
+        if (down) {
+            $(".span-pass").toggleClass("hidded");
+            down = false;
+        }
+        return false;
+    });
 </script>
 
 <fieldset>
@@ -47,59 +70,35 @@ $conexao = $integracao->getConexao();
     <table class="detailsPopUp">
         <tr class="title">
             <td>Código:</td>
-            <td colspan="3">Descrição:</td>
+            <td>Descrição:</td>
             <td>Usa LOG</td>
+            <td>Tipo</td>
         </tr>
         <tr>
             <td><?php echo $integracao->getId(); ?></td>
-            <td colspan="3"><?php echo $integracao->getDscAcaoIntegracao(); ?></td>
-            <td ><?php echo ($integracao->getIndUtilizaLog() == 'S') ? 'Sim' : 'Não'; ?></td>
+            <td><?php echo $integracao->getDscAcaoIntegracao(); ?></td>
+            <td><?php echo ($integracao->getIndUtilizaLog() == 'S') ? 'Sim' : 'Não'; ?></td>
+            <td><?php echo $integracao->getTipoAcao()->getSigla(); ?></td>
+        </tr>
+        <tr><td colspan="4"><hr class="line-row"></td></tr>
+        <tr class="title">
+            <td>Ultima execução:</td>
+            <td>Tabela de Referência:</td>
+            <td>Integrações Relacionadas:</td>
+            <td>Parametros</td>
+        </tr>
+        <tr>
+            <td><?php echo (!empty($integracao->getDthUltimaExecucao())) ? $integracao->getDthUltimaExecucao()->format('d/m/Y H:i:s') : '-'; ?></td>
+            <td><?php echo $integracao->getTabelaReferencia(); ?></td>
+            <td><?php echo $integracao->getIdAcaoRelacionada(); ?></td>
+            <td><?php echo $integracao->getParametros(); ?></td>
+        </tr>
+        <tr><td colspan="4"><hr class="line-row"></td></tr>
+        <tr class="title">
+            <td colspan="4">Script</td>
+        </tr>
+        <tr>
+            <td colspan="4"><p><?php echo $integracao->getQuery(); ?></p></td>
         </tr>
     </table>
 </fieldset>
-
-<!--        <tr>-->
-<!--            <td colspan="6" style="height:10px"></td>-->
-<!--        </tr>-->
-<!---->
-<!--        <tr class="title">-->
-<!--            <td colspan="3">Classe:</td>-->
-<!--            <td colspan="3">Fabricante:</td>-->
-<!--        </tr>-->
-<!--        <tr>-->
-<!--            <td colspan="3">--><?php //echo $produto->getClasse()->getNome(); ?><!--</td>-->
-<!--            <td colspan="3">--><?php //echo $produto->getFabricante()->getNome(); ?><!--</td>-->
-<!--        </tr>-->
-<!---->
-<!--        <tr>-->
-<!--            <td colspan="6" style="height:10px"></td>-->
-<!--        </tr>-->
-<!---->
-<!--        <tr class="title">-->
-<!--            <td colspan="3">Linha de Separação:</td>-->
-<!--            <td colspan="3">Tipo Comercialização:</td>-->
-<!--        </tr>-->
-<!--        <tr>-->
-<!--            --><?php //if ($produto->getLinhaSeparacao() == null): ?>
-<!--                <td colspan="3">--><?php //echo ''; ?><!--</td>-->
-<!--            --><?php //else : ?>
-<!--                <td colspan="3">--><?php //echo $produto->getLinhaSeparacao()->getDescricao(); ?><!--</td>-->
-<!--            --><?php //endif; ?>
-<!--            <td colspan="3">--><?php //echo $produto->getTipoComercializacao()->getDescricao(); ?><!--</td>-->
-<!--        </tr>-->
-<!---->
-<!--        <tr>-->
-<!--            <td colspan="6" style="height:10px"></td>-->
-<!--        </tr>-->
-<!---->
-<!--        --><?php //if ($produto->getCodigoBarrasBase()): ?>
-<!--            <tr class="title">-->
-<!--                <td colspan="3">Código de Barra Base:</td>-->
-<!--                <td colspan="3">Nº Volumes:</td>-->
-<!--            </tr>-->
-<!--            <tr>-->
-<!--                <td colspan="3">--><?php //echo $produto->getCodigoBarrasBase(); ?><!--</td>-->
-<!--                <td colspan="3">--><?php //echo $produto->getNumVolumes(); ?><!--</td>-->
-<!--            </tr>-->
-<!--        --><?php //endif; ?>
-

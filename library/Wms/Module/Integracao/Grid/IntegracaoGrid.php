@@ -16,7 +16,8 @@ class IntegracaoGrid extends Grid
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('i, c.id codConexao')
             ->from(AcaoIntegracao::class, 'i')
-            ->innerJoin('i.conexao', 'c');
+            ->innerJoin('i.conexao', 'c')
+            ->orderBy('i.id');
 
         $this->setAttribs(['title' => 'Gerenciamento de Integrações'])
             ->setSource(new \Core\Grid\Source\Doctrine($dql))
@@ -56,7 +57,22 @@ class IntegracaoGrid extends Grid
                 'cssClass' => 'dialogAjax',
                 'pkIndex' => 'id'
             ])
-            ;
+            ->addAction([
+                'label' => 'Editar',
+                'moduleName' => 'integracao',
+                'controllerName' => 'gerenciamento',
+                'actionName' => 'edit',
+                'pkIndex' => 'id'
+            ])
+            ->addAction([
+                'label' => 'Desligar LOG',
+                'moduleName' => 'integracao',
+                'controllerName' => 'gerenciamento',
+                'actionName' => 'turn-off-log-integracao-ajax',
+                'pkIndex' => 'id',
+                'cssClass' => 'del',
+                'condition' => function ($row) { return $row['indUtilizaLog'] == 'S';}
+            ]);
 
         return $this;
     }
