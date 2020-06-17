@@ -67,6 +67,9 @@ class notaFiscal {
     /** @var notaFiscalProduto[] */
     public $itens;
 
+    /** @var integer */
+    public $chaveAcesso;
+
 }
 
 class notaFiscalProduto {
@@ -264,7 +267,8 @@ class Integracao {
                     'serie' => $notaFiscal['SERIE_NF'],
                     'dtEmissao' => $notaFiscal['DTH'],
                     'itens' => $itens,
-                    'pedidos' => $pedidos
+                    'pedidos' => $pedidos,
+                    'chaveAcesso' => $notaFiscal['CHAVE_ACESSO']
                 );
 
                 unset($itens);
@@ -322,6 +326,7 @@ class Integracao {
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
             $nfSaida->pedidos = $pedidos;
+            $nfSaida->chaveAcesso = $nf['chaveAcesso'];
             $nfs[] = $nfSaida;
         }
         $wsExpedicao = new \Wms_WebService_Expedicao();

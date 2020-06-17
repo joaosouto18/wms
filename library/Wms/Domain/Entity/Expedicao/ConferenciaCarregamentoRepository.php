@@ -133,6 +133,8 @@ class ConferenciaCarregamentoRepository extends EntityRepository
      */
     public function getInfoToConfCarregByDanfe($keypass)
     {
+        $expFinalizada = Expedicao::STATUS_FINALIZADO;
+
         $sql = "SELECT 
                     C.COD_EXPEDICAO, 
                     CL.COD_PESSOA, 
@@ -144,13 +146,14 @@ class ConferenciaCarregamentoRepository extends EntityRepository
                 INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = NFSP.COD_PEDIDO
                 INNER JOIN CARGA C ON C.COD_CARGA = PED.COD_CARGA
                 INNER JOIN PESSOA CL ON CL.COD_PESSOA = PED.COD_PESSOA
+                INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                 INNER JOIN (SELECT C2.COD_EXPEDICAO, PED2.COD_PESSOA FROM NOTA_FISCAL_SAIDA NFS2
                             INNER JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSP2 on NFS2.COD_NOTA_FISCAL_SAIDA = NFSP2.COD_NOTA_FISCAL_SAIDA
                             INNER JOIN PEDIDO PED2 ON PED2.COD_PEDIDO = NFSP2.COD_PEDIDO
                             INNER JOIN CARGA C2 ON C2.COD_CARGA = PED2.COD_CARGA
                             WHERE NFS2.COD_CHAVE_ACESSO = '$keypass'
                     ) KEY ON KEY.COD_PESSOA = PED.COD_PESSOA AND KEY.COD_EXPEDICAO = C.COD_EXPEDICAO
-                WHERE NOT EXISTS(SELECT * FROM CONFERENCIA_CARREGAMENTO CONF_CARREG
+                WHERE E.COD_STATUS = $expFinalizada AND NOT EXISTS(SELECT * FROM CONFERENCIA_CARREGAMENTO CONF_CARREG
                                 INNER JOIN CONF_CARREG_CLIENTE CCC on CONF_CARREG.COD_CONF_CARREG = CCC.COD_CONF_CARREG 
                                 WHERE CONF_CARREG.COD_EXPEDICAO = C.COD_EXPEDICAO AND CCC.COD_CLIENTE = PED.COD_PESSOA
                     )
