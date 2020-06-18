@@ -196,7 +196,7 @@ class Setup
             }
         }
 
-        //busca ações exclusivas de ROOT
+        //busca todas as ações existentes
         $sqlRootPrivileges = "
                 SELECT DISTINCT R.NOM_RECURSO, A.NOM_ACAO
                 FROM RECURSO_ACAO RA
@@ -266,6 +266,7 @@ class Setup
 
                 if ($item['ONLY_ROOT']) {
                     $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
+                    $menu[$key]['privilege'] = 'ROOT';
                     $menu[$key]['resource'] = $item['RESOURCE'];
                 }
                 // only links
@@ -280,6 +281,7 @@ class Setup
 
                 if ($item['ONLY_ROOT']) {
                     $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
+                    $menu[$key]['privilege'] = 'ROOT';
                     $menu[$key]['resource'] = $item['RESOURCE'];
                 }
                 // links with controllers/actions
@@ -298,35 +300,34 @@ class Setup
 
                 if ($item['ONLY_ROOT']) {
                     $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
-                    $menu[$key]['privilege'] = $item['ACTION'];
+                    $menu[$key]['privilege'] = 'ROOT';
                     $menu[$key]['resource'] = $item['RESOURCE'];
                 }
 
-//                // search extra actions
-//                $sql = "
-//                SELECT RA.DSC_RECURSO_ACAO AS LABEL, A.NOM_ACAO AS ACTION, RA.ONLY_ROOT
-//                FROM RECURSO_ACAO RA
-//                        INNER JOIN ACAO A ON (A.COD_ACAO = RA.COD_ACAO)
-//                WHERE RA.COD_RECURSO = " . (int) $item['COD_RECURSO'] . "
-//                AND RA.COD_ACAO != " . (int) $item['COD_ACAO'];
-//
-//                $actions = $this->conn->fetchAll($sql);
-//
-//                if (count($actions) > 0) {
-//                    foreach ($actions as $key2 => $action) {
-//                        $menu[$key]['pages'][$key2] = array(
-//                            'module' => $item['MODULE'],
-//                            'controller' => $item['CONTROLLER'],
-//                            'label' => $action['LABEL'],
-//                            'action' => $action['ACTION'],
-//                            'visible' => 0,
-//                            'onlyRoot' => $action['ONLY_ROOT']
-//                        );
-//                        if ($action['ONLY_ROOT']) {
-//                            $menu[$key]['pages'][$key2]['privilege'] = 'ROOT';
-//                        }
-//                    }
-//                }
+                // search extra actions
+                $sql = "
+                SELECT RA.DSC_RECURSO_ACAO AS LABEL, A.NOM_ACAO AS ACTION, RA.ONLY_ROOT
+                FROM RECURSO_ACAO RA
+                        INNER JOIN ACAO A ON (A.COD_ACAO = RA.COD_ACAO)
+                WHERE RA.COD_RECURSO = " . (int) $item['COD_RECURSO'] . "
+                AND RA.COD_ACAO != " . (int) $item['COD_ACAO'];
+
+                $actions = $this->conn->fetchAll($sql);
+
+                if (count($actions) > 0) {
+                    foreach ($actions as $key2 => $action) {
+                        $menu[$key]['pages'][$key2] = array(
+                            'module' => $item['MODULE'],
+                            'controller' => $item['CONTROLLER'],
+                            'label' => $action['LABEL'],
+                            'action' => $action['ACTION'],
+                            'visible' => 0
+                        );
+                        if ($action['ONLY_ROOT']) {
+                            $menu[$key]['pages'][$key2]['privilege'] = 'ROOT';
+                        }
+                    }
+                }
             }
 
             // has CHILDREN

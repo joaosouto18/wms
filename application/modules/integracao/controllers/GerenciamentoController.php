@@ -14,7 +14,7 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
     public function editAction()
     {
         $this->view->form = new \Wms\Module\Integracao\Form\CadastrarIntegracaoForm();
-        $this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'form-cadastral.phtml');
+        //$this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'form-cadastral.phtml');
     }
 
     public function viewDetailIntegracaoAjaxAction()

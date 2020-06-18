@@ -1,0 +1,87 @@
+    i:11;a:6:
+   {s:6:"module";s:3:"web";
+    s:5:"label";s:16:"Novo Inventário";
+    s:3:"uri";s:1:"#";
+    s:6:"target";s:5:"_self";
+    s:5:"order";s:2:"10";
+    s:5:"pages";a:1:{
+        i:0;a:7:{
+            s:6:"module";s:15:"inventario_novo";
+            s:5:"label";s:11:"Inventário";
+            s:10:"controller";s:5:"index";
+            s:6:"action";s:5:"index";
+            s:6:"target";s:5:"_self";
+            s:5:"order";s:1:"1";
+            s:5:"pages";a:7:{
+                i:0;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:19:"Liberar Inventário";
+                    s:6:"action";s:7:"liberar";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+                i:1;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:17:"Remover Endereço";
+                    s:6:"action";s:16:"remover-endereco";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+                i:2;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:15:"Remover Produto";
+                    s:6:"action";s:15:"remover-produto";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+                i:3;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:22:"Criar novo inventário";
+                    s:6:"action";s:16:"criar-inventario";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+                i:4;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:17:"Atualizar estoque";
+                    s:6:"action";s:9:"atualizar";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+                i:5;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:23:"Interromper inventário";
+                    s:6:"action";s:11:"interromper";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+                i:6;a:6:{
+                    s:6:"module";s:15:"inventario_novo";
+                    s:10:"controller";s:5:"index";
+                    s:5:"label";s:20:"Cancelar inventário";
+                    s:6:"action";s:8:"cancelar";
+                    s:7:"visible";i:0;
+                    s:8:"onlyRoot";s:1:"0";}
+            }
+        }
+    }
+}
+
+
+s:6:"module";s:3:"web";
+s:5:"label";s:8:"Sistemas";
+s:3:"uri";s:1:"#";
+s:6:"target";s:5:"_self";
+s:5:"order";s:1:"3";
+s:5:"pages";a:4:{
+    i:0;a:9:{
+        s:6:"module";s:10:"integracao";
+        s:5:"label";s:37:"[ROOT] Gerenciamento de Integrações";
+        s:10:"controller";s:13:"gerenciamento";
+        s:6:"action";s:5:"index";
+        s:6:"target";s:5:"_self";
+        s:5:"order";s:3:"-10";
+        s:9:"privilege";s:5:"index";
+        s:8:"resource";s:24:"integracao:gerenciamento";
+        s:5:"pages";a:1:{i:0;a:7:{s:6:"module";s:10:"integracao";s:10:"controller";s:13:"gerenciamento";s:5:"label";s:19:"Editar Integração";s:6:"action";s:4:"edit";s:7:"visible";i:0;s:8:"onlyRoot";s:1:"1";s:9:"privilege";s:4:"edit";}}}
+}
