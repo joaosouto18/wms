@@ -209,6 +209,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT MOTOARTE
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
+            case 11:
+                //LAYOUT MACROLUB
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;

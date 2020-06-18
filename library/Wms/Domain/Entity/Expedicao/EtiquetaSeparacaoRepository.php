@@ -289,7 +289,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica,
                     cl.id as codCliente, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, 'N/D') dscBox, uf.referencia siglaEstado, 
-                    pedEnd.localidade as cidadeEntrega
+                    pedEnd.localidade as cidadeEntrega, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega
                 ")
             ->addSelect("
                         (
@@ -402,7 +402,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega, etq.codStatus,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, 
-                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, pedEnd.localidade as cidadeEntrega')
+                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, 
+                    pedEnd.localidade as cidadeEntrega, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
             ->leftJoin("e.box", "b")
@@ -435,7 +436,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
                     emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega, pedEnd.localidade as cidadeEntrega, uf.referencia siglaEstado,
-                    exp.id as reentregaExpedicao,
+                    exp.id as reentregaExpedicao, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega
                     r.id as codReentrega,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                     CASE WHEN emb.CBInterno    IS NULL THEN vol.CBInterno ELSE emb.CBInterno END as CBInterno,
@@ -488,7 +489,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
-					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, pedEnd.localidade as cidadeEntrega
+					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, 
+					pedEnd.localidade as cidadeEntrega, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega
                 ')
             ->addSelect("
                         (

@@ -428,6 +428,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
                 } elseif ($modelo == '16') {
                     $Etiqueta = new Etiqueta('L', 'mm',array(100,75));
+                } elseif ($modelo == '18') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(100, 35));
                 } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
@@ -715,6 +717,10 @@ class Expedicao_EtiquetaController  extends Action
                     //LAYOUT MOTOARTE
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
+                case 11:
+                    //LAYOUT MACROLUB
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;
@@ -785,6 +791,10 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 10:
                     //LAYOUT MOTOARTE
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 11:
+                    //LAYOUT MACROLUB
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 default:
