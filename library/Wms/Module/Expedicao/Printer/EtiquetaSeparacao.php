@@ -865,7 +865,7 @@ class EtiquetaSeparacao extends Pdf
     {
         switch ($modelo) {
             case 18: //LAYOUT MACROLUB
-                $this->layoutModelo18($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
+                $this->layoutModelo18($etiqueta,$countEtiquetas,$reimpressao, $modelo);
                 break;
             case 17: //LAYOUT VETSS
                 $this->layoutModelo17($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
@@ -1646,11 +1646,10 @@ class EtiquetaSeparacao extends Pdf
         }
     }
 
-    protected function layoutModelo18($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
+    protected function layoutModelo18($etiqueta,$countEtiquetas,$reimpressao, $modelo)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
-        $this->etiqueta = $etiqueta;
 
         $imgW = 14;
         $imgH = 5.5;
@@ -1658,6 +1657,7 @@ class EtiquetaSeparacao extends Pdf
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
 
         $this->AddPage();
+        $this->etiqueta = $etiqueta;
         $this->InFooter = true;
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
@@ -1671,7 +1671,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = utf8_decode("CLIENTE: $etiqueta[codClienteExterno] - $etiqueta[cliente]");
         $this->Cell(50, 2.8, $impressao, 0, 1,'L');
         $this->SetFont('Arial', '', 7);
-        $impressao  = utf8_decode("$etiqueta[tipoPedido]: $etiqueta[codEntrega] - $etiqueta[ruaEntrega], N $etiqueta[numeroEntrega], $etiqueta[cidadeEntrega] - $etiqueta[siglaEstado]");
+        $impressao  = utf8_decode("$etiqueta[tipoPedido]: $etiqueta[codEntrega] - $etiqueta[ruaEntrega], N $etiqueta[numeroEntrega], $etiqueta[cidadeEntrega]");
         $this->Cell(60, 2.8, $impressao, 0, 1,'L');
         $impressao = "PROD.: $etiqueta[codProduto] - ".utf8_decode(substr(trim($etiqueta['produto']),0,70));
         $this->Cell(60, 2.8, $impressao, 0, 1,'L');
