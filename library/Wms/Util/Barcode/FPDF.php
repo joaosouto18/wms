@@ -746,6 +746,7 @@ class FPDF
         $l=0;
         $ns=0;
         $nl=1;
+        $sf='';
         while($i<$nb)
         {
 //Get next character
@@ -769,12 +770,12 @@ class FPDF
                     $b=$b2;
                 continue;
             }
-            if($c==' ')
-            {
-                $sep=$i;
-                $ls=$l;
-                $ns++;
-            }
+//            if($c==' ')
+//            {
+//                $sep=$i;
+//                $ls=$l;
+//                $ns++;
+//            }
             $l+=$cw[$c];
             if($l>$wmax)
             {
@@ -788,7 +789,11 @@ class FPDF
                         $this->ws=0;
                         $this->_out('0 Tw');
                     }
-                    $this->Cell($w,$h,substr($s,$j,$i-$j),$b,2,$align,$fill);
+                    if ($c != ' ' || $s[$i-1] != ' ')
+                    {
+                        $sf = '-';
+                    }
+                    $this->Cell($w,$h,substr($s,$j,$i-$j).$sf,$b,2,$align,$fill);
                 }
                 else
                 {
