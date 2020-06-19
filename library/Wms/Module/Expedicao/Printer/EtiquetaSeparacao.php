@@ -1667,18 +1667,18 @@ class EtiquetaSeparacao extends Pdf
         $this->Cell(92, 3, $impressao, 0, 1,'R');
         $this->setX(17.5);
         $impressao  = utf8_decode("TRANSP.: $etiqueta[placaExpedicao]");
-        $this->Cell(50, 2.8, $impressao, 0, 1,'L');
+        $this->Cell(50, 3, $impressao, 0, 1,'L');
         $impressao = utf8_decode("CLIENTE: $etiqueta[codClienteExterno] - $etiqueta[cliente]");
-        $this->Cell(50, 2.8, $impressao, 0, 1,'L');
+        $this->Cell(50, 3, $impressao, 0, 1,'L');
         $this->SetFont('Arial', '', 7);
         $impressao  = utf8_decode("$etiqueta[tipoPedido]: $etiqueta[codEntrega] - $etiqueta[ruaEntrega], N $etiqueta[numeroEntrega], $etiqueta[cidadeEntrega]");
-        $this->Cell(60, 2.8, $impressao, 0, 1,'L');
-        $impressao = "PROD.: $etiqueta[codProduto] - ".utf8_decode(substr(trim($etiqueta['produto']),0,70));
-        $this->Cell(60, 2.8, $impressao, 0, 1,'L');
+        $this->Cell(60, 3, $impressao, 0, 1,'L');
+        $impressao = "PROD.: $etiqueta[codProduto] - ".utf8_decode(substr(trim($etiqueta['produto']),0,70))." - $etiqueta[tipoComercializacao] ($etiqueta[quantidade])";
+        $this->Cell(60, 6, $impressao, 0, 1,'L');
         $this->SetFont('Arial', 'B', 8.5);
         $impressao = "COD BARRAS: $etiqueta[codBarras] - END. SEP.: $etiqueta[endereco]";
-        $this->Cell(60, 2.8, $impressao, 0, 1,'L');
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 25, 18,50,12);
+        $this->Cell(60, 0, $impressao, 0, 1,'L');
+        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 25, 22,50,12);
         $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 2, $imgW - 1, $imgH);
     }
 }
