@@ -478,7 +478,6 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell($imgW, $imgH+1, '', 1);
 
             $this->SetY(32);
-            $volume['NOM_LOCALIDADE'] = 'ITAPEMERIM DE SÃO JOÃO DO RIO ABAIXO';
             $impressao = "$volume[NOM_LOCALIDADE] - ($volume[COD_REFERENCIA_SIGLA])";
             if ($this->GetStringWidth($impressao) <= 95) {
                 $this->Cell(95, 5, $this->SetStringByMaxWidth(utf8_decode($impressao), 95));
