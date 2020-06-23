@@ -266,7 +266,7 @@ class Setup
 
                 if ($item['ONLY_ROOT']) {
                     $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
-                    $menu[$key]['privilege'] = 'ROOT';
+                    $menu[$key]['privilege'] = $item['ACTION'];
                     $menu[$key]['resource'] = $item['RESOURCE'];
                 }
                 // only links
@@ -281,7 +281,7 @@ class Setup
 
                 if ($item['ONLY_ROOT']) {
                     $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
-                    $menu[$key]['privilege'] = 'ROOT';
+                    $menu[$key]['privilege'] = $item['ACTION'];
                     $menu[$key]['resource'] = $item['RESOURCE'];
                 }
                 // links with controllers/actions
@@ -300,7 +300,7 @@ class Setup
 
                 if ($item['ONLY_ROOT']) {
                     $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
-                    $menu[$key]['privilege'] = 'ROOT';
+                    $menu[$key]['privilege'] = $item['ACTION'];
                     $menu[$key]['resource'] = $item['RESOURCE'];
                 }
 
@@ -324,7 +324,9 @@ class Setup
                             'visible' => 0
                         );
                         if ($action['ONLY_ROOT']) {
-                            $menu[$key]['pages'][$key2]['privilege'] = 'ROOT';
+                            $menu[$key]['pages'][$key2]['label'] = "[ROOT] ".$action['LABEL'];
+                            $menu[$key]['pages'][$key2]['privilege'] = $action['ACTION'];
+                            $menu[$key]['pages'][$key2]['resource'] = $item['RESOURCE'];
                         }
                     }
                 }

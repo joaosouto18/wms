@@ -10,7 +10,7 @@ use Wms\Domain\Entity\Integracao\ConexaoIntegracao;
  * Time: 16:00
  */
 
-class CadastrarIntegracaoForm extends SubForm
+class AcaoIntegracaoForm extends SubForm
 {
     public function init()
     {

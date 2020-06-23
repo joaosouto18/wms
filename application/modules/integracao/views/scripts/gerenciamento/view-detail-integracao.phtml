@@ -53,13 +53,14 @@ $conexao = $integracao->getConexao();
         down = true;
         return false;
     }).mouseup(function () {
-        $(".span-pass").toggleClass("hidded");
-        down = false;
-        return false;
-    }).mouseout(function () {
         if (down) {
             $(".span-pass").toggleClass("hidded");
             down = false;
+        }
+        return false;
+    }).mouseout(function () {
+        if (down) {
+            $(this).mouseup();
         }
         return false;
     });
