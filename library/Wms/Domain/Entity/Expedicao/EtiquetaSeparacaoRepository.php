@@ -3043,7 +3043,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
 
                 if ($encontrouProduto ==true) {
-                    $produtoReserva->setQtd($produtoReserva->getQtd()+1);
+                    $produtoReserva->setQtd($produtoReserva->getQtd()+$etiquetaEntity->getQtdProduto());
                     $this->_em->persist($produtoReserva);
                 }
             }

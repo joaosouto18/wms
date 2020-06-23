@@ -478,8 +478,13 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell($imgW, $imgH+1, '', 1);
 
             $this->SetY(32);
-            $impressao = utf8_decode("($volume[COD_REFERENCIA_SIGLA]) - $volume[NOM_LOCALIDADE]");
-            $this->MultiCell(100, 5, $this->SetStringByMaxWidth($impressao, 95), 0, 'L');
+            $impressao = "$volume[NOM_LOCALIDADE] - ($volume[COD_REFERENCIA_SIGLA])";
+            if ($this->GetStringWidth($impressao) <= 95) {
+                $this->Cell(95, 5, $this->SetStringByMaxWidth(utf8_decode($impressao), 95));
+            } else {
+                $this->Cell(80, 5, $this->SetStringByMaxWidth(utf8_decode("$volume[NOM_LOCALIDADE]"), 80));
+                $this->Cell(20, 5, $this->SetStringByMaxWidth("($volume[COD_REFERENCIA_SIGLA])" , 20));
+            }
 
             $this->SetY(37);
             $x = $this->getX();

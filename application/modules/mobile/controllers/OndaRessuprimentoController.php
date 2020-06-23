@@ -321,7 +321,8 @@ class Mobile_OndaRessuprimentoController extends Action
 
             // verifica existencia de residuo no endereço de pulmao
             if( ($controlaRetornoRessup == 'S') && ($qtdResiduo > 0)){
-                $urlRedirect = '/mobile/onda-ressuprimento/retorno-ressuprimento/idOnda/' . $idOnda. '/codProduto/'.$codProduto.'/grade/'.$grade.'/qtd/'.$qtdResiduo.'/lote/'.$lote.'/enderecoOrigem/'.$enderecoOrigem.'/descricao/'.$descricao;
+                $encoded = urlencode($descricao);
+                $urlRedirect = '/mobile/onda-ressuprimento/retorno-ressuprimento/idOnda/' . $idOnda. '/codProduto/'.$codProduto.'/grade/'.$grade.'/qtd/'.$qtdResiduo.'/lote/'.$lote.'/enderecoOrigem/'.$enderecoOrigem.'/descricao/'.$encoded;
                 $this->_redirect($urlRedirect);
             }
             else
