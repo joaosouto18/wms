@@ -4,10 +4,60 @@ namespace Wms\Domain\Entity\Integracao;
 
 use Composer\DependencyResolver\Transaction;
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Util\Sigla;
 use Wms\Service\Integracao;
 
 class AcaoIntegracaoRepository extends EntityRepository
 {
+
+    /**
+     * @param array $params
+     * @return AcaoIntegracao
+     * @throws \Exception
+     */
+    public function save(array $params)
+    {
+        try {
+            $this->_em->beginTransaction();
+
+            $entity = null;
+            if (!empty($params['id'])) {
+                /** @var AcaoIntegracao $entity */
+                $entity = $this->find($params['id']);
+                if (empty($entity)) throw new \Exception("Nenhuma integração foi encontrada com o ID $params[id]!");
+            } else {
+                $entity = new AcaoIntegracao();
+            }
+
+            $entity = Configurator::configure($entity, $params);
+
+            $entity->setConexao($this->_em->getReference(ConexaoIntegracao::class, $params['conexao']));
+            $entity->setTipoAcao($this->_em->getReference(Sigla::class, $params['tipoAcao']));
+
+            $this->_em->persist($entity);
+            $this->_em->flush($entity);
+            $this->_em->commit();
+
+            return $entity;
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw $e;
+        }
+    }
+
+    public function toggleLog($id, $status)
+    {
+        /** @var AcaoIntegracao $entity */
+        $entity = $this->find($id);
+        if (empty($entity)) throw new \Exception("Nenhuma integração foi encontrada com o ID $id!");
+
+        $entity->setIndUtilizaLog($status);
+        $this->_em->persist($entity);
+        $this->_em->flush($entity);
+
+        return $entity;
+    }
 
     public function getExisteIntegracao() {
         $SQL = "SELECT * FROM ACAO_INTEGRACAO";

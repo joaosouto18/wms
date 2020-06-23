@@ -68,11 +68,32 @@ class IntegracaoGrid extends Grid
                 'label' => 'Desligar LOG',
                 'moduleName' => 'integracao',
                 'controllerName' => 'gerenciamento',
-                'actionName' => 'turn-off-log-integracao-ajax',
+                'actionName' => 'toggle-log-integracao-ajax',
                 'pkIndex' => 'id',
-                'cssClass' => 'del',
+                'cssClass' => 'cross',
+                'params' => ['status'=> 'N'],
                 'condition' => function ($row) { return $row['indUtilizaLog'] == 'S';}
-            ]);
+            ])
+            ->addAction([
+                'label' => 'Ativar LOG',
+                'moduleName' => 'integracao',
+                'controllerName' => 'gerenciamento',
+                'actionName' => 'toggle-log-integracao-ajax',
+                'pkIndex' => 'id',
+                'cssClass' => 'registry',
+                'params' => ['status'=> 'S'],
+                'condition' => function ($row) { return $row['indUtilizaLog'] == 'N';}
+            ])
+            ->addAction([
+                'label' => 'Resetar Execução',
+                'moduleName' => 'integracao',
+                'controllerName' => 'gerenciamento',
+                'actionName' => 'reset-exec-integracao-ajax',
+                'pkIndex' => 'id',
+                'cssClass' => 'refresh',
+                'condition' => function ($row) { return $row['indExecucao'] == 'S';}
+            ])
+        ;
 
         return $this;
     }

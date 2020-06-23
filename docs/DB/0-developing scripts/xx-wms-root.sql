@@ -54,14 +54,16 @@ INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_A
 VALUES (
            SQ_RECURSO_ACAO_01.nextval,
            (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'integracao:gerenciamento'),
-           (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'add'),
-           'Adicionar Integração', 1
+           (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'acao-integracao-form'),
+           'Formulário de Integração', 1
        );
 
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO, ONLY_ROOT)
 VALUES (
            SQ_RECURSO_ACAO_01.nextval,
            (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'integracao:gerenciamento'),
-           (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'acao-integracao-form'),
-           'Formulário de Integração', 1
+           (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'salvar'),
+           'Salvar Integração', 1
        );
+
+ALTER TABLE ACAO_INTEGRACAO MODIFY (COD_ACAO_RELACIONADA VARCHAR(10));

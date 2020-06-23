@@ -23,11 +23,12 @@ class AcaoIntegracaoForm extends SubForm
             $conexoes[$con['id']] = $con['descricao'];
         }
 
-        $this->addElement('text', 'dscAcaoIntegracao', array(
+        $this->addElement('hidden', 'id')
+            ->addElement('text', 'dscAcaoIntegracao', array(
                 'label' => 'Descrição',
                 'size' => 30,
             ))
-            ->addElement('select', 'Conexão', array(
+            ->addElement('select', 'conexao', array(
                 'mostrarSelecione' => true,
                 'multiOptions' => $conexoes,
                 'label' => 'Conexão',
@@ -56,14 +57,17 @@ class AcaoIntegracaoForm extends SubForm
                 'label' => 'Ações Relacionadas',
             ))
             ->addElement('textarea', 'query', array(
-                'label' => 'Script'
+                'label' => 'Script',
+                'class' => 'text-area',
+                'rows' => "20",
+                'cols' => "137"
             ))
             ->addElement('submit', 'salvar', array(
-                'class' => 'btn',
+                'class' => 'btn right',
                 'label' => 'Salvar',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('dscAcaoIntegracao', 'Conexão', 'tipoAcao', 'indUtilizaLog', 'tipoControle', 'tabelaReferencia', 'idAcaoRelacionada', 'query', 'salvar'), 'cadastro-integracao', array('legend' => 'Cadastro de Integração'));
+            ->addDisplayGroup(array('dscAcaoIntegracao', 'conexao', 'tipoAcao', 'indUtilizaLog', 'tipoControle', 'tabelaReferencia', 'idAcaoRelacionada', 'query', 'salvar'), 'cadastro-integracao', array('legend' => 'Cadastro de Integração'));
     }
 
     public function setDefaults(array $defaults)

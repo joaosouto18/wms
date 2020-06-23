@@ -35,7 +35,6 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
         $idIntegracao = $this->getRequest()->getParam('id');
         $this->view->form = new AcaoIntegracaoForm();
         try {
-
             if (!empty($idIntegracao)) {
                 /** @var AcaoIntegracao $acaoIntegracao */
                 $acaoIntegracao = $this->em->find(AcaoIntegracao::class, $idIntegracao);
@@ -50,9 +49,19 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
         }
     }
 
-    public function saveAction()
+    public function salvarAction()
     {
-
+        $params = $this->getRequest()->getParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        try {
+            $this->em->getRepository(AcaoIntegracao::class)->save($params);
+            $this->addFlashMessage('success', 'Integração salva com sucesso');
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+        $this->redirect('index');
     }
 
     public function viewDetailIntegracaoAjaxAction()
@@ -61,9 +70,16 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
         $this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'view-detail-integracao.phtml');
     }
 
-    public function turnOffLogIntegracaoAjaxAction()
+    public function toggleLogIntegracaoAjaxAction()
     {
-        $this->view->integracao = $this->em->find(AcaoIntegracao::class, $this->getRequest()->getParam('id'));
-        $this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'view-detail-integracao.phtml');
+        $id = $this->getRequest()->getParam('id');
+        $status = $this->getRequest()->getParam('status');
+        try {
+            $this->em->getRepository(AcaoIntegracao::class)->toggleLog($id, $status);
+            $this->addFlashMessage('success', 'Registro de log alterado com sucesso');
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+        $this->redirect('index');
     }
 }

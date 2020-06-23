@@ -193,6 +193,18 @@ div.gFilter {
 .gOpcRow a.del {
     background-image: url(../../img/icons/delete.png);
 }
+.gOpcRow a.cross {
+    background-image: url(../../img/icons/cross.png);
+}
+.gOpcRow a.accept {
+    background-image: url(../../img/icons/accept.png);
+}
+.gOpcRow a.registry {
+    background-image: url(../../img/icons/book_edit.png);
+}
+.gOpcRow a.refresh {
+    background-image: url(../../img/icons/arrow_refresh.png);
+}
 .gOpcRow a.pdf {
     background-image: url(../../img/icons/page_white_acrobat.png);
 }
