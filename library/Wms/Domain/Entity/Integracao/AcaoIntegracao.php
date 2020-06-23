@@ -302,4 +302,8 @@ class AcaoIntegracao
         $this->dscAcaoIntegracao = $dscAcaoIntegracao;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

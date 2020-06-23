@@ -1,0 +1,54 @@
+<?php
+//echo $this->form;
+/** @var \Wms\Module\Integracao\Form\AcaoIntegracaoForm $form */
+$form = $this->form->render();
+?>
+<form id="cadastar-integracao-form" enctype="application/x-www-form-urlencoded" class="form ng-pristine ng-valid" action="" method="post">
+    <div>
+        <fieldset id="fieldset-cadastrointegracao" rowspan="2">
+            <legend>Ação Integração</legend>
+
+            <?php echo $form->getElement('dscAcaoIntegracao')?>
+            <div class="field">
+                <label for="dscAcaoIntegracao" class="field optional">Descrição</label>
+                <input type="text" name="dscAcaoIntegracao" id="dscAcaoIntegracao" value="INTEGRAÇÃO PRODUTOS POR TRIGGER" size="30">
+            </div>
+            <div class="field">
+                <label for="Conexão" class="field optional">Conexão</label>
+
+                <select name="Conexão" id="Conexão" mostrarselecione="1" require="1">
+                    <option value="" label="Selecione...">Selecione...</option>
+                    <option value="1" label="WMS">WMS</option>
+                    <option value="2" label="WINTHOR">WINTHOR</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="tipoAcao" class="field optional">Cod. Tipo Ação</label>
+
+                <input type="text" name="tipoAcao" id="tipoAcao" value="600" size="3" require="1">
+            </div>
+            <div class="checkbox">
+                <label for="indUtilizaLog" class="optional">Usa LOG</label>
+                <input type="hidden" name="indUtilizaLog" value="N" autocomplete="off">
+                <input type="checkbox" name="indUtilizaLog" id="indUtilizaLog" value="S" checked="checked">
+            </div>
+            <div class="field">
+                <label for="tipoControle" class="field optional">Tipo Controle</label>
+                <input type="text" name="tipoControle" id="tipoControle" value="F" size="2">
+            </div>
+            <div class="field">
+                <label for="tabelaReferencia" class="field optional">Tabela Referêcia</label>
+                <input type="text" name="tabelaReferencia" id="tabelaReferencia" value="TR_PRODUTO" size="15">
+            </div>
+            <div class="field">
+                <label for="idAcaoRelacionada" class="field optional">Ações Relacionadas</label>
+                <input type="text" name="idAcaoRelacionada" id="idAcaoRelacionada" value="2         " size="3">
+            </div>
+            <div class="field">
+                <label for="query" class="field optional">Script</label>
+                <textarea name="query" id="query" rows="24" cols="80">SELECT MIN(ID) ID, COD_PRODUTO FROM TR_PRODUTO WHERE (IND_PROCESSADO = 'N' OR IND_PROCESSADO IS NULL) GROUP BY COD_PRODUTO ORDER BY ID ASC</textarea>
+            </div>
+            <input type="submit" name="salvar" id="salvar" value="Salvar" class="btn">
+        </fieldset>
+    </div>
+</form>

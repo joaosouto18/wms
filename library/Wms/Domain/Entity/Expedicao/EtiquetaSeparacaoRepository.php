@@ -2939,7 +2939,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     /**
-     * @param $etiquetaEntity
+     * @param $etiquetaEntity EtiquetaSeparacao
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
     {

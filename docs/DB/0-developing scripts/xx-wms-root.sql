@@ -47,6 +47,9 @@ INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, 
  1
 );
 
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+VALUES (SQ_ACAO_01.nextval, 'Formulário de Integração', 'acao-integracao-form');
+
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO, ONLY_ROOT)
 VALUES (
            SQ_RECURSO_ACAO_01.nextval,
@@ -59,6 +62,6 @@ INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_A
 VALUES (
            SQ_RECURSO_ACAO_01.nextval,
            (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'integracao:gerenciamento'),
-           (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'edit'),
-           'Editar Integração', 1
+           (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'acao-integracao-form'),
+           'Formulário de Integração', 1
        );

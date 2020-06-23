@@ -14,7 +14,7 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
 
     public function indexAction()
     {
-        $grid = new \Wms\Module\Integracao\Grid\IntegracaoGrid();
+        $grid = new IntegracaoGrid();
         $this->view->grid = $grid->init();
         $buttons[] = array(
             'label' => 'Nova Integração',
@@ -22,7 +22,7 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
             'urlParams' => array(
                 'module' => 'integracao',
                 'controller' => 'gerenciamento',
-                'action' => 'save'
+                'action' => 'acao-integracao-form'
             ),
             'tag' => 'a'
         );
@@ -30,10 +30,24 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
         $this->configurePage($buttons);
     }
 
-    public function editAction()
+    public function acaoIntegracaoFormAction()
     {
+        $idIntegracao = $this->getRequest()->getParam('id');
         $this->view->form = new AcaoIntegracaoForm();
-        $this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'form-cadastral.phtml');
+        try {
+
+            if (!empty($idIntegracao)) {
+                /** @var AcaoIntegracao $acaoIntegracao */
+                $acaoIntegracao = $this->em->find(AcaoIntegracao::class, $idIntegracao);
+                if (empty($acaoIntegracao)) throw new Exception("A ação integração de código $idIntegracao não foi encontrada!");
+
+                $this->view->form->setDefaults($acaoIntegracao->toArray());
+            }
+            $this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'acao-integracao-form.phtml');
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->redirect('index');
+        }
     }
 
     public function saveAction()

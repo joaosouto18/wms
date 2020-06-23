@@ -61,7 +61,7 @@ class IntegracaoGrid extends Grid
                 'label' => 'Editar',
                 'moduleName' => 'integracao',
                 'controllerName' => 'gerenciamento',
-                'actionName' => 'edit',
+                'actionName' => 'acao-integracao-form',
                 'pkIndex' => 'id'
             ])
             ->addAction([
