@@ -82,4 +82,16 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
         }
         $this->redirect('index');
     }
+
+    public function refreshExecIntegracaoAjaxAction()
+    {
+        $id = $this->getRequest()->getParam('id');
+        try {
+            $this->em->getRepository(AcaoIntegracao::class)->refreshExec($id);
+            $this->addFlashMessage('success', 'Execução reiniciada com sucesso');
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+        $this->redirect('index');
+    }
 }

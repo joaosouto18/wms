@@ -364,7 +364,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         ini_set('max_execution_time', -1);
         try {
-            $this->_em->beginTransaction();
+            if (!$isIntegracaoSQL) $this->_em->beginTransaction();
 
             $repositorios = array(
                 'produtoRepo'=> $this->_em->getRepository('wms:Produto'),
@@ -421,11 +421,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
             }
             $this->_em->flush();
-            $this->_em->commit();
+            if (!$isIntegracaoSQL) $this->_em->commit();
             return true;
         } catch (\Exception $e) {
-            $this->_em->rollback();
-            throw new \Exception($e->getMessage(), $e->getCode(), $e);
+            if (!$isIntegracaoSQL) $this->_em->rollback();
+            throw $e;
         }
     }
 
@@ -1481,10 +1481,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param notaFiscal[] nf Array de objetos nota fiscal
      * @return boolean Se as notas fiscais foram salvas com sucesso
      */
-    public function informarNotaFiscal ($nf)
+    public function informarNotaFiscal ($nf, $integracaoSQL = false)
     {
         try {
-            $this->_em->beginTransaction();
+            if (!$integracaoSQL) $this->_em->beginTransaction();
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
             $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
             $produtoRepo = $this->_em->getRepository("wms:Produto");
@@ -1591,9 +1591,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
             }
             $this->_em->flush();
-            $this->_em->commit();
+            if (!$integracaoSQL) $this->_em->commit();
         } catch (\Exception $e) {
-            $this->_em->rollback();
+            if (!$integracaoSQL) $this->_em->rollback();
             throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
         return true;

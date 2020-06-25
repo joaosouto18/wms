@@ -88,7 +88,7 @@ class IntegracaoGrid extends Grid
                 'label' => 'Resetar Execução',
                 'moduleName' => 'integracao',
                 'controllerName' => 'gerenciamento',
-                'actionName' => 'reset-exec-integracao-ajax',
+                'actionName' => 'refresh-exec-integracao-ajax',
                 'pkIndex' => 'id',
                 'cssClass' => 'refresh',
                 'condition' => function ($row) { return $row['indExecucao'] == 'S';}

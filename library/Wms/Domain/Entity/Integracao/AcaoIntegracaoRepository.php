@@ -59,6 +59,19 @@ class AcaoIntegracaoRepository extends EntityRepository
         return $entity;
     }
 
+    public function refreshExec($id)
+    {
+        /** @var AcaoIntegracao $entity */
+        $entity = $this->find($id);
+        if (empty($entity)) throw new \Exception("Nenhuma integração foi encontrada com o ID $id!");
+
+        $entity->setIndExecucao('N');
+        $this->_em->persist($entity);
+        $this->_em->flush($entity);
+
+        return $entity;
+    }
+
     public function getExisteIntegracao() {
         $SQL = "SELECT * FROM ACAO_INTEGRACAO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -258,7 +271,7 @@ class AcaoIntegracaoRepository extends EntityRepository
      * Destino => (P => Produção, T => Tabela temporária)
      */
 
-    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA, $insertAll = false) {
+    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA, $insertAll = false, $runRollBackOnException = true) {
         ini_set('max_execution_time', '-1');
         ini_set('memory_limit', '-1');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
@@ -291,7 +304,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         try {
 
-            $this->_em->beginTransaction();
+            if ($runRollBackOnException) $this->_em->beginTransaction();
 
             if ($existeOutraTransacaoAtiva == 'S') {
                 throw new \Exception("Integração em andamento em outro processo");
@@ -353,7 +366,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     foreach ($dadosFiltrar as $value) {
                         $options = array();
                         $options[] = $value;
-                        $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                        $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO, false, false);
                     }
 
                     //CASO TENHA DADO SUCESSO NA INTEGRAÇÃO RELACIONADA, ENTÃO PEGA OS IDS PARA SETAR COMO PROCESSADOS
@@ -411,7 +424,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
-            $this->_em->rollback();
+            if ($runRollBackOnException) $this->_em->rollback();
             $this->_em->clear();
         }
 
@@ -514,10 +527,10 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->clear();
 
         } catch (\Exception $e) {
-            if ($iniciouBeginTransaction == true) {
+            if ($iniciouBeginTransaction == true && $runRollBackOnException) {
                 $this->_em->rollback();
             }
-            throw new \Exception($e->getMessage());
+            throw $e;
 
         }
 

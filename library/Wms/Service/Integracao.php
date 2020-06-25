@@ -216,7 +216,7 @@ class Integracao {
                     return true;
             }
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode(), $e);
+            throw $e;
         }
     }
 
@@ -330,7 +330,7 @@ class Integracao {
             $nfs[] = $nfSaida;
         }
         $wsExpedicao = new \Wms_WebService_Expedicao();
-        $wsExpedicao->informarNotaFiscal($nfs);
+        $wsExpedicao->informarNotaFiscal($nfs, true);
 
         return true;
     }
@@ -616,7 +616,7 @@ class Integracao {
             $wsExpedicao->enviar($cargas, true);
             return true;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode(), $e);
+            throw $e;
         }
     }
 
@@ -930,7 +930,7 @@ class Integracao {
             $this->_em->clear();
             return true;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 

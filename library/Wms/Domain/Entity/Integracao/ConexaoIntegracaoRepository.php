@@ -30,10 +30,6 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             default:
                 throw new \Exception("Provedor não específicado");
         }
-        /*
-          if ($conexao->getProvedor() == "ORACLE") {
-          return $this->oracleQuery($query,$conexao);
-          } */
     }
 
     private function mysqlQuery($query, $conexao) {
@@ -62,9 +58,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return $result;
             }
         } catch (\PDOException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         } catch (\Exception $e2) {
-            throw new \Exception($e2->getMessage());
+            throw $e2;
         }
     }
 
@@ -102,9 +98,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             return $vetResult;
 
         } catch (\PDOException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         } catch (\Exception $e2) {
-            throw new \Exception($e2->getMessage());
+            throw $e2;
         }
     }
 
@@ -151,9 +147,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             return $vetResult;
         } catch (\PDOException $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         } catch (\Exception $e2) {
-            throw new \Exception($e2->getMessage());
+            throw $e2;
         }
     }
 
@@ -206,8 +202,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             oci_free_statement($res);
             oci_close($conexao);
             return $arrayResult;
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+        } catch (\PDOException $e) {
+            throw $e;
+        } catch (\Exception $e2) {
+            throw $e2;
         }
     }
 
@@ -240,10 +238,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             pg_close($conexao);
             return $arr;
 
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+        } catch (\PDOException $e) {
+            throw $e;
+        } catch (\Exception $e2) {
+            throw $e2;
         }
-
     }
 
     private function firebirdQuery($query, $conexao, $update)
@@ -282,10 +281,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             ibase_close($conexao);
             return $result;
 
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+        } catch (\PDOException $e) {
+            throw $e;
+        } catch (\Exception $e2) {
+            throw $e2;
         }
-
     }
 
 }

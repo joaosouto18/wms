@@ -46,7 +46,7 @@ class Importacao
     }
 
 
-        public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
+    public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
     {
         try {
             /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
@@ -405,7 +405,7 @@ class Importacao
         /** @var NotaFiscal $notaFiscalEn */
         $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $entityFornecedor->getId()));
         if (!$notaFiscalEn) {
-            $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao,null, $tipoNota);
+            $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao,null, $tipoNota,null, true);
         } else {
             $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
             if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
@@ -955,7 +955,7 @@ class Importacao
             $produtoRepo->atualizaPesoProduto($idProduto,$grade);
             return true;
         }catch (\Exception $e){
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
