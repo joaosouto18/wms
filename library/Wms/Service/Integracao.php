@@ -507,6 +507,7 @@ class Integracao {
             }
             
             foreach ($dados as $key => $row) {
+                $row = array_change_key_case($row,CASE_UPPER);
                 $idPedido = $row['PEDIDO'];
                 $idCarga = $row['CARGA'];
 
@@ -937,6 +938,7 @@ class Integracao {
     public function salvaTemporario() {
         $x = 0;
         foreach ($this->_dados as $row) {
+            $row = array_change_key_case($row,CASE_UPPER);
             $x = $x + 1;
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
