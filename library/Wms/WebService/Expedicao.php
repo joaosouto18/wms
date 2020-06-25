@@ -155,8 +155,6 @@ class notaFiscal {
     /** @var notaFiscalProduto[] */
     public $itens;
     /** @var string */
-    public $cpfEmitente;
-    /** @var string */
     public $chaveAcesso;
 }
 
@@ -1500,24 +1498,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             /* @var notaFiscal $notaFiscal */
             foreach ($nf as $notaFiscal) {
 
-                /** @var \Wms\Domain\Entity\Pessoa $pessoaEn */
-                $pessoaEn = null;
-                if (!empty($notaFiscal->cnpjEmitente)) {
-                    $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $notaFiscal->cnpjEmitente));
-                    $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cnpjEmitente));
+                $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $notaFiscal->cnpjEmitente));
+                $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cnpjEmitente));
 
-                    if (empty($pessoaEn)) {
-                        throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
-                    }
-                } elseif (!empty($notaFiscal->cpfEmitente)) {
-                    $cpfEmitente = trim(str_replace(array(".", "-"), "", $notaFiscal->cpfEmitente));
-                    $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cpfEmitente));
-
-                    if (empty($pessoaEn)) {
-                        throw new \Exception("Emitente não encontrado para o cpf " . $notaFiscal->cpfEmitente);
-                    }
-                } else {
-                    throw new \Exception("Emitente não especificado");
+                if (is_null($pessoaEn)) {
+                    throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
                 }
 
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
