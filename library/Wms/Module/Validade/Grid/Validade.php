@@ -31,6 +31,10 @@ class Validade extends Grid
         }
 
         $this->addColumn(array(
+                'label' => 'Lote',
+                'index' => 'LOTE',
+            ))
+            ->addColumn(array(
                 'label' => 'Descrição',
                 'index' => 'DESCRICAO',
             ))
