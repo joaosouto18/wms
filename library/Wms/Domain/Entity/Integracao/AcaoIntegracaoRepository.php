@@ -400,9 +400,11 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             }
 
-            $this->_em->flush();
-            $this->_em->commit();
-            $this->_em->clear();
+            if ($runRollBackOnException) {
+                $this->_em->flush();
+                $this->_em->commit();
+                $this->_em->clear();
+            }
             $errNumber = "";
             $trace = "";
             $query = "";
@@ -427,23 +429,24 @@ class AcaoIntegracaoRepository extends EntityRepository
             if ($runRollBackOnException) $this->_em->rollback();
             $this->_em->clear();
         }
-
+        $newEm = null;
         try {
 
             $iniciouBeginTransaction = false;
-            if ($this->_em->isOpen() == false) {
-                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
-            }
+            $newEm = $this->_em->create($this->_em->getConnection()->getParams(),$this->_em->getConfiguration());
+//            if ($this->_em->isOpen() == false) {
+//                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+//            }
 
-            $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
+            $acaoEn = $newEm->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
             if ($iniciouTransacaoAtual == "S") {
                 $acaoEn->setIndExecucao("N");
-                $this->_em->persist($acaoEn);
-                $this->_em->flush();
+                $newEm->persist($acaoEn);
+                $newEm->flush();
             }
 
-            $this->_em->beginTransaction();
+            $newEm->beginTransaction();
             $iniciouBeginTransaction = true;
 
             if (($tipoExecucao == "E") || ($dados == null)) {
@@ -467,7 +470,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     if ($sucess != "S") {
                         $andamentoEn->setQuery($query);
                     }
-                    $this->_em->persist($andamentoEn);
+                    $newEm->persist($andamentoEn);
                 }
             }
 
@@ -481,7 +484,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $maxDate = $integracaoService->getMaxDate();
                     if (!empty($maxDate)) {
                         $acaoEn->setDthUltimaExecucao($maxDate);
-                        $this->_em->persist($acaoEn);
+                        $newEm->persist($acaoEn);
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
@@ -504,32 +507,33 @@ class AcaoIntegracaoRepository extends EntityRepository
                                 if(count($ids) == $max){
                                     $ids = implode(',',$ids);
                                     $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                                    $this->_em->getConnection()->query($query)->execute();
+                                    $newEm->getConnection()->query($query)->execute();
                                     unset($ids);
                                 }
                             }
                             if(count($ids) < $max){
                                 $ids = implode(',',$ids);
                                 $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                                $this->_em->getConnection()->query($query)->execute();
+                                $newEm->getConnection()->query($query)->execute();
                                 unset($ids);
                             }
                         }else{
                             $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
-                            $this->_em->getConnection()->query($query)->execute();
+                            $newEm->getConnection()->query($query)->execute();
                         }
                     }
                 }
             }
 
-            $this->_em->flush();
-            $this->_em->commit();
-            $this->_em->clear();
-
+            $newEm->flush();
+            $newEm->commit();
+            $newEm->clear();
+            $newEm->close();
         } catch (\Exception $e) {
-            if ($iniciouBeginTransaction == true && $runRollBackOnException) {
-                $this->_em->rollback();
+            if ($iniciouBeginTransaction == true) {
+                $newEm->rollback();
             }
+            $newEm->close();
             throw $e;
 
         }

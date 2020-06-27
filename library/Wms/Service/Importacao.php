@@ -827,43 +827,27 @@ class Importacao
                     if ($embalagemCadastrada->getEndereco() != null ) {
                         $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
                     }
+                    $embalagemArray = array(
+                        'acao'=> 'alterar',
+                        'quantidade' => $fator ,
+                        'id' =>$embalagemCadastrada->getId(),
+                        'endereco' => $endPicking,
+                        'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
+                        'CBInterno' => $embalagemCadastrada->getCBInterno(),
+                        'embalado' => $embalagemCadastrada->getEmbalado(),
+                        'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
+                        'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
+                        'descricao' => $descricaoEmbalagem,
+                        'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
+                        'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
+                    );
 
                     if ($parametroPeso->getValor() == 'S') {
-                        $embalagemArray = array(
-                            'acao'=> 'alterar',
-                            'quantidade' => $fator ,
-                            'id' =>$embalagemCadastrada->getId(),
-                            'endereco' => $endPicking,
-                            'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
-                            'CBInterno' => $embalagemCadastrada->getCBInterno(),
-                            'embalado' => $embalagemCadastrada->getEmbalado(),
-                            'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
-                            'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                            'descricao' => $descricaoEmbalagem,
-                            'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
-                            'largura'=> $larguraEmbalagem,
-                            'altura'=> $alturaEmbalagem,
-                            'profundidade'=> $profundidadeEmbalagem,
-                            'peso'=> $pesoEmbalagem,
-                            'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
-                        );
-                    } else {
-                        $embalagemArray = array(
-                            'acao'=> 'alterar',
-                            'quantidade' => $fator ,
-                            'id' =>$embalagemCadastrada->getId(),
-                            'endereco' => $endPicking,
-                            'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
-                            'CBInterno' => $embalagemCadastrada->getCBInterno(),
-                            'embalado' => $embalagemCadastrada->getEmbalado(),
-                            'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
-                            'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                            'descricao' => $descricaoEmbalagem,
-                            'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
-                            'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
-                        );
+                        $embalagemArray['largura'] = $larguraEmbalagem;
+                        $embalagemArray['altura'] = $alturaEmbalagem;
+                        $embalagemArray['profundidade'] = $profundidadeEmbalagem;
+                        $embalagemArray['peso'] = $pesoEmbalagem;
                     }
-
 
                     if ($encontrouEmbalagem == false) {
                         $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
@@ -887,6 +871,8 @@ class Importacao
 
                 }
 
+                $checkCodsRepetidos = [];
+
                 //DEPOIS INCLUO AS NOVAS EMBALAGENS
                 foreach ($embalagens as $embalagemWs) {
 
@@ -905,51 +891,44 @@ class Importacao
                     }
 
                     if ($encontrouEmbalagem == false) {
+                        if (!empty($checkCodsRepetidos[$embalagemWs->codBarras])) {
+                            if ($checkCodsRepetidos[$embalagemWs->codBarras] != $embalagemWs->qtdEmbalagem) {
+                                $msg = "O produto $idProduto grade $grade não pode integrar o código de barras " . $embalagemWs->codBarras;
+                                $msg .= " simultaneamente nos fatores " . $checkCodsRepetidos[$embalagemWs->codBarras] . " e " . $embalagemWs->qtdEmbalagem . "!";
+                                throw new \Exception($msg);
+                            }
+                        }
+
+                        $embalagemArray = array (
+                            'acao' => 'incluir',
+                            'descricao' => $embalagemWs->descricao,
+                            'quantidade' => $embalagemWs->qtdEmbalagem,
+                            'isPadrao' => 'N',
+                            'CBInterno' => 'N',
+                            'imprimirCB' => 'N',
+                            'codigoBarras' => $embalagemWs->codBarras,
+                            'embalado' => 'N',
+                            'capacidadePicking' => 0,
+                            'pontoReposicao' => 0,
+                            'endereco' => null,
+                            'isEmbExpDefault' => 'N',
+                            'isEmbFracionavelDefault' => 'N'
+                        );
 
                         if ($parametroPeso->getValor() == 'S') {
-                            $embalagemArray = array (
-                                'acao' => 'incluir',
-                                'descricao' => $embalagemWs->descricao,
-                                'quantidade' => $embalagemWs->qtdEmbalagem,
-                                'isPadrao' => 'N',
-                                'CBInterno' => 'N',
-                                'imprimirCB' => 'N',
-                                'codigoBarras' => $embalagemWs->codBarras,
-                                'embalado' => 'N',
-                                'capacidadePicking' => 0,
-                                'pontoReposicao' => 0,
-                                'endereco' => null,
-                                'largura'=> $larguraEmbalagem,
-                                'altura'=> $alturaEmbalagem,
-                                'profundidade'=> $profundidadeEmbalagem,
-                                'peso'=> $pesoEmbalagem,
-                                'isEmbExpDefault' => 'N',
-                                'isEmbFracionavelDefault' => 'N'
-                            );
-                        } else {
-                            $embalagemArray = array (
-                                'acao' => 'incluir',
-                                'descricao' => $embalagemWs->descricao,
-                                'quantidade' => $embalagemWs->qtdEmbalagem,
-                                'isPadrao' => 'N',
-                                'CBInterno' => 'N',
-                                'imprimirCB' => 'N',
-                                'codigoBarras' => $embalagemWs->codBarras,
-                                'embalado' => 'N',
-                                'capacidadePicking' => 0,
-                                'pontoReposicao' => 0,
-                                'endereco' => null,
-                                'isEmbExpDefault' => 'N',
-                                'isEmbFracionavelDefault' => 'N'
-                            );
-
+                            $embalagemArray['largura'] = $larguraEmbalagem;
+                            $embalagemArray['altura'] = $alturaEmbalagem;
+                            $embalagemArray['profundidade'] = $profundidadeEmbalagem;
+                            $embalagemArray['peso'] = $pesoEmbalagem;
                         }
-                        $embalagensArray[] = $embalagemArray;
+
+                        $embalagensArray[$embalagemWs->codBarras] = $embalagemArray;
+                        $checkCodsRepetidos[$embalagemWs->codBarras] = $embalagemWs->qtdEmbalagem;
                     }
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
-                $result = $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
+                $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
             }
 
             $produtoRepo->atualizaPesoProduto($idProduto,$grade);

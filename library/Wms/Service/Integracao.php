@@ -888,7 +888,7 @@ class Integracao {
                     return $a['qtdEmbalagem'] < $b['qtdEmbalagem'];
                 });
 
-                $pesoUnitário = null;
+                $pesoUnitario = null;
                 $alturaProduto = null;
                 $larguraProduto = null;
                 $profundidadeUnitario = null;
@@ -899,18 +899,14 @@ class Integracao {
                     }
                     if ($embalagem['ativa'] == 'S') {
 
-                        if ($pesoUnitário == null) {
+                        if ($pesoUnitario == null) {
                             $peso = str_replace(',','.',$embalagem['peso']);
                             $profundidade = str_replace(',','.',$embalagem['profundidade']);
                             $fator = str_replace(',','.',$embalagem['qtdEmbalagem']);
 
-                            $pesoUnitário = $peso / $fator;
+                            $pesoUnitario = $peso / $fator;
                             $profundidadeUnitario = $profundidade / $fator;
-
-                            $alturaProduto = $embalagem['altura'];
-                            $larguraProduto = $embalagem['largura'];
                         }
-
 
                         $emb = new embalagem();
                         $emb->codBarras = $embalagem['codBarras'];
@@ -919,13 +915,13 @@ class Integracao {
 
                         $emb->largura = number_format(Math::dividir($embalagem['largura'],1),3);
                         $emb->altura = number_format(Math::dividir($embalagem['altura'],1),3);
-                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1),3);
+                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitario,$emb->qtdEmbalagem),1),3);
                         $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1),3) ;
 
                         $embalagensObj[] = $emb;
                     }
                 }
-                $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
+                $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
             }
             $this->_em->flush();
             $this->_em->clear();
