@@ -38,6 +38,10 @@ class EtiquetaSeparacao extends Pdf
                     $this->Cell(20, 3, "", 0, 1, "L");
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
+                case 6:
+                case 11:
+                case 7:
+                case 4:
                 case 3:
                     // font
                     $this->SetFont('Arial','B',7);
