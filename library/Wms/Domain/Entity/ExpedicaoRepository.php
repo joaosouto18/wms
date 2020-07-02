@@ -644,12 +644,17 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
 
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
-            $codEexpedicoes = explode(',',$strExpedicao);
-            foreach ($codEexpedicoes as $codExpedicao) {
+            $codExpedicoes = explode(',',$strExpedicao);
+            /** @var Expedicao[] $expedicoesSemModelo */
+            $expedicoesSemModelo = [];
+            $modeloSeparacaoEn = null;
+            foreach ($codExpedicoes as $codExpedicao) {
                 $expedicaoEntity = $expedicaoRepo->find($codExpedicao);
                 if (!is_null($expedicaoEntity->getModeloSeparacao())) {
-                    $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
-                    break;
+                    if (empty($modeloSeparacaoEn))
+                        $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+                } else {
+                    $expedicoesSemModelo[] = $expedicaoEntity;
                 }
             }
 
@@ -657,6 +662,11 @@ class ExpedicaoRepository extends EntityRepository {
                 $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
                 /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
                 $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
+            }
+
+            foreach ($expedicoesSemModelo as $expedicao) {
+                $expedicao->setModeloSeparacao($modeloSeparacaoEn);
+                $this->_em->persist($expedicao);
             }
 
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
