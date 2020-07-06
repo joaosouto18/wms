@@ -953,21 +953,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         try {
 
             if ($this->getSystemParameterValue("COMPARA_PRODUTOS_EXPEDICAO_ERP") == "S") {
-                $idPP = array();
-                foreach ($pedidosProdutos as $pedidoProduto) {
-                    $idPP[] = $pedidoProduto->getId();
-                }
-
-                $result  = $expedicaoRepo->validaConferenciaERP($idExpedicao);
-                if (is_string($result)) {
-                    throw new \Exception($result);
-                }
-                $enPP = array();
-                foreach( $idPP as $id) {
-                    $ppEn = $pedidoProdutoRepo->find($id);
-                    $enPP[] = $ppEn;
-                    $pedidosProdutos = $enPP;
-                }
+                $expedicaoRepo->validaConferenciaERP($idExpedicao);
             }
 
             $this->iniciaMapaSeparacao($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);

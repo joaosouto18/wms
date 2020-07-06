@@ -242,12 +242,13 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
         /* Executa cada ação salvando os dados na tabela temporaria */
-        foreach ($acoes as $acaoEn) {
-            $result = $this->processaAcao($acaoEn,$options,"E","T",null,$idFiltro);
-            if (!($result === true)) {
-                $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
-                return $result;
+        try {
+            foreach ($acoes as $acaoEn) {
+                $this->processaAcao($acaoEn, $options, "E", "T", null, $idFiltro);
             }
+        } catch (\Exception $e) {
+            $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
+            throw $e;
         }
 
         /* Faz a consulta na tabela temporaria, para retornar as informações no mesmo modelo do ERP */
@@ -424,7 +425,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             $errNumber = $e->getCode();
-            $result = $e->getMessage();
+            $result = $e;
 
             if ($runRollBackOnException) $this->_em->rollback();
             $this->_em->clear();
@@ -537,6 +538,8 @@ class AcaoIntegracaoRepository extends EntityRepository
             throw $e;
 
         }
+
+        if (is_a($result, \Exception::class)) throw $result;
 
         return $result;
     }

@@ -436,7 +436,7 @@ class Integracao {
                 return $expedicaoRepo->campareResumoConferenciaByCarga($row['QTD'], $idCarga);
             }
         }
-        throw new \Exception("Carga não encontrada na consulta do ERP");
+        throw new \Exception("Carga $idCarga não encontrada na consulta do ERP");
     }
 
     public function processaEstoque($dados) {

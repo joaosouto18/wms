@@ -37,9 +37,14 @@ class Expedicao_OndaRessuprimentoController extends Action
         //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
         if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
             $acaoEn = $acaoIntRepo->find(24);
-            $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+            $cargasCanceladasEntities = [];
+            try{
+                $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+            } catch (Exception $e) {
+                $link = '<a href="/integracao/index/integracao-error-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+                $this->addFlashMessage("info","Houve algum erro na integração automática de cancelamento de expedição! " . $link);
+            }
 
-            $acaoEn = $acaoIntRepo->find(24);
             foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
 
                 /*
@@ -113,9 +118,16 @@ class Expedicao_OndaRessuprimentoController extends Action
         if (isset($parametroPedidosTelaExpedicao) && !empty($parametroPedidosTelaExpedicao)) {
             $explodeIntegracoes = explode(',', $parametroPedidosTelaExpedicao);
 
-            foreach ($explodeIntegracoes as $codIntegracao) {
-                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
+            try {
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+                $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+                foreach ($explodeIntegracoes as $codIntegracao) {
+                    $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                    $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity, null, 'E', 'P', null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
+                }
+            } catch (Exception $e) {
+                $link = '<a href="/integracao/index/integracao-error-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+                $this->addFlashMessage("info","Houve algum erro na integração automática de expedição! " . $link);
             }
         }
 

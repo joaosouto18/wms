@@ -1264,12 +1264,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
         if (isset($codAcaoIntegracao) && !empty($codAcaoIntegracao)) {
             $explodeIntegracoes = explode(',',$codAcaoIntegracao);
-
-            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
-            $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-            foreach ($explodeIntegracoes as $codIntegracao) {
-                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
+            try{
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+                $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+                foreach ($explodeIntegracoes as $codIntegracao) {
+                    $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                    $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
+                }
+            } catch (Exception $e) {
+                $link = '<a href="/integracao/index/integracao-error-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+                $this->addFlashMessage("info","Houve algum erro na integração automática de notas fiscais! " . $link);
             }
         }
 

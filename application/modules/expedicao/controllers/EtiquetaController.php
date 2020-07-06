@@ -129,10 +129,7 @@ class Expedicao_EtiquetaController  extends Action
                             $options = $cargas;
                         }
 
-                        $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
-                        if (!$result === true) {
-                            throw new \Wms\Util\WMS_Exception($result);
-                        }
+                        $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
                     }
                 }
             }

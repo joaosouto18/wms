@@ -43,11 +43,7 @@ class Importacao_GerenciamentoController extends Action
             }
             $options = explode(",",$idProduto);
 
-            $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
-            if (!empty($result)) {
-                throw new \Exception($result);
-            }
-
+            $acaoIntRepo->processaAcao($acaoEn,$options,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
         } catch (\Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
@@ -122,9 +118,7 @@ class Importacao_GerenciamentoController extends Action
             }
 
             if (isset($result)) {
-                if (is_string($result)) {
-                    $this->_helper->json(array('error' => $result, 'redirect' => '/importacao/gerenciamento/index/id/'.$acao));
-                } else if ($result === true) {
+                if ($result === true) {
                     if ($acaoIntEntity->getTipoAcao()->getId() ==  AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
                         $this->_helper->json(array('success' => 'Notas Fiscais enviadas com sucesso!', 'redirect' => '/web/recebimento/index'));
                     } else if ($acaoIntEntity->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
@@ -141,7 +135,7 @@ class Importacao_GerenciamentoController extends Action
 
             $this->view->valores = $arrayFinal;
         } catch (\Exception $e) {
-            $redirect = "/";
+            $redirect = '/importacao/gerenciamento/index/id/'.$acao;
             if (!empty($acaoIntEntity)) {
                 if ($acaoIntEntity->getTipoAcao()->getId() ==  AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
                     $redirect = '/web/recebimento/index';

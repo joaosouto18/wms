@@ -196,16 +196,19 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
     public function saldoAction(){
         ini_set('max_execution_time', 3000);
         ini_set('memory_limit', '-1');
+        try {
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $idAcao = $this->getSystemParameterValue('COD_ACAO_INTEGRACAO_ESTOQUE');
+            if (empty($idAcao)) throw new Exception('Integração com ERP não configurada');
 
-        $idAcao = $this->getSystemParameterValue('COD_ACAO_INTEGRACAO_ESTOQUE');
-        $acaoEn = $acaoIntRepo->find($idAcao);
-        if ($acaoEn != null) {
+            $acaoEn = $acaoIntRepo->find($idAcao);
+            if (empty($acaoEn)) throw new Exception('Integração com ERP não encontrada');
+
             $acaoIntRepo->processaAcao($acaoEn);
-        } else {
-            $this->addFlashMessage('error','Integração com ERP não configurada');
+        } catch (Exception $e) {
+            $this->addFlashMessage('error',$e->getMessage());
         }
 
         $this->redirect('index');
