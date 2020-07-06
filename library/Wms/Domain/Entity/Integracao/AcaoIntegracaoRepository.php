@@ -30,13 +30,30 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $entity = new AcaoIntegracao();
             }
 
+            $filtros[] = AcaoIntegracaoFiltro::DATA_ESPECIFICA;
+            $filtros[] = AcaoIntegracaoFiltro::CODIGO_ESPECIFICO;
+            $filtros[] = AcaoIntegracaoFiltro::CONJUNTO_CODIGO;
+            $filtros[] = AcaoIntegracaoFiltro::INTERVALO_CODIGO;
+            foreach ($filtros as $filtro) {
+                if (!empty($params['filtro'.$filtro])) {
+                    $args = [
+                        'acaoIntegracao' => $entity,
+                        'tipoRegistro' => $this->_em->getReference(Sigla::class, $filtro),
+                        'filtro' => $params['filtro'.$filtro]
+                    ];
+                    $this->_em->getRepository(AcaoIntegracaoFiltro::class)->save($args);
+                } elseif (!empty($params['id'])) {
+                    $this->_em->getConnection()->query("DELETE FROM ACAO_INTEGRACAO_FILTRO WHERE COD_TIPO_REGISTRO = $filtro AND COD_ACAO_INTEGRACAO = $params[id]");
+                }
+            }
+
             $entity = Configurator::configure($entity, $params);
 
             $entity->setConexao($this->_em->getReference(ConexaoIntegracao::class, $params['conexao']));
             $entity->setTipoAcao($this->_em->getReference(Sigla::class, $params['tipoAcao']));
 
             $this->_em->persist($entity);
-            $this->_em->flush($entity);
+            $this->_em->flush();
             $this->_em->commit();
 
             return $entity;

@@ -11,6 +11,13 @@ $form = $this->form;
         padding: 8px;
         box-sizing: border-box;
     }
+    .field-form {
+        display: flex;
+        flex-direction: column;
+    }
+    .row {
+        flex-flow: row;
+    }
 </style>
 <form id="cadastar-integracao-form" enctype="application/x-www-form-urlencoded" class="form ng-pristine ng-valid" action="/integracao/gerenciamento/salvar" method="post">
     <div>
@@ -21,15 +28,24 @@ $form = $this->form;
                     <?php echo $form->getElement('dscAcaoIntegracao')?>
                     <?php echo $form->getElement('conexao')?>
                     <?php echo $form->getElement('tipoAcao')?>
-                    <?php echo $form->getElement('indUtilizaLog')?>
                     <?php echo $form->getElement('tipoControle')?>
                     <?php echo $form->getElement('tabelaReferencia')?>
                     <?php echo $form->getElement('idAcaoRelacionada')?>
+                    <?php echo $form->getElement('indUtilizaLog')?>
                 </div>
                 <div class="row">
                     <?php echo $form->getElement('query')?>
                     <?php echo $form->getElement('id')?>
                     <?php echo $form->getElement('salvar')?>
+                </div>
+                <br />
+                <div class="row">
+                    <?php echo $form->getElement('filtro610')?>
+                    <?php echo $form->getElement('filtro611')?>
+                </div>
+                <div class="row">
+                    <?php echo $form->getElement('filtro612')?>
+                    <?php echo $form->getElement('filtro613')?>
                 </div>
             </div>
         </fieldset>

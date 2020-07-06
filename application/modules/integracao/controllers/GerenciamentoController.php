@@ -39,8 +39,9 @@ class Integracao_GerenciamentoController extends \Wms\Controller\Action
                 /** @var AcaoIntegracao $acaoIntegracao */
                 $acaoIntegracao = $this->em->find(AcaoIntegracao::class, $idIntegracao);
                 if (empty($acaoIntegracao)) throw new Exception("A ação integração de código $idIntegracao não foi encontrada!");
+                $filtros = $this->em->getRepository(\Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::class)->findBy(['acaoIntegracao' => $acaoIntegracao]);
 
-                $this->view->form->setDefaults($acaoIntegracao->toArray());
+                $this->view->form->setDefaults($acaoIntegracao->toArray(), $filtros);
             }
             $this->renderScript('gerenciamento' . DIRECTORY_SEPARATOR . 'acao-integracao-form.phtml');
         } catch (Exception $e) {

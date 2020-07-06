@@ -8,6 +8,7 @@
 
 namespace Wms\Domain\Entity\Integracao;
 
+use Wms\Domain\Configurator;
 use Wms\Domain\EntityRepository;
 
 /**
@@ -73,5 +74,20 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
         }
         $query = str_replace(":codFilial", $this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"), $query);
         return $query;
+    }
+
+    public function save(array $params)
+    {
+        $entity = null;
+        /** @var AcaoIntegracaoFiltro $entity */
+        $entity = $this->findOneBy(['acaoIntegracao' => $params['acaoIntegracao'], 'tipoRegistro' => $params['tipoRegistro']]);
+        if (empty($entity)) {
+            $entity = new AcaoIntegracaoFiltro();
+        }
+
+        $entity = Configurator::configure($entity, $params);
+        $this->_em->persist($entity);
+
+        return $entity;
     }
 }
