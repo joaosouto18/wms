@@ -1952,7 +1952,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         THEN 'VENCIDO'
                       ELSE
                         TO_CHAR(TO_DATE(TO_CHAR(E.DTH_VALIDADE,'dd/mm/yyyy'),'dd/mm/yyyy') - TO_DATE(TO_CHAR(SYSDATE,'dd/mm/yyyy'),'dd/mm/yyyy'))
-                      END AS DIASVENCER
+                      END AS DIASVENCER,
+                      NVL(E.DSC_LOTE, 'N/D') LOTE
                   FROM ESTOQUE E 
                   INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE AND P.POSSUI_VALIDADE = 'S'
@@ -1970,7 +1971,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                   GROUP BY 
                       P.COD_PRODUTO, 
                       P.DSC_GRADE, 
-                      P.DSC_PRODUTO, 
+                      P.DSC_PRODUTO,
+                      NVL(E.DSC_LOTE, 'N/D'),
                       L.DSC_LINHA_SEPARACAO, 
                       F.NOM_FABRICANTE, 
                       DE.DSC_DEPOSITO_ENDERECO,

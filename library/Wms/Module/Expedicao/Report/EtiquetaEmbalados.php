@@ -41,7 +41,7 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 6:
                 //LAYOUT PLANETA
-                self::bodyExpedicaoModelo6($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo6($volumePatrimonio);
                 break;
             case 7:
                 //LAYOUT MBLED
@@ -59,7 +59,7 @@ class EtiquetaEmbalados extends eFPDF
                 self::bodyExpedicaoModelo10($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
                 break;
             case 11:
-                self::bodyExpedicaoModelo11($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo11($volumePatrimonio);
                 break;
             default:
                 self::bodyExpedicaoModelo1($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
@@ -353,11 +353,9 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo6($volumes, $mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo6($volumes)
     {
         foreach ($volumes as $volume) {
-
-            $qtdEtiquetasEmbalados = $mapaSeparacaoEmbaladoRepo->getQtdEtiquetaEmbalados($volume['COD_EXPEDICAO'], $volume['COD_PESSOA']);
 
             $imgW = 45;
             $imgH = 17;
@@ -385,7 +383,11 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(90,6);
             $this->SetFont('Arial', 'B', 17);
-            $this->MultiCell(40, 10, $volume['NUM_SEQUENCIA'].'/'.reset($qtdEtiquetasEmbalados)['NUMERO_CAIXAS'], 0, 'L');
+            if ($volume['IND_ULTIMO_VOLUME'] == 'S')
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+            $this->MultiCell(40, 10, $impressao, 0, 'L');
 
             $this->SetXY(88,14);
             $this->SetFont('Arial', 'B', 12);

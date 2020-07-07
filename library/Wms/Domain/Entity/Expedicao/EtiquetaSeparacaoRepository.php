@@ -339,8 +339,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
 
         if ($reentrega == true) {
-            $dql->innerJoin('etq.reentrega','r')
-                ->innerJoin('r.carga','c');
+            $dql->innerJoin('etq.reentrega','rtg')
+                ->innerJoin('rtg.carga','c');
         } else {
             $dql->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga');
         }
