@@ -1,0 +1,105 @@
+<?php
+/** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $integracao */
+$integracao = $this->integracao;
+$conexao = $integracao->getConexao();
+?>
+<style>
+    #show-pass {
+        cursor: pointer;
+        margin-right: 6px;
+        padding: 0 6px;
+    }
+
+    .hidded {
+        display: none;
+    }
+
+    .line-row {
+        margin: 10px 0;
+    }
+</style>
+<fieldset>
+    <legend>Conexão</legend>
+    <table class="detailsPopUp">
+        <tr class="title">
+            <td>Código:</td>
+            <td colspan="2">Descrição:</td>
+            <td>Provedor:</td>
+            <td colspan="2">Servidor:</td>
+            <td>Porta:</td>
+            <td>Usuário:</td>
+            <td>Senha: <img id="show-pass" src="/img/icons/lock_open.png" alt="show-pass" title="Clique para exibir a senha!"></td>
+        </tr>
+        <tr>
+            <td><?php echo $conexao->getId(); ?></td>
+            <td colspan="2"><?php echo $conexao->getDescricao(); ?></td>
+            <td><?php echo $conexao->getProvedor(); ?></td>
+            <td colspan="2"><?php echo $conexao->getServidor(); ?></td>
+            <td><?php echo $conexao->getPorta(); ?></td>
+            <td><?php echo $conexao->getUsuario(); ?></td>
+            <td>
+                <span class="span-pass"><?php echo str_repeat('*', strlen($conexao->getSenha())).'*****'; ?></span>
+                <span class="span-pass hidded"><?php echo $conexao->getSenha(); ?></span>
+            </td>
+        </tr>
+    </table>
+</fieldset>
+
+<script>
+    var down = false;
+
+    $("#show-pass").mousedown(function () {
+        $(".span-pass").toggleClass("hidded");
+        down = true;
+        return false;
+    }).mouseup(function () {
+        if (down) {
+            $(".span-pass").toggleClass("hidded");
+            down = false;
+        }
+        return false;
+    }).mouseout(function () {
+        if (down) {
+            $(this).mouseup();
+        }
+        return false;
+    });
+</script>
+
+<fieldset>
+    <legend>Integração</legend>
+    <table class="detailsPopUp">
+        <tr class="title">
+            <td>Código:</td>
+            <td>Descrição:</td>
+            <td>Usa LOG</td>
+            <td>Tipo</td>
+        </tr>
+        <tr>
+            <td><?php echo $integracao->getId(); ?></td>
+            <td><?php echo $integracao->getDscAcaoIntegracao(); ?></td>
+            <td><?php echo ($integracao->getIndUtilizaLog() == 'S') ? 'Sim' : 'Não'; ?></td>
+            <td><?php echo $integracao->getTipoAcao()->getSigla(); ?></td>
+        </tr>
+        <tr><td colspan="4"><hr class="line-row"></td></tr>
+        <tr class="title">
+            <td>Ultima execução:</td>
+            <td>Tabela de Referência:</td>
+            <td>Integrações Relacionadas:</td>
+            <td>Parametros</td>
+        </tr>
+        <tr>
+            <td><?php echo (!empty($integracao->getDthUltimaExecucao())) ? $integracao->getDthUltimaExecucao()->format('d/m/Y H:i:s') : '-'; ?></td>
+            <td><?php echo $integracao->getTabelaReferencia(); ?></td>
+            <td><?php echo $integracao->getIdAcaoRelacionada(); ?></td>
+            <td><?php echo $integracao->getParametros(); ?></td>
+        </tr>
+        <tr><td colspan="4"><hr class="line-row"></td></tr>
+        <tr class="title">
+            <td colspan="4">Script</td>
+        </tr>
+        <tr>
+            <td colspan="4"><p><?php echo $integracao->getQuery(); ?></p></td>
+        </tr>
+    </table>
+</fieldset>
