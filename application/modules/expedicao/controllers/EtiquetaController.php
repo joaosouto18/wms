@@ -728,7 +728,7 @@ class Expedicao_EtiquetaController  extends Action
 
             }
 
-            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta,$fechaEmbaladosNoFinal,$agrupaEtiquetas);
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta,$fechaEmbaladosNoFinal,!$agrupaEtiquetas);
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -805,7 +805,7 @@ class Expedicao_EtiquetaController  extends Action
 
             }
 
-            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal, $agrupaEtiquetas);
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal, !$agrupaEtiquetas);
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());

@@ -384,7 +384,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(80,6);
             $this->SetFont('Arial', 'B', 17);
-            if (!$agrupaEtiquetas) {
+            if ($agrupaEtiquetas) {
                 $impressao = (!$existeItensPendentes) ? $volume['NUM_SEQUENCIA'].' de '.$volume['NUM_SEQUENCIA'] : $volume['NUM_SEQUENCIA'];
             } else {
                 $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
