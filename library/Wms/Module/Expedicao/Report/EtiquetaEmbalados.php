@@ -9,7 +9,7 @@ use Wms\Util\Barcode\eFPDF,
 class EtiquetaEmbalados extends eFPDF
 {
 
-    public function imprimirExpedicaoModelo($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $modeloEtiqueta, $fechaEmbaladosNoFinal = false)
+    public function imprimirExpedicaoModelo($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $modeloEtiqueta, $fechaEmbaladosNoFinal = false, $agrupaEtiquetas = false)
     {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -41,7 +41,7 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 6:
                 //LAYOUT PLANETA
-                self::bodyExpedicaoModelo6($volumePatrimonio);
+                self::bodyExpedicaoModelo6($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $agrupaEtiquetas);
                 break;
             case 7:
                 //LAYOUT MBLED
@@ -353,10 +353,11 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo6($volumes)
+    private function bodyExpedicaoModelo6($volumes, $mapaSeparacaoEmbaladoRepo, $agrupaEtiquetas)
     {
         foreach ($volumes as $volume) {
 
+            $existeItensPendentes = empty($mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S')));
             $imgW = 45;
             $imgH = 17;
             $this->AddPage();
@@ -383,7 +384,12 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(80,6);
             $this->SetFont('Arial', 'B', 17);
-            $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
+            if ($agrupaEtiquetas) {
+                $impressao = (!$existeItensPendentes) ? $volume['NUM_SEQUENCIA'].' de '.$volume['NUM_SEQUENCIA'] : $volume['NUM_SEQUENCIA'];
+            } else {
+                $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
+            }
+
             $this->MultiCell(40, 10, $impressao, 0, 'L');
 
             $this->SetXY(88,14);

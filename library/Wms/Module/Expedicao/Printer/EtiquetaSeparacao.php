@@ -82,9 +82,9 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetFont('Arial','B',7);
                     //Go to 1.5 cm from bottom
                     $this->SetY($this->footerPosition + 11);
-                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
-                    $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 3, 'Etiqueta ' . $this->etiqueta['posEntrega'], 0, 1, "L");
+//                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->SetFont('Arial','B',13);
+                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['posEntrega'], 0, 1, "L");
                     $this->SetFont('Arial','B',7);
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
@@ -1400,7 +1400,7 @@ class EtiquetaSeparacao extends Pdf
         }
     }
 
-    protected function layoutModelo14($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
+    protected function layoutModelo14($etiqueta,$countEtiquetas,$reimpressao, $modelo)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
@@ -1413,6 +1413,7 @@ class EtiquetaSeparacao extends Pdf
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
         $this->etiqueta = $etiqueta;
+        $this->InFooter = true;
 
         if ($etiqueta['tipoCarga'] == 'TRANSBORDO') {
             $etiqueta['tipoCarga'] = 'TRANSB.';
@@ -1431,7 +1432,7 @@ class EtiquetaSeparacao extends Pdf
         $this->MultiCell(85, 1, "", 0, 'L');
 
         $this->SetFont('Arial', 'B', 10);
-        $this->MultiCell(85, 2.8, utf8_decode($etiqueta['tipoComercializacao']), 0, 'L');
+        $this->MultiCell(85, 2.8, utf8_decode($etiqueta['tipoComercializacao'] . "($etiqueta[quantidade])"), 0, 'L');
 
 
         $this->SetXY(3,40);
@@ -1439,8 +1440,6 @@ class EtiquetaSeparacao extends Pdf
         $this->Cell(10, 4, "BOX:");
         $this->SetFont('Arial', 'B', 11);
         $this->Cell(40, 4, $etiqueta['dscBox']);
-
-        $this->InFooter = true;
 
         if (!empty($etiqueta['tipoSaida'])) {
             $this->SetFont('Arial', 'B', 8);

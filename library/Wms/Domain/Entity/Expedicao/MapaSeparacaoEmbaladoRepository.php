@@ -218,7 +218,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 break;
 
         }
-        $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta, $mapaSeparacaoEmbaladoRepo, $modeloEtiqueta, $fechaEmbaladosNoFinal);
+        $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta, $mapaSeparacaoEmbaladoRepo, $modeloEtiqueta, $fechaEmbaladosNoFinal, $checkSetLast);
 
     }
 
