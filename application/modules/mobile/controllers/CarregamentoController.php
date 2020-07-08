@@ -73,7 +73,7 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
 
             $response = ['status' => 'ok', 'response' => $clienteDanfes];
         } catch (Exception $e) {
-            $result = ['status' => 'error', 'exception' => $e->getMessage(), 'errorCode' => $e->getCode()];
+            $response = ['status' => 'error', 'exception' => $e->getMessage(), 'errorCode' => $e->getCode()];
         }
 
         $this->_helper->json($response);
