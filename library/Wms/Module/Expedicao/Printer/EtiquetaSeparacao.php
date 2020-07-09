@@ -88,7 +88,7 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetY($this->footerPosition + 11);
                     $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
+                    $this->Cell(20, 3, 'Etiqueta ' . $this->etiqueta['posEntrega'], 0, 1, "L");
                     $this->SetFont('Arial','B',7);
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
@@ -1416,6 +1416,7 @@ class EtiquetaSeparacao extends Pdf
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
+	$this->etiqueta = $etiqueta;
 
         if ($etiqueta['tipoCarga'] == 'TRANSBORDO') {
             $etiqueta['tipoCarga'] = 'TRANSB.';

@@ -353,11 +353,9 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo6($volumes, $mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo6($volumes)
     {
         foreach ($volumes as $volume) {
-
-            $qtdEtiquetasEmbalados = $mapaSeparacaoEmbaladoRepo->getQtdEtiquetaEmbalados($volume['COD_EXPEDICAO'], $volume['COD_PESSOA']);
 
             $imgW = 45;
             $imgH = 17;
@@ -380,12 +378,13 @@ class EtiquetaEmbalados extends eFPDF
             $this->SetFont('Arial', 'B', 12);
             $this->Cell(15, 4, "$volume[SEQ_ROTA]-$volume[SEQ_PRACA]");
 
-            $this->SetxY(84,1);
+            $this->SetxY(75,1);
             $this->SetFont('Arial', '', 13);
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
-            $this->SetxY(90,6);
+            $this->SetxY(80,6);
             $this->SetFont('Arial', 'B', 17);
-            $this->MultiCell(40, 10, $volume['NUM_SEQUENCIA'].'/'.reset($qtdEtiquetasEmbalados)['NUMERO_CAIXAS'], 0, 'L');
+            $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[NUM_SEQUENCIA] de $volume[NUM_SEQUENCIA]" : $volume['NUM_SEQUENCIA'];
+            $this->MultiCell(30, 10, $impressao, 0, 'L');
 
             $this->SetXY(88,14);
             $this->SetFont('Arial', 'B', 12);
@@ -448,7 +447,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 56, 63 , 50, 12);
 
         }
-    }
+    }	
 
     private function bodyExpedicaoModelo7($volumes)
     {
