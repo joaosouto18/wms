@@ -662,7 +662,6 @@ class Expedicao_EtiquetaController  extends Action
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($idExpedicao);
             $fechaEmbaladosNoFinal = ($modeloSeparacaoEn->getCriarVolsFinalCheckout() == 'S');
-            $agrupaEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
 
             $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
             if (empty($etiqueta)) {
@@ -728,7 +727,7 @@ class Expedicao_EtiquetaController  extends Action
 
             }
 
-            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta,$fechaEmbaladosNoFinal,!$agrupaEtiquetas);
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta,$fechaEmbaladosNoFinal);
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -744,7 +743,6 @@ class Expedicao_EtiquetaController  extends Action
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($idExpedicao);
         $fechaEmbaladosNoFinal = ($modeloSeparacaoEn->getCriarVolsFinalCheckout() == 'S');
-        $agrupaEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
         try {
             $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
             if (empty($etiqueta)) {
@@ -805,7 +803,7 @@ class Expedicao_EtiquetaController  extends Action
 
             }
 
-            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal, !$agrupaEtiquetas);
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal);
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
