@@ -1446,6 +1446,8 @@ class ExpedicaoRepository extends EntityRepository {
                         $qtdRestante = Math::subtrair($qtdRestante, $qtdReservarPicking);
                         if (empty($qtdRestante)) break;
                     }
+                } else {
+                    $forcarSeparacaoAerea = true;
                 }
             }
 
@@ -5025,11 +5027,11 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if (!empty($idEndereco)) {
-                $sqlFiltro .= " AND MSP.COD_DEPOSITO_ENDERECO = '$idEndereco'";
+                $sqlFiltro .= " AND MSP.COD_DEPOSITO_ENDERECO = $idEndereco";
             }
 
             if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
-                $sqlFiltro .= " AND MSP.COD_PRODUTO_EMBALAGEM = '$idEmbalagem'";
+                $sqlFiltro .= " AND MSP.COD_PRODUTO_EMBALAGEM = $idEmbalagem";
             }
 
             $sql = "SELECT COD_MAPA_SEPARACAO_PRODUTO 
