@@ -1,9 +1,18 @@
 <?php
-use Wms\Module\Web\Controller\Action;
+use Wms\Module\Web\Controller\Action,
+    Wms\Module\Web\Page;
 
 class Web_RelatorioCustomizadoController extends Action
 {
     public function relatorioAction (){
+        $buttons[] =  array(
+            'label' => 'Selecionar outro relatório',
+            'cssClass' => 'btnBack',
+            //  'tag' => 'a'
+        );
+
+        Page::configure(array('buttons' => $buttons));
+
         $params = $this->getRequest()->getParams();
         $idRelatorio = 1;
 

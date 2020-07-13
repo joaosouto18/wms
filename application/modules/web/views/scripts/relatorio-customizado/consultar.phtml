@@ -10,21 +10,14 @@
             if (Object.keys(arrReports).length > 0) {
                 $.each(arrReports, function (k, tipos) {
 
-                    let accordionRua = $('<div class="accordion"></div>');
+                    let accordion = $('<div class="accordion"></div>');
 
                     $.each(tipos, function (k, tipo) {
-
                         let tableConf = prepareGridConf(tipo.relatorios);
-                        accordionRua.append(
-                            newAccordionGroup(k, tipo, tableConf, true)
+                        $("#accordion-master").append(
+                            newAccordionGroup(k, tipo, tableConf)
                         )
                     });
-
-
-                    $("#accordion-master").append(
-                        newAccordionGroup(k, tipos, accordionRua)
-                    )
-
                 })
             }
 
@@ -56,47 +49,39 @@
 
         var prepareGridConf = function (relatorios) {
             let tBody = $('<tbody>');
-            tBody.append('<tr class="gTTitle">' +
+
+            tBody.append('' +
+                '<tr class="gTTitle">' +
                 '<td>Cod.Relatório</td>' +
+                '<td>Relatório</td>' +
                 '<td>Relatório</td>' +
                 '</tr>');
 
             $.each(relatorios, function (k, rpt) {
-                tBody.append('<tr class="gTResultSet ">' +
+                tBody.append('' +
+                    '<tr class="gTResultSet ">' +
                     '<td>'+rpt.id+'</td>' +
                     '<td>'+rpt.titulo+'</td>' +
+                    '<td><a class="btn gradientBtn" href="/relatorio-customizado/relatorio/id/' + rpt.id + '">Executar Relatório</a></td>' +
                     '</tr>');
             });
 
             return $('<table class="gTable">').append(tBody);
         };
 
-        var newAccordionGroup = function (index, accTitle, dataBody, subAcc) {
+        var newAccordionGroup = function (index, accTitle, dataBody) {
             let divGroupAcc = $('<div class="group"></div>');
             let accHeader = null;
 
-            if (!subAcc) {
-                let title = '' +
-                    '<table width="100%">' +
-                    '<thead>' +
-                    '<tr>' +
-                    '<td class="accordion-master-head" width="15%">Relatórios Customizados</td>' +
-                    '</tr>' +
-                    '</thead>' +
-                    '</table>';
-                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
-            }
-            else {
-                let title = '' +
-                    '<table width="100%">' +
-                    '<thead>' +
-                    '<tr>' +
-                    '<td class="accordion-master-head" >'+accTitle.descricao+'</td>' +
-                    '</tr>' +
-                    '</thead>' +
-                    '</table>';
-                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
-            }
+            let title = '' +
+                '<table width="100%">' +
+                '<thead>' +
+                '<tr>' +
+                '<td class="accordion-master-head" >'+accTitle.descricao+'</td>' +
+                '</tr>' +
+                '</thead>' +
+                '</table>';
+            accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
 
             let divAccBody = $('<div class="accordion-body"></div>');
 
