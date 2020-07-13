@@ -3,56 +3,17 @@ use Wms\Module\Web\Controller\Action;
 
 class Web_RelatorioCustomizadoController extends Action
 {
-    public function consultarAction (){
-
-    }
-
     public function relatorioAction (){
         $params = $this->getRequest()->getParams();
+        $idRelatorio = 1;
 
-        $paramsQuery = array();
-        $sort = arraY();
-        $titulo = "";
-        $query = "";
+        $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
+        $report = $reportService->getDadosReport($idRelatorio);
 
-        /*
-         * Esta parte é resultado de consulta em banco
-         * montada na mão apenas para desenvolvimento da regra de negocio
-         */
-
-        //Dados do relatório
-        $query = "SELECT COD_PRODUTO as Codigo, DSC_PRODUTO 
-                    FROM PRODUTO P 
-                   WHERE 1 = 1 :CodProduto :DscProduto";
-        $titulo = "Relatório de Produtos";
-
-        //Critérios de Filtro
-        $paramsQuery[] = array(
-            'name' => 'CodProduto',
-            'label' => 'Código',
-            'query' => " AND P.COD_PRODUTO = ':value' ",
-            'required' => "N",
-            'type' => 'text'
-        );
-        $paramsQuery[] = array(
-            'name' => 'DscProduto',
-            'label' => 'Descrição',
-            'required' => "N",
-            'query' => " AND P.DSC_PRODUTO LIKE '%:value%' ",
-            'type' => 'text'
-        );
-
-        //Critérios de Ordenação
-        $sort[] = array(
-            'label' => 'Código ASC',
-            'value' => 'P.COD_PRODUTO ASC'
-        );
-        $sort[] = array(
-            'label' => 'Descrição ASC',
-            'value' => 'P.DSC_PRODUTO ASC'
-        );
-
-
+        $paramsQuery = $report['filters'];
+        $sort = $report['sort'];
+        $title = $report['title'];
+        $query = $report['query'];
 
         $form = new \Wms\Module\Web\Form\RelatorioCustomizado($paramsQuery);
         $form->init($paramsQuery, $sort);
@@ -84,14 +45,14 @@ class Web_RelatorioCustomizadoController extends Action
                     $this->view->result = $result;
                 }
                 if (isset($params['btnPDF'])) {
-                    $this->exportPDF($result,  $titulo, $titulo,'L');
+                    $this->exportPDF($result,  $title,$title,'L');
                 }
                 if (isset($params['btnXLS'])) {
-                    $this->exportCSV($result, $titulo,true );
+                    $this->exportCSV($result, $title,true );
                 }
             }
         }
-        $this->view->title = $titulo;
+        $this->view->title = $title;
         $this->view->form = $form;
 
     }
@@ -99,6 +60,11 @@ class Web_RelatorioCustomizadoController extends Action
     public function indexAction (){
 
     }
+
+    public function consultarAction (){
+
+    }
+
 }
 
 ?>
