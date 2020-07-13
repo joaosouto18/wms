@@ -7,10 +7,6 @@ use Wms\Module\Web\Grid;
 
 class RelatorioCustomizado extends Grid
 {
-    /**
-     *
-     * @param array $params 
-     */
 
     public function init($arrayResult, $assemblyData)
     {
@@ -30,7 +26,6 @@ class RelatorioCustomizado extends Grid
 
         $pager = new Pager((count($arrayResult) - 1),0,count($arrayResult));
         $this->setPager($pager);
-        //$this->showPager = false;
         $this->showExport = false;
 
         return $this;
