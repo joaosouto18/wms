@@ -42,12 +42,11 @@ class Web_RelatorioCustomizadoController extends Action
 
     }
 
-    public function indexAction (){
-
-    }
-
     public function consultarAction (){
+        $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
+        $relatoriosDisponíveis = json_encode($reportService->getReports());
 
+        $this->view->reports = $relatoriosDisponíveis;
     }
 
 }

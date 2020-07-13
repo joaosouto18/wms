@@ -1644,7 +1644,6 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $produtos['produtos'][$k] = $dadosProduto;
             }
         }
-
         return $produtos;
     }
 }

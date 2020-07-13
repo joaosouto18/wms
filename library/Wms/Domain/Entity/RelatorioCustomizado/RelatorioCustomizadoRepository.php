@@ -50,4 +50,25 @@ class RelatorioCustomizadoRepository extends EntityRepository
         return $result;
     }
 
+    public function getRelatoriosDisponiveisMock() {
+        $result = array();
+        $result[] = array(
+            'COD_RELATORIO' => '1',
+            'DSC_TITULO' => 'Relatório de Produtos',
+            'TIPO' => 'Relatórios Cadastrais'
+        );
+        $result[] = array(
+            'COD_RELATORIO' => '3',
+            'DSC_TITULO' => 'Expedições por Dia',
+            'TIPO' => 'Relatórios de Expedição'
+        );
+        $result[] = array(
+            'COD_RELATORIO' => '2',
+            'DSC_TITULO' => 'Relatório de Clientes',
+            'TIPO' => 'Relatórios Cadastrais'
+        );
+
+        return $result;
+    }
+
 }

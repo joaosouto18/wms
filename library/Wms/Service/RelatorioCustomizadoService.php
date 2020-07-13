@@ -132,4 +132,44 @@ class RelatorioCustomizadoService extends AbstractService {
         return $result;
     }
 
+    public function getReports() {
+        $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
+        $result = $reportRepo->getRelatoriosDisponiveisMock();
+
+        $tiposRelatorios = array();
+
+        foreach ($result as $r) {
+            $k = null;
+            $arrRelatorios = array();
+            foreach ($tiposRelatorios as $key => $t) {
+                if ($t['descricao'] == $r['TIPO']) {
+                    $k = $key;
+                    $arrRelatorios = $t['relatorios'];
+                }
+            }
+
+            $arrRelatorios[] = array(
+                'id' => $r['COD_RELATORIO'],
+                'titulo' => $r['DSC_TITULO']
+            );
+
+            $tipoRelatorio = array(
+                'descricao' => $r['TIPO'],
+                'relatorios' => $arrRelatorios
+            );
+
+            if ($k === null) {
+                $tiposRelatorios[] = $tipoRelatorio;
+            } else {
+                $tiposRelatorios[$k] = $tipoRelatorio;
+            }
+        }
+
+        $result = array (
+            'tipos' => $tiposRelatorios
+        );
+
+        return $result;
+    }
+
 }
