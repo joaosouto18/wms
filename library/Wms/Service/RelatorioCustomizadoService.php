@@ -62,13 +62,18 @@ class RelatorioCustomizadoService extends AbstractService {
         $this->_sort = $sort;
     }
 
-    public function getDadosReport($idRelatorio) {
-
-        $reportRepo = $this->_em->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
+    private function populate($idRelatorio) {
+        $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
         $mock = $reportRepo->getProdutosReportMock();
+
+        $this->_reportEn = $mock['reportEn'];
         $this->_filters = $mock['filters'];
         $this->_sort = $mock['sort'];
-        $this->_reportEn = $mock['reportEn'];
+    }
+
+    public function getAssemblyReport($idRelatorio) {
+
+        $this->populate($idRelatorio);
 
         $title = $this->_reportEn->getTitulo();
         $query = $this->_reportEn->getQuery();
@@ -102,8 +107,29 @@ class RelatorioCustomizadoService extends AbstractService {
         return $result;
     }
 
-    public function buildQuery() {
+    public function executeReport($idRelatorio, $params) {
+        $this->populate($idRelatorio);
+        $query = $this->_reportEn->getQuery();
 
+        foreach ($this->_filters as $filterObj) {
+            $filterValue = "";
+            if (isset($params[$filterObj['NOME_PARAM']]) && $params[$filterObj['NOME_PARAM']] != null)
+                $filterValue = $params[$filterObj['NOME_PARAM']];
+
+            if ($filterValue != '') {
+                $filterValue = str_replace(':value' , $filterValue, $filterObj['DSC_QUERY']);
+            }
+
+            $query = str_replace(":" . $filterObj['NOME_PARAM'], $filterValue, $query );
+        }
+
+        if (isset($params['sort']) && $params['sort'] != null) {
+            $query .= " ORDER BY " . $params['sort'];
+        }
+
+        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
     }
 
 }

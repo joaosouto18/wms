@@ -8,35 +8,19 @@ class Web_RelatorioCustomizadoController extends Action
         $idRelatorio = 1;
 
         $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
-        $report = $reportService->getDadosReport($idRelatorio);
+        $report = $reportService->getAssemblyReport($idRelatorio);
 
-        $paramsQuery = $report['filters'];
+        $filters = $report['filters'];
         $sort = $report['sort'];
         $title = $report['title'];
-        $query = $report['query'];
 
-        $form = new \Wms\Module\Web\Form\RelatorioCustomizado($paramsQuery);
-        $form->init($paramsQuery, $sort);
+        $form = new \Wms\Module\Web\Form\RelatorioCustomizado();
+        $form->init($filters, $sort);
+        $form->setDefaults($params);
+
         if (isset($params['btnBuscar']) || isset($params['btnPDF']) || isset($params['btnXLS'])) {
 
-            foreach ($paramsQuery as $value) {
-                $filterValue = "";
-                if (isset($params[$value['name']]) && $params[$value['name']] != null)
-                    $filterValue = $params[$value['name']];
-
-                if ($filterValue != '') {
-                    $filterValue = str_replace(':value' , $filterValue, $value['query']);
-                }
-
-                $query = str_replace(":" . $value['name'], $filterValue, $query );
-            }
-
-            if (isset($params['sort']) && $params['sort'] != null) {
-                $query .= " ORDER BY " . $params['sort'];
-            }
-
-            $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-            $form->setDefaults($params);
+            $result = $reportService->executeReport($idRelatorio,$params);
 
             if (count($result) == 0) {
                 $this->addFlashMessage('info', 'Nenhum Resultado Encontrado');
@@ -52,6 +36,7 @@ class Web_RelatorioCustomizadoController extends Action
                 }
             }
         }
+
         $this->view->title = $title;
         $this->view->form = $form;
 

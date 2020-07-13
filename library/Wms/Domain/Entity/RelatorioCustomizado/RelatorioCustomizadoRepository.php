@@ -43,7 +43,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
 
         $result = array(
             'reportEn' => $reportEn,
-            'filter' => $filter,
+            'filters' => $filter,
             'sort' => $sort
         );
 
