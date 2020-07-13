@@ -8,14 +8,12 @@ class Web_RelatorioCustomizadoController extends Action
         $idRelatorio = 1;
 
         $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
-        $report = $reportService->getAssemblyReport($idRelatorio);
+        $assemblyData = $reportService->getAssemblyDataReport($idRelatorio);
 
-        $filters = $report['filters'];
-        $sort = $report['sort'];
-        $title = $report['title'];
+        $title = $assemblyData['title'];
 
         $form = new \Wms\Module\Web\Form\RelatorioCustomizado();
-        $form->init($filters, $sort);
+        $form->init($assemblyData);
         $form->setDefaults($params);
 
         if (isset($params['btnBuscar']) || isset($params['btnPDF']) || isset($params['btnXLS'])) {
@@ -26,7 +24,9 @@ class Web_RelatorioCustomizadoController extends Action
                 $this->addFlashMessage('info', 'Nenhum Resultado Encontrado');
             } else {
                 if (isset($params['btnBuscar'])) {
-                    $this->view->result = $result;
+                    $grid = new \Wms\Module\Web\Grid\RelatorioCustomizado();
+                    $grid->init($result, $assemblyData);
+                    $this->view->grid = $grid;
                 }
                 if (isset($params['btnPDF'])) {
                     $this->exportPDF($result,  $title,$title,'L');

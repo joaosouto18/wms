@@ -71,7 +71,7 @@ class RelatorioCustomizadoService extends AbstractService {
         $this->_sort = $mock['sort'];
     }
 
-    public function getAssemblyReport($idRelatorio) {
+    public function getAssemblyDataReport($idRelatorio) {
 
         $this->populate($idRelatorio);
 

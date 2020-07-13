@@ -11,48 +11,5 @@
     </div>
 <?php
 echo $this->form;
-if (isset($this->result)) {
-    if (count($this->result) > 0) {?>
-        <style>
-            tr.tooltip span
-            {
-                display: none
-            }
-            tr.tooltip:hover td span
-            {
-                display:block;
-                position:absolute;
-                color:#111;
-                border:1px solid #DCA;
-                padding: 8px;
-                background:#fffAF0;
-                max-width: 600px;
-                font-size: 14px;
-            }
-        </style>
-        <div id="quantidade-grid" style="width: 1200px" class="grid">
-            <table class="gTable ">
-                <tbody>
-                <tr class ="gTTitle">
-                    <?php foreach ($this->result[0] as $key => $value){
-                        echo "<td>". $key . "</td>";
-                    }?>
-                </tr>
-                <?php
-                foreach ($this->result as $row) {
-                $fontColor = "black";
-                $this->color = !($this->color);?>
-                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';} ?>">
-                    <?php
-                    foreach ($row as $column => $value) {
-                        echo "<td>". $value . "</td>";
-                    }?>
-                    </tr>
-                <?php }?>
-                </tbody>
-            </table>
-        </div>
-        <?php
-    }
-}
+echo $this->grid;
 ?>

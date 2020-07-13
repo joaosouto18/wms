@@ -10,7 +10,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
         $reportEn = new RelatorioCustomizado();
         $reportEn->setTitulo("Relatório de Produtos");
         $reportEn->setQuery("
-            SELECT COD_PRODUTO as Codigo, DSC_PRODUTO 
+            SELECT COD_PRODUTO as Codigo, DSC_PRODUTO as Descrição 
               FROM PRODUTO P 
              WHERE 1 = 1 :CodProduto :DscProduto
         ");

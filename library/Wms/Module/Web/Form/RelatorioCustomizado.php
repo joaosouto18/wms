@@ -6,20 +6,26 @@ use Wms\Module\Web\Form;
 
 class RelatorioCustomizado extends Form
 {
-    public function init($params = null, $sort = null)
+    public function init($assemblyData = null)
     {
-        if (isset($params) && ($params!= null)) {
-            foreach ($params as $param) {
-                $required = false;
-                if ($param['required'] == "S") $required = true;
-                $this->addElement($param['type'], $param['name'], array(
-                    'label' => $param['label'],
-                    'required' => $required
-                ));
-            }
+        $filters = array();
+        $sort = array();
+
+        if (isset($assemblyData) && ($assemblyData != null)) {
+            $sort = $assemblyData['sort'];
+            $filters = $assemblyData['filters'];
         }
 
-        if (isset($sort) && ($sort!= null)) {
+        foreach ($filters as $filterOption) {
+            $required = false;
+            if ($filterOption['required'] == "S") $required = true;
+            $this->addElement($filterOption['type'], $filterOption['name'], array(
+                'label' => $filterOption['label'],
+                'required' => $required
+            ));
+        }
+
+        if ($sort != null) {
             $srt = array();
             $firstOpt = "";
             foreach ($sort as $srtOption) {
