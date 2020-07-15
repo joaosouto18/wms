@@ -1343,6 +1343,7 @@ class ExpedicaoRepository extends EntityRepository {
 
                 $idEndereco = $enderecoPicking->getId();
 
+                $estoquePicking = [];
                 if ($controlaLote) {
 
                     $params = array(
@@ -1356,12 +1357,13 @@ class ExpedicaoRepository extends EntityRepository {
                     );
 
                     $saldoPicking = $repositorios['estoqueRepo']->getEstoqueByParams($params);
-
-                    if (empty($saldoPicking)) {
+                    if (empty($saldoPicking) && $lote == Lote::LND) {
                         $estoquePicking = [Lote::LND => 0];
+                    } elseif (empty($saldoPicking) && $lote != Lote::LND) {
+                        $forcarSeparacaoAerea = true;
                     } else {
-                        foreach($saldoPicking as $key => $estoque) {
-
+                        $ultimoLote = $lastKey($saldoPicking);
+                        foreach ($saldoPicking as $key => $estoque) {
                             $loteReservar = ($lote == Lote::LND) ? $estoque['DSC_LOTE'] : $lote;
 
                             $estoquePicking[$loteReservar] = $estoque['SALDO'];
@@ -1371,14 +1373,12 @@ class ExpedicaoRepository extends EntityRepository {
                                 // SE FOR RESERVA DE UM LOTE ESPECÍFICO QUE NÃO ESTÁ NO PICKING DEVERÁ SAÍR DIRETO DO PULMÃO
                                 if ($reserva['estoqueReservado'] && $lote != Lote::LND) {
                                     $forcarSeparacaoAerea = true;
-                                }
-                                // SE FOR RESERVAR DE QUALQUER LOTE
+                                } // SE FOR RESERVAR DE QUALQUER LOTE
                                 elseif ($reserva['estoqueReservado']) {
                                     // VERIFICA O PRÓXIMO LOTE NESSE ENDEREÇO, CASO TENHA
-                                    if ($key != $lastKey($saldoPicking)) {
+                                    if ($key != $ultimoLote) {
                                         continue;
-                                    }
-                                    // CASO NÃO, REGISTRA O SALDO ZERADO NO LOTE ATUAL
+                                    } // CASO NÃO, REGISTRA O SALDO ZERADO NO LOTE ATUAL
                                     else {
                                         $estoquePicking[$loteReservar] = 0;
                                     }
@@ -1391,88 +1391,84 @@ class ExpedicaoRepository extends EntityRepository {
                             if ($forcarSeparacaoAerea) break;
 
                         }
-
-                        if ($forcarSeparacaoAerea) continue;
                     }
+
+                    if ($forcarSeparacaoAerea) continue;
+
                 } else {
                     $estoquePicking = [Lote::NCL => 0];
                 }
 
-                if ( ($controlaLote && !empty($saldoPicking)) ||
-                     ($controlaLote && empty($saldoPicking) && $lote == Lote::LND) ||
-                      !$controlaLote ) {
-                    foreach ($estoquePicking as $loteReservar => $saldo) {
-                        $qtdReservarPicking = $qtdRestante;
-                        $zerouEstoque = false;
-                        $ultimoLote = ($loteReservar == $lastKey($estoquePicking));
-                        if (!empty($saldo)) {
-                            if (Math::compare($qtdRestante, $saldo, ">=")) {
-                                $qtdReservarPicking = $saldo;
-                                $zerouEstoque = true;
-                            }
-                        } elseif ($controlaLote && !$ultimoLote) {
-                            continue;
-                        } elseif ($controlaLote && $ultimoLote) {
-                            $loteReservar = Lote::LND;
+                $ultimoLote = $lastKey($estoquePicking);
+                foreach ($estoquePicking as $loteReservar => $saldo) {
+                    $qtdReservarPicking = $qtdRestante;
+                    $zerouEstoque = false;
+                    if (!empty($saldo)) {
+                        if (Math::compare($qtdRestante, $saldo, ">=")) {
+                            $qtdReservarPicking = $saldo;
+                            $zerouEstoque = true;
                         }
-
-                        foreach ($idsElementos as $id) {
-                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'])) {
-                                $qtdReservadaAtual = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'];
-                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = Math::adicionar($qtdReservadaAtual, $qtdReservarPicking);
-                            } else {
-                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = $qtdReservarPicking;
-                            }
-                            $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = $zerouEstoque;
-                        }
-
-                        $qtdReservar = $qtdReservarPicking;
-
-                        foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                            if ($qtdReservar > 0) {
-                                $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
-                                if ($qtdAtendida == $qtdItenPedido['qtd']) {
-                                    continue;
-                                } else {
-                                    $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
-                                }
-
-                                if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
-                                    $qtdReservada = $qtdPendente;
-                                } else {
-                                    $qtdReservada = $qtdReservar;
-                                }
-
-                                $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
-
-                                if ($enderecoPicking == null) {
-                                    throw new \Exception("Produto $codProduto - $dscGrade sem endereço de picking definido");
-                                }
-
-                                foreach ($idsElementos as $id) {
-                                    $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]["$lote*#*$loteReservar"][$id] = array(
-                                        'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
-                                        'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
-                                        'codProduto' => $codProduto,
-                                        'grade' => $dscGrade,
-                                        'qtd' => $qtdReservada,
-                                        'lote' => $loteReservar
-                                    );
-                                }
-
-                                $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
-                                $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
-                            } else {
-                                break;
-                            }
-                        }
-
-                        $qtdRestante = Math::subtrair($qtdRestante, $qtdReservarPicking);
-                        if (empty($qtdRestante)) break;
+                    } elseif ($controlaLote && $ultimoLote != $loteReservar) {
+                        continue;
+                    } elseif ($controlaLote && $ultimoLote == $loteReservar) {
+                        $loteReservar = Lote::LND;
                     }
-                } else {
-                    $forcarSeparacaoAerea = true;
+
+                    foreach ($idsElementos as $id) {
+                        if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'])) {
+                            $qtdReservadaAtual = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'];
+                            $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = Math::adicionar($qtdReservadaAtual, $qtdReservarPicking);
+                        } else {
+                            $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = $qtdReservarPicking;
+                        }
+                        $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = $zerouEstoque;
+                    }
+
+                    $qtdReservar = $qtdReservarPicking;
+
+                    foreach ($pedidos as $codPedido => $qtdItenPedido) {
+                        if ($qtdReservar > 0) {
+                            $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
+                            if ($qtdAtendida == $qtdItenPedido['qtd']) {
+                                continue;
+                            } else {
+                                $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
+                            }
+
+                            if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
+                                $qtdReservada = $qtdPendente;
+                            } else {
+                                $qtdReservada = $qtdReservar;
+                            }
+
+                            $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
+
+                            if ($enderecoPicking == null) {
+                                throw new \Exception("Produto $codProduto - $dscGrade sem endereço de picking definido");
+                            }
+
+                            foreach ($idsElementos as $id) {
+                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]["$lote*#*$loteReservar"][$id] = array(
+                                    'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
+                                    'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
+                                    'codProduto' => $codProduto,
+                                    'grade' => $dscGrade,
+                                    'qtd' => $qtdReservada,
+                                    'lote' => $loteReservar
+                                );
+                            }
+
+                            $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
+                            $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    $qtdRestante = Math::subtrair($qtdRestante, $qtdReservarPicking);
+                    if (empty($qtdRestante)) break;
                 }
+
             }
 
             if (empty($qtdRestante)) {
@@ -4938,18 +4934,18 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $mapa
      * @param $idEmbalagem
      * @param $forcarEmbVendaDefault
+     * @param $idEndereco
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null, $mapa = null, $idEmbalagem = null, $forcarEmbVendaDefault = null, $idEndereco = null) {
+    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null, $mapa = null, $idEmbalagem = null, $forcarEmbVendaDefault = null, $idEndereco = null, $lote = null) {
 
         /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
         $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         /** @var Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
@@ -4980,8 +4976,16 @@ class ExpedicaoRepository extends EntityRepository {
             $ordenacao = "TO_NUMBER(REE.COD_RESERVA_ESTOQUE) DESC";
         }
 
-        $where = (!empty($idEndereco)) ? " AND RE.COD_DEPOSITO_ENDERECO = $idEndereco" : "";
+        $whereArr = [];
+        if ($produtoEn->getIndControlaLote() == 'S' && !empty($lote)) {
+            $whereArr[] = "REP.DSC_LOTE = '$lote'";
+        }
 
+        if (!empty($idEndereco)) {
+            $whereArr[] = "RE.COD_DEPOSITO_ENDERECO = $idEndereco";
+        }
+
+        $where = (!empty($whereArr)) ? " AND " . implode(" AND ", $whereArr ): "";
 
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
@@ -4997,22 +5001,43 @@ class ExpedicaoRepository extends EntityRepository {
 
         $valToNext = 0;
         $qtdRemoveReserva = $qtdCortar;
+        $mapeamentoCorte = [];
         foreach ($result as $item) {
             $check = Math::adicionar($qtdRemoveReserva, $item['QTD']);
+            /** @var ReservaEstoqueProduto[] $entityReservaEstoqueProduto */
             $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $item['ID']));
-            /** @var ReservaEstoqueProduto $reservaEstoqueProduto */
+            $reservaEstoque = $entityReservaEstoqueProduto[0]->getReservaEstoque();
+            $qtdACortarMapa = 0;
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 if (Math::compare($check, 0, '>=')) {
-                    $reservaEstoque = $reservaEstoqueProduto->getReservaEstoque();
-                    $reservaEstoque->setAtendida('C');
-                    $this->getEntityManager()->persist($reservaEstoque);
-                    $valToNext = $check;
+                    $reservaEstoqueProduto->setQtd(0);
+                    $this->getEntityManager()->persist($reservaEstoqueProduto);
+                    if ($reservaEstoque->getAtendida() == 'N') {
+                        $qtdACortarMapa = Math::subtrair($qtdRemoveReserva, $check);
+                        $reservaEstoque->setAtendida('C');
+                        $this->getEntityManager()->persist($reservaEstoque);
+                        $valToNext = $check;
+                    }
                 } else {
                     $reservaEstoqueProduto->setQtd($check);
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
                     $valToNext = 0;
+                    $qtdACortarMapa = $qtdRemoveReserva;
                 }
             }
+
+            $idEnd = $reservaEstoque->getEndereco()->getId();
+            $lote = $entityReservaEstoqueProduto[0]->getLote();
+            if (!isset($mapeamentoCorte[$idEnd."#!#".$lote])) {
+                $mapeamentoCorte[$idEnd . "#!#" . $lote] = [
+                    'endereco' => $idEnd,
+                    'qtdCortada' => $qtdACortarMapa,
+                    'lote' => $lote
+                ];
+            } else {
+                $mapeamentoCorte[$idEnd . "#!#" . $lote]['qtdACortar'] = Math::adicionar($mapeamentoCorte[$idEnd . "#!#" . $lote]['qtdACortar'], $qtdACortarMapa);
+            }
+
             $qtdRemoveReserva = $valToNext;
             if ($qtdRemoveReserva <= 0) {
                 break;
@@ -5021,6 +5046,18 @@ class ExpedicaoRepository extends EntityRepository {
 
         //Seta na pedido_produto a quantidade cortada baseada na quantia já cortada mais a nova qtd
         $pedidoProdutoEn->setQtdCortada(Math::adicionar($qtdCortada, $qtdCortar));
+        if ($produtoEn->getIndControlaLote() == 'S' && !empty($lote)) {
+            $pedProdLoteRepo = $this->_em->getRepository(Expedicao\PedidoProdutoLote::class);
+            /** @var Expedicao\PedidoProdutoLote $pedProdLoteEn */
+            $pedProdLoteEn = $pedProdLoteRepo->findOneBy(['pedidoProduto' => $pedidoProdutoEn, 'lote' => $lote]);
+            if (!empty($pedProdLoteEn)) {
+                if (Math::compare(Math::adicionar($qtdCortar, $pedProdLoteEn->getQtdCorte()), $pedProdLoteEn->getQuantidade(), '>')) {
+                    throw new \Exception("A quantidade já cortada somada à este corte excede a quantidade do pedido deste lote '$lote'!");
+                }
+                $pedProdLoteEn->setQtdCorte(Math::adicionar($pedProdLoteEn->getQtdCorte(), $qtdCortar));
+                $this->getEntityManager()->persist($pedProdLoteEn);
+            }
+        }
         if ($corteAutomatico == 'S') {
             $pedidoProdutoEn->setQtdCortadoAutomatico($pedidoProdutoEn->getQtdCortadoAutomatico() + $qtdCortar);
         }
@@ -5056,64 +5093,51 @@ class ExpedicaoRepository extends EntityRepository {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
 
-            $sqlFiltro = "";
-            if (!empty($quebraConsolidado)) {
-                $agrupamentoConsolidado = "CLIENTE";
-                if ($agrupamentoConsolidado == "CLIENTE") {
-                    $sqlFiltro .= " AND P.COD_PESSOA = " . $pedidoEn->getPessoa()->getId();
-                } else {
-                    $sqlFiltro .= " AND MSP.COD_PEDIDO_PRODUTO = " . $pedidoProdutoEn->getId();
+            foreach ($mapeamentoCorte as $item) {
+                $dql = $this->getEntityManager()->createQueryBuilder();
+                $dql->select("msp")
+                    ->from(Expedicao\MapaSeparacaoProduto::class, 'msp')
+                    ->leftJoin(Expedicao\PedidoProduto::class, 'pp', 'WITH', 'msp.pedidoProduto = pp.id')
+                    ->leftJoin('pp.pedido', 'p')
+                    ->where("msp.mapaSeparacao = $mapa")
+                    ->andWhere("msp.codProduto = '$codProduto'")
+                    ->andWhere("msp.dscGrade = '$grade'")
+                    ->andWhere("msp.depositoEndereco = ".$item['endereco'])
+                    ->andWhere("((msp.qtdEmbalagem * msp.qtdSeparar) - msp.qtdCortado) > 0")
+                ;
+
+                if (!empty($quebraConsolidado)) {
+                    $dql->andWhere("p.pessoa = " . $pedidoEn->getPessoa()->getId());
                 }
-            }
 
-            if (!empty($idEndereco)) {
-                $sqlFiltro .= " AND MSP.COD_DEPOSITO_ENDERECO = $idEndereco";
-            }
+                if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
+                    $dql->andWhere("msp.produtoEmbalagem = $idEmbalagem");
+                }
 
-            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
-                $sqlFiltro .= " AND MSP.COD_PRODUTO_EMBALAGEM = $idEmbalagem";
-            }
+                if ($produtoEn->getIndControlaLote() == 'S' && !empty($item['lote'])) {
+                    $dql->andWhere("msp.lote = '$item[lote]'");
+                }
 
-            $sql = "SELECT COD_MAPA_SEPARACAO_PRODUTO 
-                      FROM MAPA_SEPARACAO_PRODUTO MSP
-                      LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                      LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
-                     WHERE MSP.COD_MAPA_SEPARACAO = '$mapa'
-                       AND MSP.COD_PRODUTO = '$codProduto'
-                       AND MSP.DSC_GRADE = '$grade' $sqlFiltro ";
-            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                $dql->orderBy("msp.qtdEmbalagem");
 
-            $idMapaSeparacaoProduto = 0;
-            if (count($result) >0) {
-                $idMapaSeparacaoProduto = $result[0]['COD_MAPA_SEPARACAO_PRODUTO'];
-            }
-
-            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array ('id' => $idMapaSeparacaoProduto));
-
-            if (!empty($entidadeMapaProduto)) {
-
-                usort($entidadeMapaProduto, function ($itemA, $itemB) {
-                    $qtdA = Math::multiplicar($itemA->getQtdEmbalagem(), $itemA->getQtdSeparar());
-                    $qtdB = Math::multiplicar($itemB->getQtdEmbalagem(), $itemB->getQtdSeparar());
-                    return $qtdA > $qtdB;
-                });
-
-                /** @var Expedicao\MapaSeparacaoProduto $itemMapa */
-                $qtd = $qtdCortar;
-                foreach ($entidadeMapaProduto as $itemMapa) {
-                    $qtdCortadaMapa = $itemMapa->getQtdCortado();
-                    $qtdSeparar = Math::multiplicar($itemMapa->getQtdEmbalagem(), $itemMapa->getQtdSeparar());
-                    if (Math::compare($qtdCortadaMapa, $qtdSeparar, '<')) {
+                $qtd = $item['qtdCortada'];
+                /** @var Expedicao\MapaSeparacaoProduto $produtoMapa */
+                foreach ($dql->getQuery()->getResult() as $produtoMapa) {
+                    $qtdCortadaMapa = $produtoMapa->getQtdCortado();
+                    if (!empty($produtoMapa->getProdutoEmbalagem())) {
+                        $qtdSeparar = Math::multiplicar($produtoMapa->getQtdEmbalagem(), $produtoMapa->getQtdSeparar());
                         $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
                         if (Math::compare($qtdDisponivelDeCorte, $qtd, '>=')) {
-                            $itemMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
+                            $produtoMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
                             $qtd = 0;
                         } else {
-                            $itemMapa->setQtdCortado($qtdSeparar);
+                            $produtoMapa->setQtdCortado($qtdSeparar);
                             $qtd = Math::subtrair($qtd, $qtdDisponivelDeCorte);
                         }
-                        $this->getEntityManager()->persist($itemMapa);
+                    } else if (!empty($produtoMapa->getProdutoVolume())){
+                        $produtoMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
                     }
+
                     if (empty($qtd)) {
                         break;
                     }
@@ -5122,7 +5146,8 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $codExterno = $pedidoEn->getCodExterno();
-        $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
+        $obsLote = (!empty($lote)) ? " lote: '$lote'" : "";
+        $observacao = "Item $codProduto - $grade" . "$obsLote do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
