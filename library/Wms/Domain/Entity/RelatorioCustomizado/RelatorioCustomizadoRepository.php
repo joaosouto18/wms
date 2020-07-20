@@ -14,10 +14,27 @@ class RelatorioCustomizadoRepository extends EntityRepository
         return $arrResult;
     }
 
+    public function executeQuery($query, $conexaoEn) {
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->getEntityManager()->getRepository('wms:Integracao\ConexaoIntegracao');
+
+        if ($conexaoEn == null) {
+            $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
+        } else {
+            $result = $conexaoRepo->runQuery($query, $conexaoEn, false);
+        }
+
+        return $result;
+    }
+
     public function getProdutosReportMock () {
 
         $reportEn = new RelatorioCustomizado();
         $reportEn->setTitulo("Relatório de Produtos");
+        $reportEn->setConexao(null);
+        $reportEn->setAllowPDF("S");
+        $reportEn->setAllowSearch("S");
+        $reportEn->setAllowXLS("S");
         $reportEn->setQuery("
             SELECT COD_PRODUTO as Codigo, DSC_PRODUTO as Descrição 
               FROM PRODUTO P 
@@ -64,9 +81,17 @@ class RelatorioCustomizadoRepository extends EntityRepository
     }
 
     public function getExpedicaoReportMock () {
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->getEntityManager()->getRepository('wms:Integracao\ConexaoIntegracao');
+        $conexaoEn = $conexaoRepo->find(3);
 
         $reportEn = new RelatorioCustomizado();
         $reportEn->setTitulo("Relatório de Expedição");
+
+        $reportEn->setConexao($conexaoEn);
+        $reportEn->setAllowPDF("N");
+        $reportEn->setAllowSearch("S");
+        $reportEn->setAllowXLS("N");
         $reportEn->setQuery("
                 SELECT E.COD_EXPEDICAO as EXPEDICAO, 
                        E.DSC_PLACA_EXPEDICAO as PLACA, 

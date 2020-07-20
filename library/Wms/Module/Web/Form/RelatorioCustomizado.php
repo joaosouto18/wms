@@ -64,22 +64,33 @@ class RelatorioCustomizado extends Form
             ));
         }
 
-        $this->addElement('submit', 'btnBuscar', array(
-            'class' => 'btn',
-            'label' => 'Buscar',
-            'decorators' => array('ViewHelper'),
-        ));
-        $this->addElement('submit', 'btnPDF', array(
-            'class' => 'btn',
-            'label' => 'PDF',
-            'decorators' => array('ViewHelper'),
-        ));
-        $this->addElement('submit', 'btnXLS', array(
-            'class' => 'btn',
-            'label' => 'EXCEL',
-            'decorators' => array('ViewHelper'),
-        ));
+        if (isset($assemblyData) && ($assemblyData != null)) {
+            if ($assemblyData['allowSearch'] == "S") {
+                $this->addElement('submit', 'btnBuscar', array(
+                    'class' => 'btn',
+                    'label' => 'Buscar',
+                    'decorators' => array('ViewHelper'),
+                ));
+            }
+            if ($assemblyData['allowPDF'] == "S") {
+                $this->addElement('submit', 'btnPDF', array(
+                    'class' => 'btn',
+                    'label' => 'PDF',
+                    'decorators' => array('ViewHelper'),
+                ));
+            }
+            if ($assemblyData['allowXLS'] == "S") {
+                $this->addElement('submit', 'btnXLS', array(
+                    'class' => 'btn',
+                    'label' => 'EXCEL',
+                    'decorators' => array('ViewHelper'),
+                ));
+            }
+        }
 
-        $this->addDisplayGroup($this->getElements(), 'filtro', array('legend' => 'Filtro'));
+        if (count($this->getElements()) >0) {
+            $this->addDisplayGroup($this->getElements(), 'filtro', array('legend' => 'Filtro'));
+        }
+
     }
 }

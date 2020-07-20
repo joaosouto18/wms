@@ -26,6 +26,27 @@ class RelatorioCustomizado
     protected $query;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Integracao\ConexaoIntegracao")
+     * @JoinColumn(name="COD_CONEXAO_INTEGRACAO", referencedColumnName="COD_CONEXAO_INTEGRACAO")
+     */
+    protected $conexao;
+
+    /**
+     * @Column(name="IND_ALLOW_XLS", type="string", nullable=false)
+     */
+    protected $allowXLS;
+
+    /**
+     * @Column(name="IND_ALLOW_PDF", type="string", nullable=false)
+     */
+    protected $allowPDF;
+
+    /**
+     * @Column(name="IND_ALLOW_SEARCH", type="string", nullable=false)
+     */
+    protected $allowSearch;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -71,6 +92,70 @@ class RelatorioCustomizado
     public function setQuery($query)
     {
         $this->query = $query;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConexao()
+    {
+        return $this->conexao;
+    }
+
+    /**
+     * @param mixed $conexao
+     */
+    public function setConexao($conexao)
+    {
+        $this->conexao = $conexao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAllowXLS()
+    {
+        return $this->allowXLS;
+    }
+
+    /**
+     * @param mixed $allowXLS
+     */
+    public function setAllowXLS($allowXLS)
+    {
+        $this->allowXLS = $allowXLS;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAllowPDF()
+    {
+        return $this->allowPDF;
+    }
+
+    /**
+     * @param mixed $allowPDF
+     */
+    public function setAllowPDF($allowPDF)
+    {
+        $this->allowPDF = $allowPDF;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAllowSearch()
+    {
+        return $this->allowSearch;
+    }
+
+    /**
+     * @param mixed $allowSearch
+     */
+    public function setAllowSearch($allowSearch)
+    {
+        $this->allowSearch = $allowSearch;
     }
 
 }

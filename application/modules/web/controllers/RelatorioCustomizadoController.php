@@ -16,6 +16,7 @@ class Web_RelatorioCustomizadoController extends Action
         $params = $this->getRequest()->getParams();
         $idRelatorio = 1;
 
+        /** @var \Wms\Service\RelatorioCustomizadoService $reportService */
         $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
         $assemblyData = $reportService->getAssemblyDataReport($idRelatorio);
 

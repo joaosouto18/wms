@@ -13,6 +13,8 @@ class RelatorioCustomizadoService extends AbstractService {
     protected $_reportEn;
     protected $_filters;
     protected $_sort;
+    /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoRepository $_reportRepo */
+    protected $_reportRepo;
 
     /**
      * @return mixed
@@ -66,6 +68,7 @@ class RelatorioCustomizadoService extends AbstractService {
         $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
         $mock = $reportRepo->getExpedicaoReportMock();
 
+        $this->_reportRepo = $reportRepo;
         $this->_reportEn = $mock['reportEn'];
         $this->_filters = $mock['filters'];
         $this->_sort = $mock['sort'];
@@ -77,6 +80,9 @@ class RelatorioCustomizadoService extends AbstractService {
 
         $title = $this->_reportEn->getTitulo();
         $query = $this->_reportEn->getQuery();
+        $allowXLS = $this->_reportEn->getAllowXLS();
+        $allowPDF = $this->_reportEn->getAllowPDF();
+        $allowSearch = $this->_reportEn->getAllowSearch();
 
         $filterArr = array();
         foreach ($this->_filters as $f){
@@ -103,7 +109,10 @@ class RelatorioCustomizadoService extends AbstractService {
             'title' => $title,
             'query' => $query,
             'filters' => $filterArr,
-            'sort' => $sortArr
+            'sort' => $sortArr,
+            'allowXLS' => $allowXLS,
+            'allowPDF' => $allowPDF,
+            'allowSearch' => $allowSearch,
         );
 
         return $result;
@@ -129,12 +138,13 @@ class RelatorioCustomizadoService extends AbstractService {
             $query .= " ORDER BY " . $params['sort'];
         }
 
-        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-
+        $result = $this->_reportRepo->executeQuery($query, $this->_reportEn->getConexao());
         return $result;
     }
 
     public function getReports() {
+
+        /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoRepository $reportRepo */
         $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
         $result = $reportRepo->getRelatoriosDisponiveisMock();
 
