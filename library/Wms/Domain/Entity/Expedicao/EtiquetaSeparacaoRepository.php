@@ -938,16 +938,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         }
 
-        /** @var $pedidoProdutoRepo $pedidoProdutoRepo */
-        if (isset($arrayRepositorios['pedidoProdutoRepo'])) {
-            $pedidoProdutoRepo = $arrayRepositorios['pedidoProdutoRepo'];
-        } else {
-            $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
-        }
         /** @var ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoque");
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
-
 
         $arrMapaPedProd = [];
         try {
