@@ -31,6 +31,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
             'IND_OBRIGATORIO' => 'N',
             'TIPO' => 'text',
             'PARAMS' => '',
+            'TAMANHO' => '',
             'DSC_QUERY' => " AND P.COD_PRODUTO = ':value' "
         );
         $filter[] = array(
@@ -39,6 +40,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
             'IND_OBRIGATORIO' => 'N',
             'TIPO' => 'text',
             'PARAMS' => '',
+            'TAMANHO' => '',
             'DSC_QUERY' => " AND P.DSC_PRODUTO LIKE '%:value%' "
         );
 
@@ -74,7 +76,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                  WHERE E.DTH_INICIO >= TO_DATE('10-06-2020 00:00','DD-MM-YYYY HH24:MI') 
-                       :CodExpedicao :DthInicio :Situacao
+                       :CodExpedicao :DthInicio :Situacao :Finalizado
         ");
 
         $filter = array();
@@ -84,6 +86,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
             'IND_OBRIGATORIO' => 'N',
             'TIPO' => 'text',
             'PARAMS' => '',
+            'TAMANHO' => '8',
             'DSC_QUERY' => " AND E.COD_EXPEDICAO = ':value' "
         );
         $filter[] = array(
@@ -92,6 +95,7 @@ class RelatorioCustomizadoRepository extends EntityRepository
             'IND_OBRIGATORIO' => 'N',
             'TIPO' => 'Date',
             'PARAMS' => '',
+            'TAMANHO' => '',
             'DSC_QUERY' => " AND E.DTH_INICIO >= TO_DATE(':value 00:00','DD/MM/YYYY HH24:MI') "
         );
         $filter[] = array(
@@ -100,8 +104,19 @@ class RelatorioCustomizadoRepository extends EntityRepository
             'IND_OBRIGATORIO' => 'N',
             'TIPO' => 'SQL',
             'PARAMS' => 'SELECT COD_SIGLA as VALUE, DSC_SIGLA as LABEL FROM SIGLA WHERE COD_TIPO_SIGLA = 53',
+            'TAMANHO' => '',
             'DSC_QUERY' => " AND E.COD_STATUS = ':value' "
         );
+        $filter[] = array(
+            'NOME_PARAM' => 'Finalizado',
+            'DSC_TITULO' => 'Finalizado',
+            'IND_OBRIGATORIO' => 'N',
+            'TIPO' => 'select',
+            'TAMANHO' => '',
+            'PARAMS' => '{"E.COD_STATUS = 465":"Sim","E.COD_STATUS <> 465":"Nao"}',
+            'DSC_QUERY' => " AND :value "
+        );
+
         $sort = array();
         $sort[] = array(
             'DSC_TITULO' => 'Código ASC',

@@ -26,15 +26,22 @@ class RelatorioCustomizado extends Form
             $type = $filterOption['type'];
             $name = $filterOption['name'];
             $label = $filterOption['label'];
+            $size = $filterOption['size'];
             $params = array();
 
             if ($filterOption['required'] == "S") $required = true;
 
             if ($filterOption['type'] == "SQL") {
-                $type = 'Select';
-                $params['multiOptions'] = $reportRepo->getFilterContent($filterOption['params']);
+                $type = 'select';
+                $valor = $reportRepo->getFilterContent($filterOption['params']);
+                $params['multiOptions'] = $valor;
             }
 
+            if ($filterOption['type'] == "select") {
+                $type = 'select';
+                $params['multiOptions'] = get_object_vars(json_decode($filterOption['params']));
+            }
+            $params['size'] = $size;
             $params['required'] = $required;
             $params['label'] = $label;
 

@@ -86,6 +86,7 @@ class RelatorioCustomizadoService extends AbstractService {
                 'required' => $f['IND_OBRIGATORIO'],
                 'query' => $f['DSC_QUERY'],
                 'type' => $f['TIPO'],
+                'size' => $f['TAMANHO'],
                 'params' => $f['PARAMS']
             );
         }
