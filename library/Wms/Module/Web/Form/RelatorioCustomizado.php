@@ -8,6 +8,11 @@ class RelatorioCustomizado extends Form
 {
     public function init($assemblyData = null)
     {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        $reportRepo = $em->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
+
         $filters = array();
         $sort = array();
 
@@ -18,11 +23,22 @@ class RelatorioCustomizado extends Form
 
         foreach ($filters as $filterOption) {
             $required = false;
+            $type = $filterOption['type'];
+            $name = $filterOption['name'];
+            $label = $filterOption['label'];
+            $params = array();
+
             if ($filterOption['required'] == "S") $required = true;
-            $this->addElement($filterOption['type'], $filterOption['name'], array(
-                'label' => $filterOption['label'],
-                'required' => $required
-            ));
+
+            if ($filterOption['type'] == "SQL") {
+                $type = 'Select';
+                $params['multiOptions'] = $reportRepo->getFilterContent($filterOption['params']);
+            }
+
+            $params['required'] = $required;
+            $params['label'] = $label;
+
+            $this->addElement($type, $name, $params);
         }
 
         if ($sort != null) {

@@ -64,7 +64,7 @@ class RelatorioCustomizadoService extends AbstractService {
 
     private function populate($idRelatorio) {
         $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
-        $mock = $reportRepo->getProdutosReportMock();
+        $mock = $reportRepo->getExpedicaoReportMock();
 
         $this->_reportEn = $mock['reportEn'];
         $this->_filters = $mock['filters'];
@@ -85,7 +85,8 @@ class RelatorioCustomizadoService extends AbstractService {
                 'label' => $f['DSC_TITULO'],
                 'required' => $f['IND_OBRIGATORIO'],
                 'query' => $f['DSC_QUERY'],
-                'type' => $f['TIPO']
+                'type' => $f['TIPO'],
+                'params' => $f['PARAMS']
             );
         }
 
