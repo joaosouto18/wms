@@ -9,11 +9,17 @@ class RelatorioCustomizadoFiltro
 {
     /**
      * @Id
-     * @Column(name="COD_RELATORIO_CUSTOMIZADO_FILTRO", type="integer", nullable=false)
+     * @Column(name="COD_RELATORIO_CUST_FILTRO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_RELATORIO_CUSTOMIZADO_FILTRO_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_RELATORIO_CUST_FILTRO_01", allocationSize=1, initialValue=1)
      */
     protected $id;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizado")
+     * @JoinColumn(name="COD_RELATORIO_CUSTOMIZADO", referencedColumnName="COD_RELATORIO_CUSTOMIZADO")
+     */
+    protected $relatorio;
 
     /**
      * @Column(name="NOME_PARAM", type="string", nullable=false)
@@ -174,4 +180,19 @@ class RelatorioCustomizadoFiltro
         $this->query = $query;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getRelatorio()
+    {
+        return $this->relatorio;
+    }
+
+    /**
+     * @param mixed $relatorio
+     */
+    public function setRelatorio($relatorio)
+    {
+        $this->relatorio = $relatorio;
+    }
 }

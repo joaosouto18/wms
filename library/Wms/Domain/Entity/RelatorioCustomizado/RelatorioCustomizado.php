@@ -47,6 +47,12 @@ class RelatorioCustomizado
     protected $allowSearch;
 
     /**
+     * @Column(name="DTH_INATIVACAO", type="datetime", nullable=true)
+     * @var \datetime
+     */
+    protected $dataInativacao;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -156,6 +162,22 @@ class RelatorioCustomizado
     public function setAllowSearch($allowSearch)
     {
         $this->allowSearch = $allowSearch;
+    }
+
+    /**
+     * @return \datetime
+     */
+    public function getDataInativacao()
+    {
+        return $this->dataInativacao;
+    }
+
+    /**
+     * @param \datetime $dataInativacao
+     */
+    public function setDataInativacao($dataInativacao)
+    {
+        $this->dataInativacao = $dataInativacao;
     }
 
 }
