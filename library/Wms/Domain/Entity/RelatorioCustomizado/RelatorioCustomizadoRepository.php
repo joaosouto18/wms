@@ -73,11 +73,18 @@ class RelatorioCustomizadoRepository extends EntityRepository
     }
 
     public function getRelatoriosDisponiveis() {
-        $sql = "SELECT COD_RELATORIO_CUSTOMIZADO as COD_RELATORIO,
-                       DSC_TITULO_RELATORIO as DSC_TITULO,
-                       DSC_GRUPO_RELATORIO as DSC_GRUPO
-                  FROM RELATORIO_CUSTOMIZADO
-                 WHERE DTH_INATIVACAO IS NULL";
+        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+
+        $sql = "SELECT DISTINCT
+                       R.COD_RELATORIO_CUSTOMIZADO as COD_RELATORIO,
+                       R.DSC_TITULO_RELATORIO as DSC_TITULO,
+                       R.DSC_GRUPO_RELATORIO as DSC_GRUPO
+                  FROM RELATORIO_CUSTOMIZADO R
+                  LEFT JOIN RELATORIO_CUST_PERFIL_USUARIO RP ON R.COD_RELATORIO_CUSTOMIZADO = RP.COD_RELATORIO_CUSTOMIZADO
+                 WHERE R.DTH_INATIVACAO IS NULL
+                   AND COD_PERFIL_USUARIO IN (SELECT COD_PERFIL_USUARIO 
+                                                FROM usuario_perfil_usuario 
+                                               WHERE COD_USUARIO = $idUsuario)";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
