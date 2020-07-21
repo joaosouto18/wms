@@ -182,17 +182,17 @@ class RelatorioCustomizadoRepository extends EntityRepository
         $result[] = array(
             'COD_RELATORIO' => '1',
             'DSC_TITULO' => 'Relatório de Produtos',
-            'TIPO' => 'Relatórios Cadastrais'
+            'DSC_GRUPO' => 'Relatórios Cadastrais'
         );
         $result[] = array(
             'COD_RELATORIO' => '3',
             'DSC_TITULO' => 'Expedições por Dia',
-            'TIPO' => 'Relatórios de Expedição'
+            'DSC_GRUPO' => 'Relatórios de Expedição'
         );
         $result[] = array(
             'COD_RELATORIO' => '2',
             'DSC_TITULO' => 'Relatório de Clientes',
-            'TIPO' => 'Relatórios Cadastrais'
+            'DSC_GRUPO' => 'Relatórios Cadastrais'
         );
 
         return $result;

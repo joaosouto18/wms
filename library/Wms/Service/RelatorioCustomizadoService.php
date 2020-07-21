@@ -148,15 +148,15 @@ class RelatorioCustomizadoService extends AbstractService {
         $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
         $result = $reportRepo->getRelatoriosDisponiveisMock();
 
-        $tiposRelatorios = array();
+        $gruposRelatorios = array();
 
         foreach ($result as $r) {
             $k = null;
             $arrRelatorios = array();
-            foreach ($tiposRelatorios as $key => $t) {
-                if ($t['descricao'] == $r['TIPO']) {
+            foreach ($gruposRelatorios as $key => $g) {
+                if ($g['descricao'] == $r['DSC_GRUPO']) {
                     $k = $key;
-                    $arrRelatorios = $t['relatorios'];
+                    $arrRelatorios = $g['relatorios'];
                 }
             }
 
@@ -165,20 +165,20 @@ class RelatorioCustomizadoService extends AbstractService {
                 'titulo' => $r['DSC_TITULO']
             );
 
-            $tipoRelatorio = array(
-                'descricao' => $r['TIPO'],
+            $grupoRelatorio = array(
+                'descricao' => $r['DSC_GRUPO'],
                 'relatorios' => $arrRelatorios
             );
 
             if ($k === null) {
-                $tiposRelatorios[] = $tipoRelatorio;
+                $gruposRelatorios[] = $grupoRelatorio;
             } else {
-                $tiposRelatorios[$k] = $tipoRelatorio;
+                $gruposRelatorios[$k] = $grupoRelatorio;
             }
         }
 
         $result = array (
-            'tipos' => $tiposRelatorios
+            'tipos' => $gruposRelatorios
         );
 
         return $result;

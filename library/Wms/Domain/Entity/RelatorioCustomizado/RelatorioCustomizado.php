@@ -21,6 +21,11 @@ class RelatorioCustomizado
     protected $titulo;
 
     /**
+     * @Column(name="DSC_GRUPO_RELATORIO", type="string", nullable=false)
+     */
+    protected $grupoRelatorio;
+
+    /**
      * @Column(name="DSC_QUERY", type="string", nullable=false)
      */
     protected $query;
@@ -178,6 +183,22 @@ class RelatorioCustomizado
     public function setDataInativacao($dataInativacao)
     {
         $this->dataInativacao = $dataInativacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGrupoRelatorio()
+    {
+        return $this->grupoRelatorio;
+    }
+
+    /**
+     * @param mixed $grupoRelatorio
+     */
+    public function setGrupoRelatorio($grupoRelatorio)
+    {
+        $this->grupoRelatorio = $grupoRelatorio;
     }
 
 }
