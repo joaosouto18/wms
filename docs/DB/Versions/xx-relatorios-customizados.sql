@@ -1,11 +1,5 @@
-/* 
- * SCRIPT PARA: Estrutura para registrar data de criação do palete
- * DATA DE CRIAÇÃO: 10/06/2020 
- * CRIADO POR: Tarcísio César
- *
- */
 
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.16', 'xx-xx-relatorios-customizados.sql.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.16', 'xx-xx-relatorios-customizados.sql');
 
 INSERT INTO RECURSO (DSC_RECURSO, COD_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES ('Relatórios Customizados', SQ_RECURSO_01.NEXTVAL,0,'relatorio-customizado');
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'relatorio-customizado'), (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'consultar'), 'Listar Relatórios Customizados');
