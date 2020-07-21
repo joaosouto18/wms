@@ -14,7 +14,7 @@ class Web_RelatorioCustomizadoController extends Action
         Page::configure(array('buttons' => $buttons));
 
         $params = $this->getRequest()->getParams();
-        $idRelatorio = 1;
+        $idRelatorio = $params['id'];
 
         /** @var \Wms\Service\RelatorioCustomizadoService $reportService */
         $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
@@ -53,6 +53,8 @@ class Web_RelatorioCustomizadoController extends Action
     }
 
     public function consultarAction (){
+
+        /** @var \Wms\Service\RelatorioCustomizadoService $reportService */
         $reportService = $this->getServiceLocator()->getService('RelatorioCustomizado');
         $relatoriosDisponíveis = json_encode($reportService->getReports());
 

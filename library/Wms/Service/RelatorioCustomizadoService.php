@@ -65,13 +65,16 @@ class RelatorioCustomizadoService extends AbstractService {
     }
 
     private function populate($idRelatorio) {
+        /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoRepository $reportRepo */
         $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
-        $mock = $reportRepo->getExpedicaoReportMock();
+
+        //$mock = $reportRepo->getExpedicaoReportMock();
+        $dados = $reportRepo->getDadosReport($idRelatorio);
 
         $this->_reportRepo = $reportRepo;
-        $this->_reportEn = $mock['reportEn'];
-        $this->_filters = $mock['filters'];
-        $this->_sort = $mock['sort'];
+        $this->_reportEn = $dados['reportEn'];
+        $this->_filters = $dados['filters'];
+        $this->_sort = $dados['sort'];
     }
 
     public function getAssemblyDataReport($idRelatorio) {
@@ -146,7 +149,7 @@ class RelatorioCustomizadoService extends AbstractService {
 
         /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoRepository $reportRepo */
         $reportRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizado');
-        $result = $reportRepo->getRelatoriosDisponiveisMock();
+        $result = $reportRepo->getRelatoriosDisponiveis();
 
         $gruposRelatorios = array();
 

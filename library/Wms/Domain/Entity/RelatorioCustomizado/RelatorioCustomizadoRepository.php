@@ -27,6 +27,66 @@ class RelatorioCustomizadoRepository extends EntityRepository
         return $result;
     }
 
+    public function getDadosReport($idRelatorio) {
+        $reportEn = $this->find($idRelatorio);
+
+        /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoSortRepository $reportRepo */
+        $sortRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizadoSort');
+        /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoFilroRepository $filterRepo */
+        $filterRepo = $this->getEntityManager()->getRepository('wms:RelatorioCustomizado\RelatorioCustomizadoFiltro');
+
+        $sorts = $sortRepo->findBy(array('relatorio'=> $reportEn));
+        $filters = $filterRepo->findBy(array('relatorio'=> $reportEn));
+
+        $sortArr = array();
+        $filtersArr = array();
+
+        /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoSort $s */
+        foreach ($sorts as $s) {
+            $sortArr[] = array(
+                'DSC_TITULO' => $s->getTitulo(),
+                'DSC_QUERY' => $s->getQuery()
+            );
+        }
+
+        /** @var \Wms\Domain\Entity\RelatorioCustomizado\RelatorioCustomizadoFiltro $f */
+        foreach ($filters as $f) {
+            $filtersArr[] = array(
+                'NOME_PARAM' => $f->getNomeParam(),
+                'DSC_TITULO' => $f->getTitulo(),
+                'IND_OBRIGATORIO' => $f->getObrigatorio(),
+                'TIPO' => $f->getTipo(),
+                'PARAMS' => $f->getParams(),
+                'TAMANHO' => $f->getTamanho(),
+                'DSC_QUERY' => $f->getQuery()
+            );
+        }
+
+        $result = array(
+            'reportEn' => $reportEn,
+            'filters' => $filtersArr,
+            'sort' => $sortArr
+        );
+
+        return $result;
+
+    }
+
+    public function getRelatoriosDisponiveis() {
+        $sql = "SELECT COD_RELATORIO_CUSTOMIZADO as COD_RELATORIO,
+                       DSC_TITULO_RELATORIO as DSC_TITULO,
+                       DSC_GRUPO_RELATORIO as DSC_GRUPO
+                  FROM RELATORIO_CUSTOMIZADO
+                 WHERE DTH_INATIVACAO IS NULL";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
+    /*
+     * São mocks para verificar as possibilidades de criação de relatórios
+     */
     public function getProdutosReportMock () {
 
         $reportEn = new RelatorioCustomizado();
@@ -81,14 +141,10 @@ class RelatorioCustomizadoRepository extends EntityRepository
     }
 
     public function getExpedicaoReportMock () {
-        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-        $conexaoRepo = $this->getEntityManager()->getRepository('wms:Integracao\ConexaoIntegracao');
-        $conexaoEn = $conexaoRepo->find(3);
-
         $reportEn = new RelatorioCustomizado();
         $reportEn->setTitulo("Relatório de Expedição");
 
-        $reportEn->setConexao($conexaoEn);
+        $reportEn->setConexao(null);
         $reportEn->setAllowPDF("N");
         $reportEn->setAllowSearch("S");
         $reportEn->setAllowXLS("N");
@@ -172,27 +228,6 @@ class RelatorioCustomizadoRepository extends EntityRepository
             'reportEn' => $reportEn,
             'filters' => $filter,
             'sort' => $sort
-        );
-
-        return $result;
-    }
-
-    public function getRelatoriosDisponiveisMock() {
-        $result = array();
-        $result[] = array(
-            'COD_RELATORIO' => '1',
-            'DSC_TITULO' => 'Relatório de Produtos',
-            'DSC_GRUPO' => 'Relatórios Cadastrais'
-        );
-        $result[] = array(
-            'COD_RELATORIO' => '3',
-            'DSC_TITULO' => 'Expedições por Dia',
-            'DSC_GRUPO' => 'Relatórios de Expedição'
-        );
-        $result[] = array(
-            'COD_RELATORIO' => '2',
-            'DSC_TITULO' => 'Relatório de Clientes',
-            'DSC_GRUPO' => 'Relatórios Cadastrais'
         );
 
         return $result;
