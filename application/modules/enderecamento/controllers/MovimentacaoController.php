@@ -19,7 +19,7 @@ class Enderecamento_MovimentacaoController extends Action
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
         $this->view->controleProprietario = $controleProprietario;
 
-        $obsUserTrimmed = (!empty($data['obsUsuario'])) ? trim($data['obsUsuario']) : null;
+        $obsUserTrimmed = (!empty($data['obsUsuario'])) ? urlencode(trim($data['obsUsuario'])) : null;
         $params = array(
             'idProduto' => (!empty($data['idProduto']))? $data['idProduto'] : null,
             'grade' => (!empty($data['grade']))? $data['grade'] : null,
@@ -157,7 +157,7 @@ class Enderecamento_MovimentacaoController extends Action
 
             $EstoqueRepository->validaMovimentaçãoExpedicaoFinalizada($enderecoEn->getId(),$idProduto,$grade);
 
-            $params['obsUsuario'] = (!empty($data['obsUsuario'])) ? $data['obsUsuario'] : null;
+            $params['obsUsuario'] = (!empty($data['obsUsuario'])) ? urldecode($data['obsUsuario']) : null;
             $params['idMotMov'] = (!empty($data['idMotMov'])) ? $data['idMotMov'] : null;
 
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {

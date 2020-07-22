@@ -82,9 +82,9 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetFont('Arial','B',7);
                     //Go to 1.5 cm from bottom
                     $this->SetY($this->footerPosition + 11);
-//                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
-                    $this->SetFont('Arial','B',13);
-                    $this->Cell(20, 4, 'Etiqueta ' . $this->etiqueta['posEntrega'], 0, 1, "L");
+                    $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    $this->SetFont('Arial','B',10);
+                    $this->Cell(20, 3, 'Etiqueta ' . $this->etiqueta['posEntrega'], 0, 1, "L");
                     $this->SetFont('Arial','B',7);
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;

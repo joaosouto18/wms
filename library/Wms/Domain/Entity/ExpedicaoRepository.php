@@ -1470,6 +1470,8 @@ class ExpedicaoRepository extends EntityRepository {
                         $qtdRestante = Math::subtrair($qtdRestante, $qtdReservarPicking);
                         if (empty($qtdRestante)) break;
                     }
+                } else {
+                    $forcarSeparacaoAerea = true;
                 }
             }
 
