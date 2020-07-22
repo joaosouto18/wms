@@ -1,0 +1,21 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ * Author:  Luis Fernando
+ * Created: 01/06/2018
+ */
+
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.0.0', '03-lote-virgem.sql');
+
+INSERT INTO RECURSO (DSC_RECURSO,COD_RECURSO,COD_RECURSO_PAI,NOM_RECURSO)
+  VALUES ('Lote Virgem',SQ_RECURSO_01.NEXTVAL,0,'lote-virgem');
+
+  INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO)
+  VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO LIKE 'lote-virgem'), (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO LIKE 'index'), 'Lote Virgem');
+
+  INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO,DSC_URL,DSC_TARGET,SHOW)
+  VALUES (SQ_MENU_ITEM_01.NEXTVAL, (select COD_RECURSO_ACAO from recurso_acao where COD_RECURSO = (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO LIKE 'lote-virgem') AND COD_ACAO = (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO LIKE 'index')),
+  (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Cadastros'),'Lote Virgem',10,'#','_self','S');
