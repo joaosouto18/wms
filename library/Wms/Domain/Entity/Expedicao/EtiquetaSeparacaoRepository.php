@@ -2945,7 +2945,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
     {
-        if ($etiquetaEntity->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) {
+        if ($etiquetaEntity->getStatus()->getId() == EtiquetaSeparacao::STATUS_CORTADO) {
             throw new \Exception("Etiqueta " . $etiquetaEntity->getId() . " ja se encontra cortada");
         }
 
@@ -2973,7 +2973,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
-                if ($etiqueta->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
+                if ($etiqueta->getStatus()->getId() != EtiquetaSeparacao::STATUS_CORTADO) {
         //            if ($corteTodosVolumes == true) {
         //                $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
         //            } else {

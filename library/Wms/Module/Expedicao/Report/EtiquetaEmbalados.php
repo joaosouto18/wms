@@ -383,9 +383,8 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(80,6);
             $this->SetFont('Arial', 'B', 17);
-            $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
-
-            $this->MultiCell(40, 10, $impressao, 0, 'L');
+            $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[NUM_SEQUENCIA] de $volume[NUM_SEQUENCIA]" : $volume['NUM_SEQUENCIA'];
+            $this->MultiCell(30, 10, $impressao, 0, 'L');
 
             $this->SetXY(88,14);
             $this->SetFont('Arial', 'B', 12);
@@ -448,7 +447,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 56, 63 , 50, 12);
 
         }
-    }
+    }	
 
     private function bodyExpedicaoModelo7($volumes)
     {

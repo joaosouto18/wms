@@ -3160,9 +3160,9 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['placa']) && !empty($parametros['placa'])) {
-            $where .= $and . " E.DSC_PLACA_EXPEDICAO = '" . $parametros['placa'] . "'";
+            $where .= $and . " E.DSC_PLACA_EXPEDICAO LIKE '" . $parametros['placa'] . "'";
             $and = " AND ";
-            $WhereExpedicao .= " AND (E.DSC_PLACA_EXPEDICAO = '" . $parametros['placa'] . "')";
+            $WhereExpedicao .= " AND (E.DSC_PLACA_EXPEDICAO LIKE '" . $parametros['placa'] . "')";
         }
 
         if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1']))) {
