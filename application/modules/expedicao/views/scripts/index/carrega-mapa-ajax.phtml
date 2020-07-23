@@ -322,8 +322,6 @@ if ($this->erro) {
                                 conferido.show();
                             }
                             conferido.find("#qtd").text(produto['qtdConferidaTotalEmb']);
-
-                            $('#conferidos p[produto="' + codGradeLote +'"]').remove();
                             conferidos.prepend(conferido);
 
                             if (data.retorno.message == 'checkout') {

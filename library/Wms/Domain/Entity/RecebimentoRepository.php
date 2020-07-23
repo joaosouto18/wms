@@ -1953,11 +1953,13 @@ class RecebimentoRepository extends EntityRepository
         $sql = "SELECT DISTINCT
                     R.COD_RECEBIMENTO
                 FROM RECEBIMENTO R
-                LEFT JOIN (SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD
-                             FROM RECEBIMENTO_CONFERENCIA RC
-                            INNER JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-                            WHERE R.COD_STATUS = 457 AND R.COD_RECEBIMENTO = $idRecebimento 
-                              AND (QTD_DIVERGENCIA = 0 OR (QTD_DIVERGENCIA != 0 AND COD_NOTA_FISCAL IS NOT NULL))
+                LEFT JOIN (
+                          SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD
+                          FROM RECEBIMENTO_CONFERENCIA RC
+                          INNER JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                          WHERE R.COD_STATUS = 457 AND R.COD_RECEBIMENTO = $idRecebimento 
+                                  AND ((QTD_DIVERGENCIA = 0 AND IND_DIVERGENCIA_PESO = 'N' AND IND_DIVERG_VOLUMES = 'N' AND IND_DIVERG_LOTE = 'N') 
+                                    OR ((QTD_DIVERGENCIA != 0 OR IND_DIVERGENCIA_PESO != 'N' AND IND_DIVERG_VOLUMES != 'N' AND IND_DIVERG_LOTE != 'N') AND COD_NOTA_FISCAL IS NOT NULL))
                              ) V ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                 LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
                             FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, PP.DSC_LOTE
