@@ -81,7 +81,7 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
 
 
     /**
-     * @var bool
+     * @var integer
      * @Column(name="ROOT_USER", type="integer", length=1, nullable=false)
      */
     protected $root;
@@ -330,7 +330,7 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      */
     public function isRoot()
     {
-        return $this->root;
+        return boolval($this->root);
     }
 
     /**
@@ -338,6 +338,6 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      */
     public function setRoot($root)
     {
-        $this->root = $root;
+        $this->root = (int)($root);
     }
 }

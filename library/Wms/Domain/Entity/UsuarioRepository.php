@@ -87,7 +87,7 @@ class UsuarioRepository extends AtorRepository {
         $usuario->setIsAtivo($isAtivo);
         $usuario->setPercentReceb($percentReceb);
         $usuario->setCodErp($codErp);
-        $usuario->setRoot(false);
+        $usuario->setRoot($usuario->isRoot());
         $em->persist($usuario);
     }
 
