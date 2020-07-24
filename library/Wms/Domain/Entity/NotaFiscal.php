@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\NotaFiscal\Item;
+use Wms\Domain\Entity\NotaFiscal\Tipo;
 
 /**
  * Nota fiscal
@@ -56,6 +57,15 @@ class NotaFiscal
      * @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor
      */
     protected $fornecedor;
+
+    /**
+     * Cliente da nota fiscal de devolução
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Cliente", cascade={"persist"})
+     * @JoinColumn(name="COD_CLIENTE", referencedColumnName="COD_PESSOA")
+     * @var \Wms\Domain\Entity\Pessoa\Papel\Cliente
+     */
+    protected $cliente;
 
     /**
      * Data de emissão da nota fiscal
@@ -153,10 +163,11 @@ class NotaFiscal
 
     /**
      *
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
-     * @JoinColumn(name="COD_TIPO_NOTA_FISCAL", referencedColumnName="COD_SIGLA")
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\NotaFiscal\Tipo")
+     * @JoinColumn(name="COD_TIPO_NOTA_FISCAL", referencedColumnName="COD_TIPO")
+     * @var NotaFiscal\Tipo
      */
-    protected $tipoNotaFiscal;
+    protected $tipo;
 
     /**
      * @Column(name="IND_DIVERGENCIA", nullable=true, type="string")
