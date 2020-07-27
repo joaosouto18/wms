@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity;
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\NotaFiscal\Item;
 use Wms\Domain\Entity\NotaFiscal\Tipo;
+use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
 
 /**
  * Nota fiscal
@@ -50,20 +51,20 @@ class NotaFiscal
     protected $serie;
 
     /**
-     * Fornecedor da nota fiscal
+     * Emissor da nota fiscal
      * 
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Fornecedor", cascade={"persist"})
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_FORNECEDOR")
-     * @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor
+     * @var \Wms\Domain\Entity\Pessoa\Papel\EmissorInterface
      */
     protected $fornecedor;
 
     /**
-     * Cliente da nota fiscal de devolução
+     * Emissor da nota fiscal de devolução
      *
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Cliente", cascade={"persist"})
      * @JoinColumn(name="COD_CLIENTE", referencedColumnName="COD_PESSOA")
-     * @var \Wms\Domain\Entity\Pessoa\Papel\Cliente
+     * @var \Wms\Domain\Entity\Pessoa\Papel\EmissorInterface
      */
     protected $cliente;
 
@@ -419,5 +420,47 @@ class NotaFiscal
         $this->divergencia = $divergencia;
     }
 
+    /**
+     * @return EmissorInterface
+     */
+    public function getCliente()
+    {
+        return $this->cliente;
+    }
 
+    /**
+     * @param EmissorInterface $cliente
+     */
+    public function setCliente($cliente)
+    {
+        $this->cliente = $cliente;
+    }
+
+    /**
+     * @return Tipo
+     */
+    public function getTipo()
+    {
+        return $this->tipo;
+    }
+
+    /**
+     * @param Tipo $tipo
+     */
+    public function setTipo($tipo)
+    {
+        $this->tipo = $tipo;
+    }
+
+    /**
+     * @return EmissorInterface
+     */
+    public function getEmissor()
+    {
+        if ($this->tipo->getTipoResponsavel() === Tipo::RESPONSAVEL_FORNECEDOR) {
+            return self::getFornecedor();
+        } else {
+            return self::getCliente();
+        }
+    }
 }

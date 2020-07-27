@@ -11,7 +11,7 @@ use Wms\Domain\Entity\Pessoa,
  * @Table(name="CLIENTE")
  * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\ClienteRepository")
  */
-class Cliente implements Ator {
+class Cliente implements Ator, EmissorInterface {
 
     /**
      * @var integer $id
@@ -49,6 +49,11 @@ class Cliente implements Ator {
     }
 
     public function getCodClienteExterno()
+    {
+        return $this->codClienteExterno;
+    }
+
+    public function getCodExterno()
     {
         return $this->codClienteExterno;
     }

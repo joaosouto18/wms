@@ -175,7 +175,7 @@ class RecebimentoRepository extends EntityRepository
                 $acaoEn = $acaoIntRepo->find($parametroRecebimentoERP);
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $notasFiscais[0]);
                 $options = array(
-                    0 => $notaFiscal->getFornecedor()->getIdExterno(),
+                    0 => $notaFiscal->getEmissor()->getCodExterno(),
                     1 => $notaFiscal->getSerie(),
                     2 => $notaFiscal->getNumero(),
                     3 => $notaFiscal->getFornecedor()->getPessoa()->getCnpj()

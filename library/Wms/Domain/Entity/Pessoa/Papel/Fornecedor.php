@@ -16,13 +16,8 @@ use Wms\Domain\Entity\Pessoa;
  * @Table(name="FORNECEDOR")
  * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository")
  */
-class Fornecedor implements Ator
+class Fornecedor implements Ator, EmissorInterface
 {
-
-    /*     
-    * @GeneratedValue(strategy="SEQUENCE")
-    * @SequenceGenerator(sequenceName="SQ_PESSOA_01", initialValue=1, allocationSize=100)
-    */
     
     /**
      * @var integer $id
@@ -69,6 +64,11 @@ class Fornecedor implements Ator
     }
 
     public function getIdExterno()
+    {
+        return $this->idExterno;
+    }
+
+    public function getCodExterno()
     {
         return $this->idExterno;
     }

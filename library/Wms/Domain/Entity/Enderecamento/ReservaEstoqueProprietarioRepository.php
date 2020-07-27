@@ -65,7 +65,7 @@ class ReservaEstoqueProprietarioRepository extends EntityRepository
             $nfVetEntity = $nfRepository->findBy(['recebimento' => $idRecebimento]);
             if(!empty($nfVetEntity)) {
                 foreach ($nfVetEntity as $key => $nf) {
-                    $itemsNF = $nfRepository->getConferencia($nf->getFornecedor()->getId(), $nf->getNumero(), $nf->getSerie(), '', 16);
+                    $itemsNF = $nfRepository->getConferencia($nf->getEmissor()->getId(), $nf->getNumero(), $nf->getSerie(), '', 16);
                     if (!empty($itemsNF)) {
                         foreach ($itemsNF as $item) {
                             self::save([
