@@ -9,5 +9,4 @@ interface EmissorInterface
     public function getId();
     public function getPessoa();
     public function getCodExterno();
-    //public function getCpfCnpj();
 }
