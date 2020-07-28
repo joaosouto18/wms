@@ -299,9 +299,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $senha = $conexao->getSenha();
             $servidor = $conexao->getServidor();
             $porta = $conexao->getPorta();
-
+teste;
             $conn_string = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;" .
-                "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha;";
+                "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha; ";
             $conn = db2_connect($conn_string, '', '');
 
             $stmt = db2_prepare($conn, $query);
