@@ -26,7 +26,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return self::firebirdQuery($query, $conexao, $update);
             case ConexaoIntegracao::PROVEDOR_POSTGRE:
                 return self::postgreQuery($query, $conexao);
-
+            case ConexaoIntegracao::PROVEDOR_DB2:
+                return self::db2Query($query, $conexao);
             default:
                 throw new \Exception("Provedor não específicado");
         }
@@ -287,5 +288,35 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         }
 
     }
+
+    private function db2Query($query, $conexao)
+    {
+        try {
+            ini_set('memory_limit', '-1');
+
+            $database = $conexao->getDbName();
+            $usuario = $conexao->getUsuario();
+            $senha = $conexao->getSenha();
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+
+            $conn_string = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;" .
+                "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha;";
+            $conn = db2_connect($conn_string, '', '');
+
+            $stmt = db2_prepare($conn, $query);
+            $r = db2_execute($stmt);
+            $result = db2_fetch_array($stmt);
+
+            db2_close($conn);
+
+            return $result;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+    }
+
 
 }
