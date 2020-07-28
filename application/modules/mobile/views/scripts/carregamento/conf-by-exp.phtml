@@ -2,19 +2,35 @@
     .btn-spacing {
         margin-top: 5px;
     }
+    .input-form {
+        margin: 0;
+        padding: 5px;
+        line-height: 22px;
+        height: 30px!important;
+        border: none;
+        size: 10px!important;
+        font-size: 15px;
+        border-top: 1px solid #999;
+        border-left: 1px solid #999;
+        border-bottom: 2px solid #999;
+        border-right: 2px solid #999;
+    }
 </style>
+<div>
+    <form>
+        <div class="field">
+            <label for="input-filter" class="field">Buscar expedição:</label>
+            <input type="text" class="input-form" name="input-filter" id="input-filter" />
+        </div>
+        <button type="submit" class="btn gradientBtn btn-spacing" id="filter">Filtrar</button>
+    </form>
+</div>
 <h3>Expedições para conferência de carregamento</h3>
 <div id="buttons"></div>
 <script>
     var expedicoes = <?php echo json_encode($this->expedicoes)?>;
     $(document).ready(function () {
-        if (!isEmpty(expedicoes)) {
-            $.each(expedicoes, function (codExpedicao, exp) {
-                $("#buttons").append($("<button class='btn gradientBtn btn-spacing new-conf' data-id='" + codExpedicao + "' >Exp " + codExpedicao + " - [" + exp.nClientes + " Cliente(s)]</button>"));
-            });
-        } else {
-            $("#buttons").append($("<p>Nenhuma nova expedição liberada!</p>"));
-        }
+        renderButtons(null);
     });
     $(".new-conf").live('click', function () {
         $.ajax({
@@ -33,4 +49,33 @@
             }
         })
     });
+
+    $("form").submit(function (event) {
+        event.preventDefault();
+        var inptFilter = $("#input-filter");
+        renderButtons(inptFilter.val());
+        inptFilter.val("").focus();
+    })
+
+    function renderButtons( expedicao ) {
+        var divButtons = $("#buttons");
+        divButtons.html("");
+        var arr = {};
+        if (!isEmpty(expedicao)) {
+            $.each(expedicoes, function (codExpedicao, exp) {
+                if (expedicao === codExpedicao)
+                    arr[codExpedicao] = exp;
+            });
+        } else {
+            arr = expedicoes;
+        }
+
+        if (!isEmpty(arr)) {
+            $.each(arr, function (codExpedicao, exp) {
+                divButtons.append($("<button class='btn gradientBtn btn-spacing new-conf' data-id='" + codExpedicao + "' >Exp " + codExpedicao + " - [" + exp.nClientes + " Cliente(s)]</button>"));
+            });
+        } else {
+            divButtons.append($("<p>Nenhuma nova expedição encontrada!</p>"));
+        }
+    }
 </script>
