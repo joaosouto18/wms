@@ -291,7 +291,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
     private function db2Query($query, $conexao)
     {
-        return array();
+
         try {
             ini_set('memory_limit', '-1');
 
