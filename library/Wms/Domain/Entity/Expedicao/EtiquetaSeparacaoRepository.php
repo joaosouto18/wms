@@ -957,11 +957,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
 
             $expedicaoEntity = $this->getEntityManager()->find('wms:Expedicao',$idExpedicao);
-            if (!is_null($expedicaoEntity->getModeloSeparacao()))
-                $idModeloSeparacao = $expedicaoEntity->getModeloSeparacao()->getId();
-
-            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+            $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+            if (empty($modeloSeparacaoEn)) {
+                //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+                $expedicaoEntity->setModeloSeparacao($modeloSeparacaoEn);
+                $this->_em->persist($expedicaoEntity);
+            }
 
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             if (empty($modeloSeparacaoEn))
