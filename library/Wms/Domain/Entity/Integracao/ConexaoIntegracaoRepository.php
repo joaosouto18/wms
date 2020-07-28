@@ -291,6 +291,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
     private function db2Query($query, $conexao)
     {
+        return array();
         try {
             ini_set('memory_limit', '-1');
 
@@ -299,7 +300,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $senha = $conexao->getSenha();
             $servidor = $conexao->getServidor();
             $porta = $conexao->getPorta();
-teste;
+
             $conn_string = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;" .
                 "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha; ";
             $conn = db2_connect($conn_string, '', '');
