@@ -294,6 +294,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
         try {
             ini_set('memory_limit', '-1');
+            $err = "";
+            if ($conexao == null) {
+                throw new \Exception("Objeto de conexão não informado");
+            }
 
             $database = $conexao->getDbName();
             $usuario = $conexao->getUsuario();
@@ -306,18 +310,23 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $conn = db2_connect($conn_string, $usuario, $senha);
             if (!$conn) {
+                $err = "Não foi possível se conectar no banco $database no servidor $usuario/$servidor:$porta - Motivo: " . db2_conn_errormsg();
                 db2_close($conn);
-                throw new \Exception("Não foi possível se conectar no banco $database no servidor $usuario/$servidor:$porta - Motivo: " . db2_conn_errormsg());
+                throw new \Exception($err);
             }
 
             $stmt = db2_prepare($conn, $query);
             if (!$stmt) {
-                throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+                $err = "Falha preparando SQL" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt);
+                db2_close($conn);
+                throw new \Exception($err);
             }
 
             $r = db2_execute($stmt);
             if ($r === false) {
-                throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+                $err = "Falha executando SQL" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt);
+                db2_close($conn);
+                throw new \Exception($err);
             }
 
             $result = array();
