@@ -15,7 +15,7 @@ class ConfCarreg extends Grid
 
         $confCarreg = $this->getEntityManager()->getRepository(ConfCarregVolume::class)->getDetalheConfCarreg($idExpedicao);
         $this->setShowPager(false);
-        $this->setShowExport(false);
+        $this->setShowExport(true);
         $this->setSource(new ArraySource($confCarreg))
             ->setId('conf-carreg-grid')
             ->setAttrib('caption', 'Conferência Carregamento')
