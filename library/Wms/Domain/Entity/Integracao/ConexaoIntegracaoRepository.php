@@ -309,6 +309,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 $r = db2_execute($stmt);
                 $result = db2_fetch_array($stmt);
 
+                
                 db2_close($conn);
             } else {
                 throw new \Exception("Não foi possível se conectar no banco " . $servidor . "/" . $database);
