@@ -316,10 +316,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             if (!$result) {
                 throw new \Exception(db2_stmt_errormsg($stmt));
             }
-            
-            db2_close($conn);
 
-            var_dump($result);exit;
+            db2_close($conn);
 
             return $result;
 
