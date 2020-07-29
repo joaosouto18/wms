@@ -59,6 +59,7 @@ class EtiquetaEmbalados extends eFPDF
                 self::bodyExpedicaoModelo10($volumePatrimonio, $mapaSeparacaoEmbaladoRepo);
                 break;
             case 11:
+                //LAYOUT MACROLUB
                 self::bodyExpedicaoModelo11($volumePatrimonio);
                 break;
             default:
@@ -784,6 +785,8 @@ class EtiquetaEmbalados extends eFPDF
 
         foreach ($volumes as $volume) {
 
+            $existeItensPendentes = empty($mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S')));
+
             $imgW = 14;
             $imgH = 5.5;
             $this->AddPage();
@@ -805,8 +808,20 @@ class EtiquetaEmbalados extends eFPDF
             $this->SetY(-22);
             $this->Cell(20, 10, '', 0, 1, "L");
             $this->SetFont('Arial','B',8);
-            $dscSeq = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[POS_ENTREGA] de $volume[POS_ENTREGA]" : $volume['POS_ENTREGA'];
-            $this->Cell(20, 3, "Volume: $dscSeq", 0, 1,'L');
+            if ($volume['IND_ULTIMO_VOLUME'] === 'N') {
+                if (is_null($volume['POS_ENTREGA'])) {
+                    $impressao = $volume['NUM_SEQUENCIA'];
+                } else {
+                    $impressao = $volume['POS_ENTREGA'];
+                }
+            } else {
+                if (is_null($volume['POS_ENTREGA'])) {
+                    $impressao = $volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+                } else {
+                    $impressao = $volume['POS_ENTREGA'] .'/'. $volume['POS_ENTREGA'];
+                }
+            }
+            $this->Cell(20, 3, "Volume: $impressao", 0, 1,'L');
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 25, 22,50,12);
         }
