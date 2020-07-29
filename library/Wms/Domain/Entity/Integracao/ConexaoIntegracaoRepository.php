@@ -315,6 +315,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             db2_close($conn);
 
+            var_dump($result);exit;
 
             return $result;
 
