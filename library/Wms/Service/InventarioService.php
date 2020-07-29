@@ -1066,7 +1066,7 @@ class InventarioService extends AbstractService
 
         if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
             if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario, true)))
-                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
+                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario, Produto\Lote::INTERNO);
         }
 
         $elemType = ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume";

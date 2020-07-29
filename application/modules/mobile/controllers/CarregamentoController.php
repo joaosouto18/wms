@@ -85,6 +85,16 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
         $this->view->expedicoes =  $this->em->getRepository(ConferenciaCarregamento::class)->getExpedicoesToConf();
     }
 
+    public function findExpedicaoByFilterAjaxAction()
+    {
+        $filter = $this->getRequest()->getParam('filter');
+        $value = $this->getRequest()->getParam('value');
+
+        $exp = $this->_em->getRepository(\Wms\Domain\Entity\Expedicao::class)->findExpedicaoByFilters($filter, $value);
+
+        $this->_helper->json(['status'=> 'ok', 'result' => ['expedicao' => $exp]]);
+    }
+
     public function newConfAction()
     {
         try {
