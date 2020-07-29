@@ -782,11 +782,7 @@ class EtiquetaEmbalados extends eFPDF
 
     private function bodyExpedicaoModelo11($volumes)
     {
-
         foreach ($volumes as $volume) {
-
-            $existeItensPendentes = empty($mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S')));
-
             $imgW = 14;
             $imgH = 5.5;
             $this->AddPage();
