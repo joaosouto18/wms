@@ -312,13 +312,19 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $stmt = db2_prepare($conn, $query);
             $r = db2_execute($stmt);
 
+            var_dump($r);exit;
+
             $result = array();
             while ($row = db2_fetch_assoc($stmt)) {
                 $result[] = $row;
             }
 
             if (!$result) {
-                throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+                if (db2_stmt_error($stmt) != 'ERR02000') {
+
+                } else {
+                    throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+                }
             }
             db2_close($conn);
 
