@@ -312,16 +312,13 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $stmt = db2_prepare($conn, $query);
             if (!$stmt) {
-                db2_close($conn);
                 throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
             }
 
             $r = db2_execute($stmt);
-            //if ($r === false) {
-            //    db2_close($conn);
-            //    throw new \Exception("Aqui3");
-            //    throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
-            //}
+            if ($r === false) {
+                throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+            }
 
             $result = array();
             while ($row = db2_fetch_assoc($stmt)) {
