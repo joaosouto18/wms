@@ -318,7 +318,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $r = db2_execute($stmt);
-            if (!$r) {
+            if ($r === false) {
                 db2_close($conn);
                 throw new \Exception("Aqui2");
                 throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
