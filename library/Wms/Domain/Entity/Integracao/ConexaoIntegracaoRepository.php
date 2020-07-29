@@ -303,28 +303,28 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $conn_string = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;" .
                 "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha; ";
-            $conn = db2_connect($conn_string, $usuario, $senha);
 
+            $conn = db2_connect($conn_string, $usuario, $senha);
             if (!$conn) {
+                db2_close($conn);
                 throw new \Exception("Não foi possível se conectar no banco $database no servidor $usuario/$servidor:$porta - Motivo: " . db2_conn_errormsg());
             }
 
             $stmt = db2_prepare($conn, $query);
-            $r = db2_execute($stmt);
+            if (!$stmt) {
+                db2_close($conn);
+                throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+            }
 
-            var_dump($r);exit;
+            $r = db2_execute($stmt);
+            if (!$r) {
+                db2_close($conn);
+                throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
+            }
 
             $result = array();
             while ($row = db2_fetch_assoc($stmt)) {
                 $result[] = $row;
-            }
-
-            if (!$result) {
-                if (db2_stmt_error($stmt) != 'ERR02000') {
-
-                } else {
-                    throw new \Exception("ERR" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt) );
-                }
             }
             db2_close($conn);
 
