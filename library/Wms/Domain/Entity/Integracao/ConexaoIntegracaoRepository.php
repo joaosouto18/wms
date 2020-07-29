@@ -343,6 +343,4 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         }
 
     }
-
-
 }
