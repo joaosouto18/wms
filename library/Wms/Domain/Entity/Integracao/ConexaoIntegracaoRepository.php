@@ -311,7 +311,12 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $stmt = db2_prepare($conn, $query);
             $r = db2_execute($stmt);
-            $result = db2_fetch_assoc($stmt);
+            $result =
+
+            $result = array();
+            while ($row = db2_fetch_both($stmt)) {
+                $result[] = $row;
+            }
 
             if (!$result) {
                 throw new \Exception(db2_stmt_errormsg($stmt));
