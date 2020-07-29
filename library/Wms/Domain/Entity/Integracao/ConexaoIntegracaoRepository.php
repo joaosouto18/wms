@@ -295,7 +295,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         try {
             ini_set('memory_limit', '-1');
             $err = "";
-            
+
             if ($conexao == null) {
                 throw new \Exception("Objeto de conexão não informado");
             }
