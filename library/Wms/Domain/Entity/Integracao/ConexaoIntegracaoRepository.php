@@ -332,7 +332,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $result = array();
             while ($row = db2_fetch_assoc($stmt)) {
-                $result[] = $row;
+                $iRow = array();
+                foreach ($row as $key => $cell) {
+                    $iRow[$key] = utf8_encode($cell);
+                }
+                $result[] = $iRow;
             }
             db2_close($conn);
 
