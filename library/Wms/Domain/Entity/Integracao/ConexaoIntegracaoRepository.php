@@ -303,10 +303,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $conn_string = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;" .
                 "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha; ";
-            $conn = db2_connect($conn_string, '', '');
+            $conn = db2_connect($conn_string, $usuario, $senha);
 
             if (!$conn) {
-                throw new \Exception("Não foi possível se conectar no banco $banco no servidor $usuario/$servidor:$porta - Motivo: " . db2_conn_errormsg());
+                throw new \Exception("Não foi possível se conectar no banco $database no servidor $usuario/$servidor:$porta - Motivo: " . db2_conn_errormsg());
             }
 
             $stmt = db2_prepare($conn, $query);
