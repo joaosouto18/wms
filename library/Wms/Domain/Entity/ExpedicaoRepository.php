@@ -5632,7 +5632,7 @@ class ExpedicaoRepository extends EntityRepository {
                     SELECT DSC_VALOR_PARAMETRO MODELO_DEFAULT
                     FROM PARAMETRO
                     WHERE DSC_PARAMETRO = 'MODELO_SEPARACAO_PADRAO') P ON E.COD_MODELO_SEPARACAO IS NULL
-                WHERE COD_EXPEDICAO IN ($codExpedicoes)) ";
+                WHERE COD_EXPEDICAO IN ($codExpedicoes)";
 
         return $this->_em->getConnection()->query($sql)->fetchAll()[0]['MODELOS'];
 
