@@ -640,8 +640,8 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             $countmodeloSeparacao = $this->countModeloSeparacaoByExpedicoes($strExpedicao);
-            if (count($countmodeloSeparacao) > 1)
-                throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
+            if ($countmodeloSeparacao > 1)
+                throw new \Exception("Não é possível gerar onda de ressuprimento para $countmodeloSeparacao modelos distintos");
 
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
             $codExpedicoes = explode(',',$strExpedicao);
@@ -5626,14 +5626,15 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function countModeloSeparacaoByExpedicoes($codExpedicoes)
     {
-        $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('distinct ms.id')
-            ->from('wms:Expedicao','e')
-            ->leftJoin('e.modeloSeparacao', 'ms')
-            ->where("e.id IN ($codExpedicoes)")
-            ->groupBy('ms.id, e.id');
+        $sql = "SELECT COUNT(DISTINCT NVL(COD_MODELO_SEPARACAO, P.MODELO_DEFAULT)) MODELOS
+                FROM EXPEDICAO E
+                LEFT JOIN (
+                    SELECT DSC_VALOR_PARAMETRO MODELO_DEFAULT
+                    FROM PARAMETRO
+                    WHERE DSC_PARAMETRO = 'MODELO_SEPARACAO_PADRAO') P ON E.COD_MODELO_SEPARACAO IS NULL
+                WHERE COD_EXPEDICAO IN ($codExpedicoes)) ";
 
-        return $sql->getQuery()->getResult();
+        return $this->_em->getConnection()->query($sql)->fetchAll()[0]['MODELOS'];
 
     }
 
