@@ -1,22 +1,79 @@
 <style>
+    .div-loader {
+        float:left;
+        z-index: 99999;
+        padding-top: 30px;
+        position: absolute;
+        background: #FFFFFF;
+        width: 100%;
+        height: inherit;
+    }
+
     .btn-spacing {
         margin-top: 5px;
     }
+
+    .input-form {
+        margin: 0;
+        padding: 5px;
+        line-height: 22px;
+        height: 30px!important;
+        border: none;
+        size: 10px!important;
+        font-size: 15px;
+        border-top: 1px solid #999;
+        border-left: 1px solid #999;
+        border-bottom: 2px solid #999;
+        border-right: 2px solid #999;
+    }
+
+    .type-filter {
+        display: table-row;
+        margin-bottom: 6px;
+    }
+
+    .lbl-option {
+        display: table-column;
+        font-weight: bold;
+        font-size: 15px;
+        width: auto;
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-bottom: 8px;
+    }
+    .lbl-option  input[type='radio'] {
+        height: auto!important;
+        margin: 2px 5px;
+    }
 </style>
+<div>
+    <form>
+        <div class="field">
+            <h4>Buscar:</h4>
+            <div class="type-filter">
+                <label class="lbl-option"><input type="radio" name="type-filter" class="type-filter-radio" value="e" checked >Expedição</label>
+                <label class="lbl-option"><input type="radio" name="type-filter" class="type-filter-radio" value="c">Carga</label>
+                <label class="lbl-option"><input type="radio" name="type-filter" class="type-filter-radio" value="p">Pedido</label>
+            </div>
+            <input type="text" class="input-form" name="input-filter" id="input-filter" />
+        </div>
+        <button type="submit" class="btn gradientBtn btn-spacing" id="filter">Filtrar</button>
+    </form>
+</div>
 <h3>Expedições para conferência de carregamento</h3>
+<div id="loader" class="div-loader">
+    <span style="font-size: 18px">Carregando...</span>
+    <img src="/img/ajax-bar-loader.gif" alt="loading">
+</div>
 <div id="buttons"></div>
 <script>
     var expedicoes = <?php echo json_encode($this->expedicoes)?>;
     $(document).ready(function () {
-        if (!isEmpty(expedicoes)) {
-            $.each(expedicoes, function (codExpedicao, exp) {
-                $("#buttons").append($("<button class='btn gradientBtn btn-spacing new-conf' data-id='" + codExpedicao + "' >Exp " + codExpedicao + " - [" + exp.nClientes + " Cliente(s)]</button>"));
-            });
-        } else {
-            $("#buttons").append($("<p>Nenhuma nova expedição liberada!</p>"));
-        }
+        loading(false);
+        renderButtons(null);
     });
     $(".new-conf").live('click', function () {
+        loading(true);
         $.ajax({
             url: 'new-conf',
             type: 'post',
@@ -33,4 +90,70 @@
             }
         })
     });
+
+    $("form").submit(function (event) {
+        event.preventDefault();
+        var inptFilter = $("#input-filter");
+        var typeFilter = $(".type-filter-radio:checked");
+        if (typeFilter.val() === 'e') {
+            renderButtons(inptFilter.val());
+        } else {
+            findExpedicaoByFilter(typeFilter.val(), inptFilter.val())
+        }
+    });
+
+    function findExpedicaoByFilter(filter, value) {
+        loading(true);
+        $.ajax({
+            url: 'find-expedicao-by-filter-ajax/filter/'+filter+'/value/'+value,
+            type: 'get',
+            success: function (data) {
+                if (data.status === 'ok') {
+                    renderButtons(data.result.expedicao);
+                } else {
+                    alert(data.exception)
+                    if (data.errorCode === 403) {
+                        location.href = '/mobile/carregamento/index'
+                    }
+                }
+                loading(false);
+            }
+        })
+    }
+    
+    function loading(show) {
+        if (show) {
+            $("#loader").show();
+            $("#buttons").hide();
+        } else {
+            $("#loader").hide()
+            $("#buttons").show();
+        }
+    }
+
+    function renderButtons( expedicao ) {
+        var divButtons = $("#buttons");
+        divButtons.html("");
+        var arr = {};
+        if (!isEmpty(expedicao)) {
+            $.each(expedicoes, function (codExpedicao, exp) {
+                if (expedicao === codExpedicao)
+                    arr[codExpedicao] = exp;
+            });
+        } else {
+            arr = expedicoes;
+        }
+
+        if (!isEmpty(arr)) {
+            $.each(arr, function (codExpedicao, exp) {
+                var btn = $("<button class='btn gradientBtn btn-spacing new-conf'></button>")
+                btn.data('id', codExpedicao);
+                btn.text("Exp " + codExpedicao + " - [" + exp.nClientes + " Cliente(s)]");
+                divButtons.append(btn);
+            });
+        } else {
+            divButtons.append($("<p>Nenhuma nova expedição encontrada!</p>"));
+        }
+        $("#input-filter").val("").focus();
+    }
 </script>

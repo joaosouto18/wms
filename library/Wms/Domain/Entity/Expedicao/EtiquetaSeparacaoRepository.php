@@ -333,8 +333,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
             ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = p')
             ->leftjoin('etq.codDepositoEndereco', 'de')
-            ->leftJoin('wms:Pessoa\Endereco', 'enderecoEntrega', 'WITH', 'enderecoEntrega.pessoa = cl.id')
-            ->leftJoin('wms:Util\Sigla', 'uf', 'WITH', 'uf.id = enderecoEntrega.uf');
+            ->leftJoin('pedEnd.uf', 'uf');
 
 
 
@@ -402,7 +401,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega, etq.codStatus,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, 
-                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, 
+                    etq.qtdProduto, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, NVL(b.descricao, \'N/D\') dscBox, uf.referencia siglaEstado, 
                     pedEnd.localidade as cidadeEntrega, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
@@ -411,6 +410,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('p.pessoa', 'cl')
             ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = p')
+            ->leftJoin('pedEnd.uf', 'uf')
             ->leftJoin("cl.rota", "r")
             ->leftJoin("cl.praca", "pr")
             ->andWhere('etq.id >= '.$codigoInicial)
@@ -489,7 +489,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
-					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, 
+					de.descricao endereco, de.idCaracteristica, r.numSeq seqRota, r.nomeRota, pr.numSeq seqPraca, pr.nomePraca, uf.referencia siglaEstado, 
 					pedEnd.localidade as cidadeEntrega, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega
                 ')
             ->addSelect("
@@ -528,6 +528,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->innerJoin('p.pessoa', 'cl')
             ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = p')
+            ->leftJoin('pedEnd.uf', 'uf')
             ->leftJoin("cl.rota", "r")
             ->leftJoin("cl.praca", "pr")
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
@@ -978,11 +979,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
 
             $expedicaoEntity = $this->getEntityManager()->find('wms:Expedicao',$idExpedicao);
-            if (!is_null($expedicaoEntity->getModeloSeparacao()))
-                $idModeloSeparacao = $expedicaoEntity->getModeloSeparacao()->getId();
-
-            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+            $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+            if (empty($modeloSeparacaoEn)) {
+                //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+                $expedicaoEntity->setModeloSeparacao($modeloSeparacaoEn);
+                $this->_em->persist($expedicaoEntity);
+            }
 
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             if (empty($modeloSeparacaoEn))

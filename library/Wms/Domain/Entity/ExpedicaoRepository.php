@@ -6280,4 +6280,20 @@ class ExpedicaoRepository extends EntityRepository {
 
         return $dql->getQuery()->getResult();
     }
+
+    public function findExpedicaoByFilters($filter, $value)
+    {
+        $sql = "";
+        if ($filter == 'c') {
+            $sql = "SELECT DISTINCT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = '$value'";
+        } elseif ($filter == 'p') {
+            $sql = "SELECT DISTINCT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA IN (
+                        SELECT COD_CARGA FROM PEDIDO WHERE COD_EXTERNO = '$value')";
+        }
+        if (!empty($sql)) {
+            $result = $this->_em->getConnection()->query($sql)->fetchAll();
+            return (!empty($result)) ? $result[0]['COD_EXPEDICAO'] : 0;
+        }
+        return 0;
+    }
 }
