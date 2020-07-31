@@ -394,7 +394,7 @@ class Mobile_RecebimentoController extends Action
                         }
 
 
-                        $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true);
+                        $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true, null, true);
 
                         foreach ($recebimentoEmbalagemEntities as $recebimentoEmbalagemEntity) {
                             list($diaComp, $mesComp, $anoComp) = explode('/', $recebimentoEmbalagemEntity->getDataValidade()->format('d/m/Y'));

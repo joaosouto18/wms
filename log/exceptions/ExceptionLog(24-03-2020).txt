@@ -1,0 +1,10 @@
+(2020-03-24 12:59:18) [UserId = 2]  line  -> Teste login
+(2020-03-24 14:10:45) [User = 2 - LUCAS CHINELATE]  line  -> Teste login
+(2020-03-24 14:11:09) [User = 2 - LUCAS CHINELATE]  line  -> Teste login
+(2020-03-24 14:11:24) [User = 2 - LUCAS CHINELATE]  line  -> Teste login
+(2020-03-24 14:14:41) [User = 2 - LUCAS CHINELATE] Web_IndexController line 513 -> Teste login
+(2020-03-24 14:19:29) [User = 2 - LUCAS CHINELATE] Web_IndexController line 513 -> Teste login
+(2020-03-24 14:34:30) [User = 2 - LUCAS CHINELATE] Web_IndexController line 513 -> Teste msg
+(2020-03-24 15:04:03) [User = 2 - LUCAS CHINELATE] Web_IndexController line 513 -> Teste msg
+(2020-03-24 15:04:38) [User = 2 - LUCAS CHINELATE] Web_IndexController line 513 -> Teste msg
+(2020-03-24 15:07:47) [User = 2 - LUCAS CHINELATE] Web_IndexController line 513 -> Teste msg
