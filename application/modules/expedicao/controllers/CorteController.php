@@ -72,7 +72,7 @@ class Expedicao_CorteController extends Action {
                     $this->_redirect('/expedicao');
                 }
 
-                $EtiquetaRepo->cortar($etiquetaEntity, null, $motivoEn);
+                $EtiquetaRepo->cortar($etiquetaEntity, $motivoEn);
 
                 if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
                     $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();

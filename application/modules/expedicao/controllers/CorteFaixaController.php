@@ -46,7 +46,7 @@ class Expedicao_CorteFaixaController  extends Action
                                 $this->redirect('index','corte-faixa','expedicao');
                             }
 
-                            $EtiquetaRepo->cortar($etiquetaEn, true, $motivoEn);
+                            $EtiquetaRepo->cortar($etiquetaEn, $motivoEn);
 
                             if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
                                 $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
