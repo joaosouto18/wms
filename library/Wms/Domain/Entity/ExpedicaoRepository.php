@@ -2065,7 +2065,7 @@ class ExpedicaoRepository extends EntityRepository {
         return true;
     }
 
-    private function integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo)
+    public function integraCortesERP($pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo)
     {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -5153,7 +5153,7 @@ class ExpedicaoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
 
         if ($this->getSystemParameterValue('TIPO_INTEGRACAO_CORTE') == 'I') {
-            $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
+            $resultAcao = $this->integraCortesERP($pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
             if ($resultAcao == false)
                 return 'Corte Não Efetuado no ERP! Verifique o log de erro';
         }

@@ -3084,7 +3084,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         if ($this->getSystemParameterValue('TIPO_INTEGRACAO_CORTE') == 'I') {
-            $resultAcao = $expedicaoRepository->integraCortesERP($idPedido, $pedidoProdutoEn, $codProduto, $grade, $etiquetaEntity->getQtdProduto(), $motivoEn->getDscMotivo());
+            $resultAcao = $expedicaoRepository->integraCortesERP($pedidoProdutoEn, $codProduto, $grade, $etiquetaEntity->getQtdProduto(), $motivoEn->getDscMotivo());
             if ($resultAcao == false)
                 return 'Corte Não Efetuado no ERP! Verifique o log de erro';
         }
