@@ -1746,8 +1746,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     private function regroupMapaProduto($arrItens)
     {
         $arrConsolidado = $arrItensCaixas = $newArray = $arrayTemp = array();
-        $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
+        $cubagemCaixa = (float) str_replace(',', '.', $this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO'));
+        if ($cubagemCaixa == 0) throw new \Exception("A cubagem da CAIXA do carrinho de separação não pode ser 0.");
         $maxCaixasCarrinho = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
+        if ($maxCaixasCarrinho < 1) throw new \Exception("O carrinho de separação precisa ter ao menos uma caixa.");
 
         // Passa por todos os possíveis registros de mapaProduto e soma as quantidades por mapa->endereco->produto
         foreach ($arrItens as $element) {

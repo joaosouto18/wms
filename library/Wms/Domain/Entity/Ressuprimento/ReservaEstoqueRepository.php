@@ -699,6 +699,7 @@ class ReservaEstoqueRepository extends EntityRepository
 
                     if ($lote == $primeiroLote) {
                         $repEn->setQtd($val['qtdLote'] * -1);
+                        $repEn->setQtdOriginal($val['qtdLote'] * -1);
                         $repEn->setLote($primeiroLote);
                         $this->_em->persist($repEn);
                         $pedProdLoteRepo->update($pedProdLoteData);

@@ -105,14 +105,14 @@ if ($this->erro) {
             $conferidos = array();
             if (is_array($this->produtos)) {
                 foreach ($this->produtosConferidos as $key => $value) {
+                    $codGradeLote = "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]";
                     $background = $span = $quantidade = '';
                     if($value['QTD_SEPARAR'] != $value['QTD_CONFERIDA']){
                         $background = 'background: rgb(250, 208, 208);';
-                        $span = '<span id="qtd">'.$value['QTD_CONFERIDA_EMB'].'</span>';
+                        $span = '<span>'.$value['QTD_CONFERIDA_EMB'].'</span>';
                     }else{
                         $quantidade = $value['QUANTIDADE'];
                     }
-                    $codGradeLote = "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]";
                     $conferidos[$codGradeLote] = 1;
                     $strLote = (!empty($value['DSC_LOTE']) && $value['DSC_LOTE'] != \Wms\Domain\Entity\Produto\Lote::NCL) ?" Lote: '$value[DSC_LOTE]'" : "";
                     ?>
@@ -126,7 +126,7 @@ if ($this->erro) {
                         ?>
                         <p produto="<?php echo $codGradeLote ?>"
                            style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['COD_PRODUTO'] . ' - ' . $value['DSC_PRODUTO'] . $strLote . ' - ' ?>
-                            <span id="qtd"></span></span> </p>
+                            <span></span> </p>
                         <?php
                     }
                 }
@@ -243,7 +243,7 @@ if ($this->erro) {
                 requestAjax(event, qtd, codBarras);
             } else {
                 if (verificacao(codBarras, lote)) {
-                    qtd.select().focus();
+                    qtd.select();
                 }
             }
         }
@@ -289,9 +289,11 @@ if ($this->erro) {
         var lote = $("#lote");
         <?php } ?>
         if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
+            var params = $('form').serialize();
+            console.log(params);
             $.ajax({
                 url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
-                data: $('form').serialize(),
+                data: params,
                 async: false,
                 type: 'post',
                 success: function (data) {
@@ -321,15 +323,17 @@ if ($this->erro) {
                             if (conferido.is(":hidden")) {
                                 conferido.show();
                             }
-                            conferido.find("#qtd").text(produto['qtdConferidaTotalEmb']);
-                            conferidos.prepend(conferido);
+                            conferido.find('span').text(produto['qtdConferidaTotalEmb']);
+                            console.log(produto);
 
                             if (data.retorno.message == 'checkout') {
                                 $('#conferir').find('p[produto="' + codGradeLote +'"]').hide();
-                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#f3f3f3');
+                                conferido.css('background','#f3f3f3');
                             }else{
-                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
+                                conferido.css('background','#fad0d0');
                             }
+
+                            conferidos.prepend(conferido);
                             error = "";
 
                             <?php if ($this->criarVolsFinalCheckout == 'S') : ?>
@@ -340,7 +344,6 @@ if ($this->erro) {
                         $("#error").html(error);
                         $("#success").html(success);
                     }
-                    $(".item-lista").remove();
                 }
             });
         }

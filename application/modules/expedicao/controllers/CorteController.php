@@ -248,6 +248,7 @@ class Expedicao_CorteController extends Action {
                 $quantidadeCortada = $corte[2];
                 $idMapa = json_decode($corte[3]);
                 $idEndereco = json_decode($corte[4]);
+                $lote = (!empty($corte[5])) ? $corte[5] : null;
 
                 if ($idMapa == 'null') $idMapa = null;
 
@@ -280,7 +281,7 @@ class Expedicao_CorteController extends Action {
 
                 $motivo = $motivoEn->getDscMotivo();
 
-                $retornoCorte = $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault, $idEndereco);
+                $retornoCorte = $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault, $idEndereco, $lote);
                     if (is_string($retornoCorte)) {
                         throw new \Exception($retornoCorte);
                     }
@@ -340,9 +341,10 @@ class Expedicao_CorteController extends Action {
                 }
             }
 
+            $controlaLote = ($produtoEn->getIndControlaLote() == 'S');
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido, $quebraEndereco);
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido, $quebraEndereco, $controlaLote);
 
             $values = array();
             if ($produtoEn->isUnitario()) {
@@ -369,6 +371,7 @@ class Expedicao_CorteController extends Action {
                 "status" => "ok",
                 "itens" => $pedidos,
                 "embs" => $values,
+                "controlaLote" => $controlaLote,
                 "formMotivo" => $formMotivo->render()
             ];
 
