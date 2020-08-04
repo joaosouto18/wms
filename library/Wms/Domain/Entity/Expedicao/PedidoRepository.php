@@ -45,6 +45,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setIndEtiquetaMapaGerado('N');
             $enPedido->setProprietario((isset($pedido['codProprietario'])) ? $pedido['codProprietario'] : null);
             $enPedido->setNumSequencial((isset($numSequencial)) ? $numSequencial : null);
+            $enPedido->setObservacao((isset($pedido['observacao'])) ? $pedido['observacao'] : null);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();
@@ -1248,5 +1249,26 @@ class PedidoRepository extends EntityRepository
                 WHERE MSP.COD_MAPA_SEPARACAO = $idMapa";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getObservacaoPedido($idExpedicao)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codPedido, p.codExterno, cli.id codCliente, cli.codClienteExterno, pes.nome, p.observacao, c.id codCarga, c.codCargaExterno')
+            ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('p.pessoa', 'cli')
+            ->innerJoin('cli.pessoa','pes')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->where('e.id = '.$idExpedicao)
+            ->andWhere('p.observacao is not null')
+            ->orderBy('c.codCargaExterno, cli.codClienteExterno, p.codExterno');
+
+        $resultado = $sql->getQuery()->getResult();
+
+        if (!empty($resultado))
+            return $resultado;
+
+        return null;
     }
 }

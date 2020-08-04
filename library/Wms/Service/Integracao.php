@@ -570,7 +570,8 @@ class Integracao {
                         'linhaEntrega' => $row['DSC_ROTA'],
                         'tipoPedido' => $tipoPedido,
                         'codProprietario' => null,
-                        'idCarga' => $idCarga
+                        'idCarga' => $idCarga,
+                        'observacao' => $row['DSC_OBSERVACAO_INTEGRACAO']
                     );
 
                     $pedidos[] = $pedido;
@@ -988,6 +989,7 @@ class Integracao {
                     $pedido->setQtd(str_replace(",", ".", $row['QTD']));
                     $pedido->setVlrVenda(str_replace(",", ".", $row['VLR_VENDA']));
                     $pedido->setDth(isset($row['DTH']) && !empty($row['DTH']) ? \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']): new \DateTime());
+                    $pedido->setObservacao((isset($row['DSC_OBSERVACAO_INTEGRACAO']) && !empty($row['DSC_OBSERVACAO_INTEGRACAO'])) ? $row['DSC_OBSERVACAO_INTEGRACAO'] : null);
                     $this->_em->persist($pedido);
                     break;
             }

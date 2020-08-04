@@ -2947,7 +2947,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     /**
      * @param $etiquetaEntity
      */
-    public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
+    public function cortar($etiquetaEntity, $motivoEn = null)
     {
         if ($etiquetaEntity->getStatus()->getId() == EtiquetaSeparacao::STATUS_CORTADO) {
             throw new \Exception("Etiqueta " . $etiquetaEntity->getId() . " ja se encontra cortada");
@@ -2961,6 +2961,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo   = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+        $expedicaoRepository = $this->_em->getRepository('wms:Expedicao');
 
         if ($etiquetaEntity->getCodReferencia() != null) {
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
@@ -2978,11 +2980,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
                 if ($etiqueta->getStatus()->getId() != EtiquetaSeparacao::STATUS_CORTADO) {
-        //            if ($corteTodosVolumes == true) {
-        //                $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
-        //            } else {
-                        $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
-        //            }
+                    $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
                 }
             }
         }
@@ -3005,7 +3003,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $this->getEntityManager()->persist($pedidoProdutoEn);
             }
             $EtiquetaRepo->incrementaQtdAtentidaOuCortada($etiquetaEntity->getId(), 'cortada');
-
         }
 
         $this->alteraStatus($etiquetaEntity,EtiquetaSeparacao::STATUS_CORTADO);
@@ -3087,6 +3084,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
+        if ($this->getSystemParameterValue('TIPO_INTEGRACAO_CORTE') == 'I') {
+            $resultAcao = $expedicaoRepository->integraCortesERP($pedidoProdutoEn, $codProduto, $grade, $etiquetaEntity->getQtdProduto(), $motivoEn->getDscMotivo());
+            if ($resultAcao == false)
+                return 'Corte Não Efetuado no ERP! Verifique o log de erro';
+        }
 
         return true;
     }

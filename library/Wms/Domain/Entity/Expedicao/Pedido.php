@@ -109,6 +109,11 @@ class Pedido
     protected $indEtiquetaMapaGerado;
 
     /**
+     * @Column(name="DSC_OBSERVACAO", type="string", nullable=true)
+     */
+    protected $observacao;
+
+    /**
      * @param mixed $sequencia
      */
     public function setSequencia($sequencia)
@@ -346,6 +351,22 @@ class Pedido
     public function setCodTipoPedido($codTipoPedido)
     {
         $this->codTipoPedido = $codTipoPedido;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getObservacao()
+    {
+        return $this->observacao;
+    }
+
+    /**
+     * @param mixed $observacao
+     */
+    public function setObservacao($observacao)
+    {
+        $this->observacao = $observacao;
     }
 
 }

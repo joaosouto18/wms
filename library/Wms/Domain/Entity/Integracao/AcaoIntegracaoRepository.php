@@ -116,7 +116,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                                 QTD,
                                 VLR_VENDA,
                                 NOM_MOTORISTA,
-                                TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                                TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH,
+                                DSC_OBSERVACAO_INTEGRACAO
                 FROM INTEGRACAO_PEDIDO 
                 ORDER by CARGA, PEDIDO, PRODUTO";
                 break;
