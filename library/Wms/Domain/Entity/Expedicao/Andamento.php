@@ -72,6 +72,12 @@ class Andamento
     protected $erroProcessado;
 
     /**
+     * @var int
+     * @Column(name="COD_MAPA_SEPARACAO", type="integer")
+     */
+    protected $codMapa;
+
+    /**
      * @param \DateTime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
@@ -197,5 +203,19 @@ class Andamento
         $this->erroProcessado = $erroProcessado;
     }
 
+    /**
+     * @return int
+     */
+    public function getCodMapa()
+    {
+        return $this->codMapa;
+    }
 
+    /**
+     * @param int $codMapa
+     */
+    public function setCodMapa($codMapa)
+    {
+        $this->codMapa = $codMapa;
+    }
 }

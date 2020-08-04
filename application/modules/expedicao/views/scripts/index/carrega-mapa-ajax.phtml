@@ -76,6 +76,20 @@ if ($this->erro) {
 
         </fieldset>
     </form>
+    <div id="bloqued-os" style="display: none">
+        <form id="bloqued-os-form" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post">
+            <div>
+                <fieldset>
+                    <legend>Liberar Ordem de Serviço</legend>
+                    <div class="field">
+                        <label for="senha" class="field required">*Senha</label>
+                        <input type="password" name="senha" id="senha" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                    </div>
+                    <input type="submit" name="submit" id="submit" value="Liberar Ordem de Serviço" class="btn">
+                </fieldset>
+            </div>
+        </form>
+    </div>
     <div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error"></div>
     <div style="text-align: center;font-size: 12px; color: #19bd06; font-weight: bold;" id="success"></div>
     <div style="margin: 25px 17px 100px 17px;">
@@ -305,7 +319,7 @@ if ($this->erro) {
                         <?php } ?>
                         var error = "";
                         var success = "Quantidade conferida com sucesso";
-                        if (data.retorno.resposta == 'error') {
+                        if (data.retorno.resposta === 'error') {
                             error = data.retorno.message;
                             try {
                                 playSound("/alarme.mp3");
@@ -313,6 +327,12 @@ if ($this->erro) {
                                 alert(e);
                             }
                             success = "";
+                        }  else if (data.retorno.resposta === 'bloqued_os') {
+                            error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
+                            success = "";
+                            playSound("/alarme.mp3");
+                            $("#formulario").hide();
+                            $("#bloqued-os").show();
                         } else {
                             playSound("/confirm2.mp3");
                             var produto = data.retorno.produto[0];
@@ -356,6 +376,36 @@ if ($this->erro) {
         });
         <?php endif; ?>
     }
+    $("#bloqued-os-form").submit(function (e) {
+        e.preventDefault();
+        var inputPass = $("#senha");
+
+        if (isEmpty(inputPass.val())){
+            $.wmsDialogAlert({title: "Atenção", msg: "Senha de desbloqueio não informada!"})
+            return false;
+        }
+        var params = {
+            idExpedicao: $("#idExpedicao").val(),
+            senha: inputPass.val(),
+            checkout: true
+        }
+        $.ajax({
+            url: '/mobile/expedicao/liberar-os',
+            type: 'POST',
+            data: params,
+            success: function (data){
+                if (data.retorno.status === 'ok') {
+                    $("#success").html("OS Liberada!");
+                    $("#error").html('');
+                    $("#bloqued-os").hide();
+                    $("#formulario").show();
+                } else if(data.retorno.status === 'error') {
+                    $.wmsDialogAlert({title:"Atenção", msg: data.retorno.msg})
+                }
+            }
+        })
+        inputPass.val("");
+    })
 
     $('#buscar-submit').on('click', function (e) {
         var qtd = $("#qtd");

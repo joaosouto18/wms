@@ -27,7 +27,7 @@ class SenhaLiberacao extends \Core\Form
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup(
-                array('idExpedicao', 'idEtiqueta', 'senha'), 'identification', array('legend' => 'Liberar Ordem de Serviço')
+                array('idExpedicao', 'idEtiqueta', 'senha', 'submit'), 'identification', array('legend' => 'Liberar Ordem de Serviço')
         );
     }
 

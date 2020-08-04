@@ -988,6 +988,7 @@ class Expedicao_IndexController extends Action {
             $this->view->codMapa = $codBarras;
 
             $sessao = new \Zend_Session_Namespace('coletor');
+            $sessao->bloquearOs = $this->getSystemParameterValue('BLOQUEIO_OS');
             $central = $sessao->centralSelecionada;
             $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
 

@@ -337,7 +337,7 @@ class Expedicao
         if ($osEntity != null) {
             if ($osEntity[0]->getBloqueio() != null) {
                 $this->setOs($osEntity[0]);
-                $this->setMessage('OS bloqueada');
+                $this->setMessage('OS bloqueada por:');
                 $this->setStatus('error');
                 $this->setRedirect("/mobile/expedicao/liberar-os/idExpedicao/$idExpedicao/placa/$placa");
                 return false;

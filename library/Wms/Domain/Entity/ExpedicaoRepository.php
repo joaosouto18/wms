@@ -3833,7 +3833,8 @@ class ExpedicaoRepository extends EntityRepository {
         $source = $this->_em->createQueryBuilder()
                 ->select("a.dscObservacao,
                       a.dataAndamento,
-                      p.nome")
+                      p.nome,
+                      a.codMapa")
                 ->from("wms:Expedicao\Andamento", "a")
                 ->innerJoin("a.usuario", "u")
                 ->innerJoin("u.pessoa", "p")
@@ -3841,9 +3842,7 @@ class ExpedicaoRepository extends EntityRepository {
                 ->setParameter('idExpedicao', $idExpedicao)
                 ->orderBy("a.id", "DESC");
 
-        $result = $source->getQuery()->getResult();
-
-        return $source;
+        return $source->getQuery()->getResult();
     }
 
     public function getOSByUser() {
