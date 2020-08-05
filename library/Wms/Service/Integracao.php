@@ -326,12 +326,12 @@ class Integracao {
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
             $nfSaida->pedidos = $pedidos;
+            $nfSaida->dtEmissao = $nf['dtEmissao'];
             $nfSaida->chaveAcesso = $nf['chaveAcesso'];
             $nfs[] = $nfSaida;
         }
         $wsExpedicao = new \Wms_WebService_Expedicao();
         $wsExpedicao->informarNotaFiscal($nfs);
-
         return true;
     }
 

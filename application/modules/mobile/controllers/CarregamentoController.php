@@ -12,6 +12,31 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
     public function confByDanfeAction()
     {
         $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
+        $em = $this->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+        $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
+        $em->beginTransaction();
+        try {
+            $pedidoEntities = $pedidoRepository->getPedidosFinalizadosNaoFaturados();
+            foreach ($pedidoEntities as $pedidoEntity) {
+                $params['pedido'] = $pedidoEntity->getCodExterno();
+                $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
+                $pedidoEntity = $pedidoRepository->find($pedidoEntity->getId());
+                if ($result) {
+                    $pedidoEntity->setFaturado('S');
+                    $em->persist($pedidoEntity);
+                }
+            }
+            $em->flush();
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            $this->addFlashMessage("error", $e->getMessage() . ' - ' .$e->getTraceAsString());
+        }
     }
 
     public function getInfoDanfeAction()
