@@ -42,7 +42,7 @@ function agroupItens() {
     })
 }
 
-function updateList(showColEnd)
+function updateList(showColEnd, showColLote)
 {
     let newTd = function (content) {
         return $("<td style='text-align:left'></td>").append( content );
@@ -64,6 +64,7 @@ function updateList(showColEnd)
         newRow.append( newTd( item.cliente ) );
         newRow.append( newTd( item.itinerario ) );
         newRow.append( newTd( item.quantidade ) );
+        if (showColLote) newRow.append( newTd( item.lote ) );
 
         let forcarEmbVenda = $("#forcarEmbVenda").val();
         let newEmbSelector = "";
@@ -122,15 +123,14 @@ function getCorte(i) {
     return (indexEmb !== undefined && qtd !== undefined) ? parseFloat(qtd * embs[indexEmb].fator) : 0;
 }
 
-function msg(input, inputQtd) {
+function msg(input, inputQtd, text) {
     let funct = function (objInput) {
         objInput.inputQtd.val("");
         objInput.inputEven.focus();
     };
     let args = {inputQtd: inputQtd, inputEven: input};
-    let text = "A quantidade excede o saldo disponível para corte do endereço, do mapa ou do pedido!";
 
-    $.wmsDialogAlert({msg: text + " <br><br> Para efetuar o corte: <br>Utilize uma embalagem menor, <br>Reduza a quantidade, <br> Ou reinicie a conferência do item!"},
+    $.wmsDialogAlert({msg: text },
         funct ,
         args
     );
@@ -143,7 +143,12 @@ $("select.qtdCortar, input.qtdCortar").live("change", function () {
     let inputQtd = $("#qtdCortar-"+index);
     if (!getSaldoCorte(index))
     {
-        msg(input, inputQtd);
+        let txt = "A quantidade excede o saldo disponível para corte do endereço, do mapa ou do pedido!" +
+            "<br><br> Para efetuar o corte: " +
+            "<br>Utilize uma embalagem menor, " +
+            "<br>Reduza a quantidade, " +
+            "<br> Ou reinicie a conferência do item!";
+        msg(input, inputQtd, txt);
     }
 });
 
@@ -151,9 +156,15 @@ $("#btnCortar").live("click",function () {
     event.preventDefault();
 
     let cortes = [];
-
+    let errorQtdZero = false;
     $.each(itens, function (i, item) {
-        let qtdCortar = $("#qtdCortar-" + i).val();
+        let input = $("#qtdCortar-" + i);
+        let qtdCortar = input.val();
+        if (qtdCortar < 0) {
+            msg(input, input, "A quantidade à ser cortada não pode ser menor que zero");
+            errorQtdZero = true;
+            return;
+        }
         if (!isEmpty(qtdCortar)) {
             var corte = [];
             corte[0] = item.ID;
@@ -161,10 +172,13 @@ $("#btnCortar").live("click",function () {
             corte[2] = qtdCortar;
             corte[3] = item.mapa;
             corte[4] = (!isEmpty(item.idEndereco)) ? item.idEndereco : null;
+            corte[5] = (!isEmpty(item.lote)) ? item.lote : '';
 
             cortes[cortes.length] = corte;
         }
     });
+
+    if (errorQtdZero) return;
 
     if (cortes.length <= 0) {
         $.wmsDialogAlert({msg:"Selecione ao menos um pedido para cortar"});
@@ -246,7 +260,12 @@ function executeRequest() {
             } else {
                 itens = data.itens;
                 embs = data.embs;
-                updateList(checkQuebra);
+                updateList(checkQuebra, data.controlaLote);
+                if (data.controlaLote) {
+                    $("#colLote").show();
+                } else {
+                    $("#colLote").hide();
+                }
                 $("#motivoCorte").html(data.formMotivo);
                 testShowGrid();
             }

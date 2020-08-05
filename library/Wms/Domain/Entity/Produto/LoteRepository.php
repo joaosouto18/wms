@@ -76,13 +76,11 @@ class LoteRepository extends EntityRepository
             return $loteEn;
         } elseif (empty($loteEn)) {
             $loteEn = $this->findOneBy(['descricao' => $lote]);
-            if ((!empty($loteEn) && $loteEn->isInterno() && $cine) || (empty($loteEn) && $cine)) {
-                if (empty($codPessoaNovaCriacao) && !empty($loteEn)) {
-                    $codPessoaNovaCriacao = $loteEn->getCodPessoaCriacao();
-                } else {
+            if (((!empty($loteEn) && $loteEn->isInterno()) || empty($loteEn)) && $cine) {
+                if (empty($codPessoaNovaCriacao)) {
                     $codPessoaNovaCriacao = \Zend_Auth::getInstance()->getIdentity()->getId();
                 }
-                return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+                return self::save($idProduto, $grade, $lote, $codPessoaNovaCriacao, Lote::INTERNO);
             }
         }
 
