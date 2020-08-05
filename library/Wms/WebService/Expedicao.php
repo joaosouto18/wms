@@ -1011,7 +1011,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'pontoTransbordo' => $pedido['pontoTransbordo'],
             'codProprietario' => $pedido['codProprietario'],
             'envioParaLoja' => (isset($pedido['envioParaLoja'])) ? $pedido['envioParaLoja'] : null,
-            'observacao' => $pedido['observacao']
+            'observacao' => (!empty($pedido['observacao'])) ? $pedido['observacao'] : null
         );
 
         $entityPedido  = $this->findPedidoById($repositorios, $arrayPedido);

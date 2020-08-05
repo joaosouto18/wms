@@ -571,7 +571,7 @@ class Integracao {
                         'tipoPedido' => $tipoPedido,
                         'codProprietario' => null,
                         'idCarga' => $idCarga,
-                        'observacao' => $row['DSC_OBSERVACAO_INTEGRACAO']
+                        'observacao' => (!empty($row['DSC_OBSERVACAO_INTEGRACAO'])) ? $row['DSC_OBSERVACAO_INTEGRACAO'] : null
                     );
 
                     $pedidos[] = $pedido;
