@@ -229,6 +229,10 @@ class Integracao {
         $notasFiscais = array();
         $idProdutos = array();
 
+        if (count($dados) <= 0) {
+            return false;
+        }
+
         foreach ($dados as $key => $notaFiscal) {
             /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
             $idProdutos[] = $notaFiscal['COD_PRODUTO'];
