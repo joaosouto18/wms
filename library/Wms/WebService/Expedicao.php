@@ -354,6 +354,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
+        if ($isIntegracaoSQL == null) $isIntegracaoSQL = false;
+
         if ($isIntegracaoSQL === false) {
             $cargas = json_decode(json_encode($cargas), True);
             $cargas = $this->verificaEstruturaCarga($cargas);
