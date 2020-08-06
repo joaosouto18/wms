@@ -28,10 +28,11 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
                 if ($result) {
                     $pedidoEntity->setFaturado('S');
                     $em->merge($pedidoEntity);
+                    $em->flush();
+                    $em->commit();
                 }
             }
-            $em->flush();
-            $em->commit();
+
         } catch (\Exception $e) {
             $em->rollback();
             $this->addFlashMessage("error", $e->getMessage() . ' - ' .$e->getTraceAsString());
