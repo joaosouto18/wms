@@ -20,8 +20,8 @@ class ResultadoComparativoInventarioForm extends Form
         $this->getSubForm('resultado-inventario')->setDefaultsGrid($values['resultado-inventario']);
         $this->getSubForm('inventario-erp')->setDefaultsGrid($values['inventario-erp']);
         $this->getSubForm('inventario-erp-wms')->setDefaultsGrid($values['inventario-erp-wms']);
-        $this->getSubForm('apenas-wms')->setDefaultsGrid($values['apenas-wms']);
-        $this->getSubForm('apenas-erp')->setDefaultsGrid($values['apenas-erp']);
+        $this->getSubForm('apenas-wms')->setDefaultsGrid($values['apenas-wms'], 'Estes produtos foram contados no WMS mas não estão presentes no ERP e serão desconsiderados na hora de subir o estoque no ERP');
+        $this->getSubForm('apenas-erp')->setDefaultsGrid($values['apenas-erp'],'Estes produtos estão no ERP e não foram contados no WMS. Com isso terão seu saldo zerado no ERP');
     }
 
 }

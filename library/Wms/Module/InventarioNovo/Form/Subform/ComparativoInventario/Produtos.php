@@ -14,13 +14,17 @@ class Produtos extends SubForm
     public function init()
     {
         $this->addElement('hidden', 'grid', array());
+        $this->addElement('hidden', 'alert', array());
     }
 
-    public function setDefaultsGrid($values) {
+    public function setDefaultsGrid($values, $alert = "") {
+
+        if (count($values) == 0) $alert = "";
         $value = array();
         $grid = new ComparativoInventarioGrid();
         $grid->init($values);
         $value['grid'] =  $grid;
+        $value['alert'] = $alert;
         $this->setDefaults($value);
     }
 }

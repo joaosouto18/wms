@@ -1593,4 +1593,126 @@ class InventarioService extends AbstractService
 
         return true;
     }
+
+    public function getResultadoInventarioComparativo ($modelo, $codInvErp) {
+
+        $contagens = array();
+
+        if (($modelo == 1) || ($modelo == 3)) {
+
+            $inventariosByErp = $this->findBy(array('codErp' => $codInvErp));
+            foreach ($inventariosByErp as $inventario) {
+                $inventarios[] = $inventario->getId();
+            }
+            $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true, true);
+
+            $result = array();
+            foreach ($contagens as $c) {
+                $k = null;
+                foreach ($result as $key => $r) {
+                    if (($c['COD_PRODUTO'] == $r['COD_PRODUTO']) && ($c['DSC_GRADE'] == $r['DSC_GRADE'])) {
+                        $k = $key;
+                    }
+                }
+
+                if ($k != null) {
+                    $resut[$k]['QTD'] = $result[$k]['QTD'] + $c['QTD'];
+                } else {
+                    $result[] = array(
+                        'COD_PRODUTO' => $c['COD_PRODUTO'],
+                        'DSC_GRADE' => $c['DSC_GRADE'],
+                        'DSC_PRODUTO' => $c['DSC_PRODUTO'],
+                        'QTD' => $c['QTD'],
+                    );
+                }
+            }
+
+            $contagens = $result;
+        } else if ($modelo == 4) {
+            $statusFinalizado = InventarioNovo::STATUS_FINALIZADO;
+            $SQL = "SELECT P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO, NVL(ESTQ.QTD,0) as QTD
+                      FROM PRODUTO P
+                      LEFT JOIN (SELECT E.COD_PRODUTO,
+                                        E.DSC_GRADE, 
+                                        MIN(QTD) as QTD
+                                   FROM (SELECT E.COD_PRODUTO,
+                                                E.DSC_GRADE,
+                                                SUM(E.QTD) as QTD,
+                                                NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
+                                           FROM ESTOQUE E
+                                                GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
+                                  GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
+                        ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
+                       AND ESTQ.DSC_GRADE = P.DSC_GRADE 
+                      INNER JOIN (SELECT DISTINCT ICEP.COD_PRODUTO,
+                                         ICEP.DSC_GRADE
+                                    FROM INVENTARIO_ENDERECO_NOVO IEN
+                                   INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
+                                   INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
+                                    LEFT JOIN INVENTARIO_CONT_END_OS ICEO ON ICEO.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+                                    LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
+                                   WHERE INVN.COD_INVENTARIO_ERP = $codInvErp AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
+            ON (I.COD_PRODUTO = P.COD_PRODUTO)
+           AND (I.DSC_GRADE = P.DSC_GRADE)" ;
+
+            $contagens = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        }
+        return $contagens;
+    }
+
+    public function comparataInventarioWMSxERP($WMS, $ERP) {
+
+        $invWMSERP = array();
+        $invApenasWMS = array();
+        $invApenasERP = array();
+
+        foreach ($WMS as $w) {
+            $find = false;
+            foreach ($ERP as $e) {
+                if (($w['COD_PRODUTO'] == $e['COD_PRODUTO']) && ($w['DSC_GRADE']) == $e['DSC_GRADE']) {
+                    $find = true;
+                }
+            }
+
+            $produto = array(
+                'COD_PRODUTO' => $w['COD_PRODUTO'],
+                'DSC_GRADE' => $w['DSC_GRADE'],
+                'DSC_PRODUTO' => $w['DSC_PRODUTO'],
+                'QTD' => $w['QTD'],
+            );
+            if ($find == true) {
+                $invWMSERP[] = $produto;
+            } else {
+                $invApenasWMS[] = $produto;
+            }
+        }
+        foreach ($ERP as $e) {
+            $find = false;
+            foreach ($WMS as $w) {
+                if (($w['COD_PRODUTO'] == $e['COD_PRODUTO']) && ($w['DSC_GRADE']) == $e['DSC_GRADE']) {
+                    $find = true;
+                }
+            }
+
+            if ($find == false) {
+                $produto = array(
+                    'COD_PRODUTO' => $e['COD_PRODUTO'],
+                    'DSC_GRADE' => $e['DSC_GRADE'],
+                    'DSC_PRODUTO' => $e['DSC_PRODUTO'],
+                );
+                $invApenasERP[] = $produto;
+            }
+        }
+
+        $result = array(
+            'resultado-inventario' => $WMS,
+            'inventario-erp' => $ERP,
+            'inventario-erp-wms' => $invWMSERP,
+            'apenas-wms' => $invApenasWMS,
+            'apenas-erp' => $invApenasERP
+        );
+        return $result;
+    }
+
 }
