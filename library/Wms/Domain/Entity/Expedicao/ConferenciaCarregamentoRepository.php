@@ -177,6 +177,7 @@ class ConferenciaCarregamentoRepository extends EntityRepository
                     ]
                 ];
             } else {
+                $expInfo['clientes'][$item['COD_PESSOA']]['totalDanfes'] = count($expInfo['clientes'][$item['COD_PESSOA']]['danfes']);
                 $expInfo['clientes'][$item['COD_PESSOA']]['danfes'][$item['COD_CHAVE_ACESSO']] = ['status' => false, 'nota' => $item['NOTA']];
             }
         }
