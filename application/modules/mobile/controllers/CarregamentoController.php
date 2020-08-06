@@ -23,6 +23,7 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
         try {
             $pedidoEntities = $pedidoRepository->getPedidosFinalizadosNaoFaturados();
             foreach ($pedidoEntities as $pedidoEntity) {
+                $params = array();
                 $params['pedido'] = $pedidoEntity->getCodExterno();
                 $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
                 if ($result) {
