@@ -28,9 +28,9 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
                 if ($result) {
                     $pedidoEntity->setFaturado('S');
                     $em->merge($pedidoEntity);
+                    $em->flush();
                 }
             }
-            $em->flush();
             $em->commit();
         } catch (\Exception $e) {
             $em->rollback();
