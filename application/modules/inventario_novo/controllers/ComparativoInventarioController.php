@@ -22,7 +22,7 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
                 $idInventarioERP = $params['codInventario'];
                 $inv = $invRepo->findOneBy(array('codErp' => $idInventarioERP));
                 if ($inv == null) {
-                    throw new \Exception('Nenhum inventário no WMS encontrado setado para o inventário ' . $idInventarioERP . ' no ERP');
+                    throw new \Exception('Nenhum inventário no WMS referenciado para o inventário do ERP código ' . $idInventarioERP );
                 }
             }
 
@@ -31,17 +31,23 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
                 $invWMS = $this->getServiceLocator()->getService("Inventario")->getResultadoInventarioComparativo($modeloExportacao,$idInventario);
 
                 $invERP = array();
-                $invERP[] = array('COD_PRODUTO' => '8', 'DSC_GRADE' => 'UNICA', 'DSC_PRODUTO' => '	OVOS BRANCOS GRANDES "A" GRANEL CX 30 DZ');
+                $invERP[] = array('COD_PRODUTO' => '8', 'DSC_GRADE' => 'UNICA', 'DSC_PRODUTO' => 'OVOS BRANCOS GRANDES "A" GRANEL CX 30 DZ');
+                $invERP[] = array('COD_PRODUTO' => '5917', 'DSC_GRADE' => 'UNICA', 'DSC_PRODUTO' => 'FRANGO CONGELADO MAROMBI CX17KG	');
+                $invERP[] = array('COD_PRODUTO' => '570', 'DSC_GRADE' => 'UNICA', 'DSC_PRODUTO' => 'ESPET GRAN BOVINO AURORA 40X100G CX 4KG	');
                 $invERP[] = array('COD_PRODUTO' => '1013', 'DSC_GRADE' => 'UNICA', 'DSC_PRODUTO' => 'Produto de Teste 1013');
 
                 if (count($invERP) == 0) {
-                    throw new \Exception("Nenhum produto setado para o inventário no ERP encontrado");
+                    throw new \Exception("Inventário no ERP código " . $idInventario . " não encontrado ou sem nenhum produto definido");
                 }
-                $result = $this->getServiceLocator()->getService("Inventario")->comparataInventarioWMSxERP($invWMS, $invERP);
-
                 $filtroForm->init(true);
 
+                $result = $this->getServiceLocator()->getService("Inventario")->comparataInventarioWMSxERP($invWMS, $invERP);
+
+                if (count($result['apenas-wms']) >0) $this->addFlashMessage('info','Existem produtos que constam apenas no inventário do WMS');
+                if (count($result['apenas-erp']) >0) $this->addFlashMessage('info','Existem produtos que constam apenas no inventário do ERP');
+
                 $resultForm = new \Wms\Module\InventarioNovo\Form\ResultadoComparativoInventarioForm();
+                $resultForm->init($result);
                 $resultForm->setDefaultsGrid($result);
                 $this->view->resultadoForm = $resultForm;
             } else if (isset($params['btnExport'])) {
