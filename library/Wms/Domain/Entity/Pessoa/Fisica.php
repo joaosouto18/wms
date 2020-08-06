@@ -332,7 +332,6 @@ class Fisica extends Pessoa
     public function getNomeEmpregador()
     {
         return $this->nomeEmpregador;
-        return $this;
     }
 
     public function setNomeEmpregador($nomeEmpregador)
@@ -374,6 +373,10 @@ class Fisica extends Pessoa
         return $this;
     }
 
+    /**
+     * @param bool $maskOn
+     * @return string
+     */
     public function getCpf($maskOn = true)
     {
 

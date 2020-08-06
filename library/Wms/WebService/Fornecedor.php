@@ -8,6 +8,8 @@ class fornecedor {
     /** @var string */
     public $cnpj;
     /** @var string */
+    public $cpf;
+    /** @var string */
     public $insc;
 }
 
@@ -39,113 +41,35 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     }
 
     /**
-     * Adiciona um fornecedor no WMS
-     * 
-     * @param string $idFornecedor ID 
+     * Salva um fornecedor no WMS. Se o fornecedor não existe, insere, senão, altera
+     *
+     * @param string $idFornecedor ID
      * @param string $cnpj CNPJ
      * @param string $insc Inscrição Estadual
      * @param string $nome Nome ou Nome Fantasia
-     * @return boolean|Exception se o fornecedor foi inserido com sucesso ou não
-     */
-    private function inserir($idFornecedor, $cnpj, $insc, $nome)
-    {
-
-        $em = $this->__getDoctrineContainer()->getEntityManager();
-
-        /** @var \Wms\Service\FornecedorService $fornecedorSvc */
-        $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
-        $pessoaJuridica = $em->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => str_replace(array('.', '-', '/'), '', $cnpj)));
-
-        if ($pessoaJuridica == null)
-            $pessoaJuridica = new \Wms\Domain\Entity\Pessoa\Juridica;
-        
-        $pessoaJuridica->setNome($nome)
-                ->setNomeFantasia($nome)
-                ->setCnpj($cnpj)
-                ->setInscricaoEstadual($insc);
-
-        $em->persist($pessoaJuridica);
-
-        $fornecedorEntity = new \Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
-        $fornecedorEntity->setPessoa($pessoaJuridica)
-                ->setIdExterno($idFornecedor)
-                ->setId($pessoaJuridica->getId());
-        
-        if (!$fornecedorSvc->save($fornecedorEntity))
-            throw new \Exception('Houve um erro ao inserir um novo fornecedor');
-
-        return true;
-    }
-
-    /**
-     * Altera um fornecedor no WMS
-     * 
-     * @param string $idFornecedor ID 
-     * @param string $cnpj CNPJ
-     * @param string $insc Inscrição Estadual
-     * @param string $nome Nome ou Nome Fantasia
-     * @return boolean|Exception se o fornecedor foi inserido com sucesso ou não
-     */
-    private function alterar($idFornecedor, $cnpj, $insc, $nome)
-    {
-
-        $em = $this->__getDoctrineContainer()->getEntityManager();
-
-        /** @var \Wms\Service\FornecedorService $fornecedorSvc */
-        $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
-
-        /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
-        $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
-        
-        if ($fornecedorEntity == null)
-            throw new \Exception('Não foi possível alterar Fornecedor inexistente');
-
-        $pessoaJuridica = $fornecedorEntity->getPessoa();
-        $pessoaJuridica->setNome($nome)
-                ->setNomeFantasia($nome)
-                ->setCnpj($cnpj)
-                ->setInscricaoEstadual($insc);
-
-        $fornecedorEntity->setPessoa($pessoaJuridica)
-                ->setIdExterno($idFornecedor)
-                ->setId($pessoaJuridica->getId());
-        
-        if (!$fornecedorSvc->save($fornecedorEntity))
-            throw new \Exception('Houve um erro ao alterar um novo fornecedor');
-
-        return true;
-    }
-
-    /**
-     * Salva um fornecedor no WMS. Se o fornecedor não existe, insere, senão, altera 
-     * 
-     * @param string $idFornecedor ID 
-     * @param string $cnpj CNPJ
-     * @param string $insc Inscrição Estadual
-     * @param string $nome Nome ou Nome Fantasia
+     * @param string $cpf CPF
      * @return boolean se o fornecedor foi salvo ou não
+     * @throws Exception
      */
-    public function salvar($idFornecedor, $cnpj, $insc, $nome)
+    public function salvar($idFornecedor, $cnpj, $insc, $nome, $cpf)
     {
-        $idFornecedor = trim($idFornecedor);
-        $cnpj = trim($cnpj);
-        $insc = trim($insc);
-        $nome = trim($nome);
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+        try {
+            $em->beginTransaction();
+            $this->__getServiceLocator()->getService('Fornecedor')->save([
+                'idExterno' => trim($idFornecedor),
+                'cnpj' => trim($cnpj),
+                'insc' => trim($insc),
+                'nome' => trim($nome),
+                'cpf' => trim($cpf)
+            ], true);
 
-        /** @var \Bisna\Base\Domain\Entity\EntityService $fornecedorServc */
-        $fornecedorServc = $this->__getServiceLocator()->getService('Fornecedor');
-
-        /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
-        $fornecedorEntity = $fornecedorServc->findOneBy(array('idExterno' => $idFornecedor));
-
-        //novo fornecedor
-        $op = ($fornecedorEntity == null) ? $this->inserir($idFornecedor, $cnpj, $insc, $nome) :
-                $this->alterar($idFornecedor, $cnpj, $insc, $nome);
-
-        if (!$op)
-            throw new \Exception('Houve um erro ao salvar um novo fornecedor');
-
-        return true;
+            $em->commit();
+            return true;
+        } catch (Exception $e) {
+            $em->rollback();
+            throw new \Exception('Houve um erro ao salvar um novo fornecedor: '. $e->getMessage());
+        }
     }
 
     /**
@@ -158,7 +82,6 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     {
         $idFornecedor = trim($idFornecedor);
 
-        $em = $this->__getDoctrineContainer()->getEntityManager();
 
         /** @var \Wms\Service\FornecedorService $fornecedorSvc */
         $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
@@ -195,40 +118,21 @@ class Wms_WebService_Fornecedor extends Wms_WebService
             $return[] = $this->parseObjWS($fornecedor);
         }
 
-/*        $result = $em->createQueryBuilder()
-                ->select('f.idExterno as idFornecedor, p.cnpj, p.nome, p.inscricaoEstadual as insc')
-                ->from('wms:Pessoa\Papel\Fornecedor', 'f')
-                ->innerJoin('f.pessoa', 'p')
-                ->orderBy('p.nome')
-                ->getQuery()
-                ->getArrayResult();
-        
-        if ($result == null)
-            throw new \Exception('Não foi possível recuperar os fornecedores:');
-
-        $fornecedores = array();
-        foreach($result as $line){
-            $for = new fornecedor();
-            $for->idFornecedor = $line['idFornecedor'];
-            $for->nome =  $line['nome'];
-            $for->cnpj =  $line['cnpj'];
-            $for->insc = $line['insc'];
-            $fornecedores[] = $for;
-        }
-        $clsFornecedres = new fornecedores();
-        $clsFornecedres->fornecedores = $fornecedores;*/
-
         return array('fornecedores' => $return);
     }
 
     private function parseObjWS(\Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity) {
 
         $for = new fornecedor();
-        $pessoa = $fornecedorEntity->getPessoa();
         $for->idFornecedor = $fornecedorEntity->getIdExterno();
-        $for->nome =  ($pessoa->getNomeFantasia() != null) ? $pessoa->getNomeFantasia() : $pessoa->getNome();
-        $for->cnpj =  $pessoa->getCnpj();
-        $for->insc = $pessoa->getInscricaoEstadual();
+        $for->nome =  $fornecedorEntity->getNome();
+        $pessoa = $fornecedorEntity->getPessoa();
+        if (is_a($pessoa, \Wms\Domain\Entity\Pessoa\Juridica::class)) {
+            $for->insc = $pessoa->getInscricaoEstadual();
+            $for->cnpj =  $fornecedorEntity->getCpfCnpj();
+        } else {
+            $for->cpf = $fornecedorEntity->getCpfCnpj();
+        }
 
         return $for;
     }

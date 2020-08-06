@@ -113,4 +113,32 @@ class Cliente implements Ator, EmissorInterface {
         $this->rota = $rota;
     }
 
+    /**
+     * @param bool $maskOn
+     * @return string
+     * @throws \Exception
+     */
+    public function getCpfCnpj($maskOn = true)
+    {
+        if (is_a($this->pessoa, Pessoa\Fisica::class)) {
+            return $this->pessoa->getCpf($maskOn);
+        } else if (is_a($this->pessoa, Pessoa\Juridica::class)) {
+            return $this->pessoa->getCnpj($maskOn);
+        }
+        throw new \Exception("Tipo Pessoa não identificado!");
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function getNome()
+    {
+        if (is_a($this->pessoa, Pessoa\Fisica::class)) {
+            return $this->pessoa->getNome();
+        } else if (is_a($this->pessoa, Pessoa\Juridica::class)){
+            return ($this->pessoa->getNomeFantasia() != null) ? $this->pessoa->getNomeFantasia() : $this->pessoa->getNome();
+        }
+        throw new \Exception("Tipo Pessoa não identificado!");
+    }
 }

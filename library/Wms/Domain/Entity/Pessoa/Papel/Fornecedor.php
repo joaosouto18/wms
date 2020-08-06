@@ -4,12 +4,7 @@ namespace Wms\Domain\Entity\Pessoa\Papel;
 use Wms\Domain\Entity\Ator;
 use Wms\Domain\Entity\Pessoa;
 
-/*
- * Fornecedor
- *
- * @Table(name="FORNECEDOR")
- * @Entity(repositoryClass="Bisna\Base\Domain\Entity\Repository")
- */
+
 /**
  * Fornecedor
  *
@@ -31,7 +26,8 @@ class Fornecedor implements Ator, EmissorInterface
      */
     protected $idExterno;
     /**
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica")
+     * @var Pessoa
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa")
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_PESSOA")
      */
     protected $pessoa;
@@ -50,7 +46,7 @@ class Fornecedor implements Ator, EmissorInterface
     }
 
     /**
-     * @return Pessoa\Juridica
+     * @return Pessoa
      */
     public function getPessoa()
     {
@@ -77,6 +73,35 @@ class Fornecedor implements Ator, EmissorInterface
     {
         $this->idExterno = $idExterno;
         return $this;
+    }
+
+    /**
+     * @param bool $maskOn
+     * @return string
+     * @throws \Exception
+     */
+    public function getCpfCnpj($maskOn = true)
+    {
+        if (is_a($this->pessoa, Pessoa\Fisica::class)) {
+            return $this->pessoa->getCpf($maskOn);
+        } else if (is_a($this->pessoa, Pessoa\Juridica::class)) {
+            return $this->pessoa->getCnpj($maskOn);
+        }
+        throw new \Exception("Tipo Pessoa não identificado!");
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function getNome()
+    {
+        if (is_a($this->pessoa, Pessoa\Fisica::class)) {
+            return $this->pessoa->getNome();
+        } else if (is_a($this->pessoa, Pessoa\Juridica::class)){
+            return ($this->pessoa->getNomeFantasia() != null) ? $this->pessoa->getNomeFantasia() : $this->pessoa->getNome();
+        }
+        throw new \Exception("Tipo Pessoa não identificado!");
     }
 
 }

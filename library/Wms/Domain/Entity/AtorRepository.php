@@ -262,13 +262,13 @@ class AtorRepository extends EntityRepository {
      * @param $arrData
      * @return Pessoa
      */
-    public function tryUpdate( $pessoaEn, $arrData)
+    public function tryUpdate($pessoaEn, $arrData)
     {
-        if (isset($arrData['nome']) && !empty($arrData['nome']) && $pessoaEn->getNome() != $arrData['nome']) {
+        if (!empty($arrData['nome']) && strtolower($pessoaEn->getNome()) != strtolower($arrData['nome'])) {
 
             $pessoaEn->setNome($arrData['nome']);
 
-            if (is_a($pessoaEn, "\Wms\Domain\Entity\Pessoa\Juridica")) {
+            if (is_a($pessoaEn, Juridica::class)) {
                 $pessoaEn->setNomeFantasia($arrData['nome']);
             }
         }

@@ -170,10 +170,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $numero Numero da nota fiscal
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
+     * @param string $tipoNota Tipo de nota
      * @return notaFiscal
      * @throws Exception
      */
-    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
+    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao, $tipoNota = null)
     {
 
         $idFornecedor = trim($idFornecedor);

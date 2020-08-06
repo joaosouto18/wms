@@ -457,7 +457,7 @@ class NotaFiscal
      */
     public function getEmissor()
     {
-        if ($this->tipo->getTipoResponsavel() === Tipo::RESPONSAVEL_FORNECEDOR) {
+        if ($this->tipo->getTipoResponsavel() === Tipo::EMISSOR_FORNECEDOR) {
             return self::getFornecedor();
         } else {
             return self::getCliente();

@@ -7,49 +7,56 @@ namespace Wms\Domain\Entity\NotaFiscal;
 /**
  * Class Tipo
  * @package Wms\Domain\Entity\NotaFiscal
- * @Table(name="TIPO_NOTA_FISCAL")
+ * @Table(name="TIPO_NOTA_ENTRADA")
  * @Entity(repositoryClass="Wms\Domain\Entity\NotaFiscal\TipoRepository")
  */
 class Tipo
 {
-    const RESPONSAVEL_CLIENTE = 'C';
-    const RESPONSAVEL_FORNECEDOR = 'F';
+    const EMISSOR_CLIENTE = 'C';
+    const EMISSOR_FORNECEDOR = 'F';
 
     public static $arrResponsaveis = [
-        self::RESPONSAVEL_CLIENTE => "Cliente",
-        self::RESPONSAVEL_FORNECEDOR => "Fornecedor",
+        self::EMISSOR_CLIENTE => "Cliente",
+        self::EMISSOR_FORNECEDOR => "Fornecedor",
     ];
 
     /**
      * @Id
-     * @Column(name="COD_TIPO", type="integer", nullable=false)
+     * @Column(name="COD_TIPO_NOTA_ENTRADA", type="integer", nullable=false)
      * @var integer
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_TIPO_NOTA_FISCAL_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_TIPO_NOTA_ENTRADA_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
     /**
      * @var string
-     * @Column(name="DSC_TIPO", type="string", nullable=false)
+     * @Column(name="DSC_TIPO_NOTA_ENTRADA", type="string", nullable=false)
      */
     protected $descricao;
 
     /**
      * @var string
-     * @Column(name="IND_TIPO_RESPONSAVEL", type="string", length=1, nullable=false)
+     * @Column(name="IND_EMISSOR", type="string", length=1, nullable=false)
      */
-    protected $tipoResponsavel;
+    protected $emissor;
 
     /**
      * @var string
      * @Column(name="COD_EXTERNO", type="string", nullable=false)
      */
-    protected $codErp;
+    protected $codExterno;
+
+    /**
+     * @var bool
+     * @Column(name="SYS_DEFAULT", type="integer", nullable=false)
+     */
+    protected $systemDefault;
 
     public function __construct()
     {
-        self::setTipoResponsavel(self::RESPONSAVEL_FORNECEDOR);
+        self::setEmissor(self::EMISSOR_FORNECEDOR);
+        self::setSystemDefault(false);
     }
 
     /**
@@ -87,32 +94,48 @@ class Tipo
     /**
      * @return string
      */
-    public function getTipoResponsavel()
+    public function getEmissor()
     {
-        return $this->tipoResponsavel;
+        return $this->emissor;
     }
 
     /**
-     * @param string $tipoResponsavel
+     * @param string $emissor
      */
-    public function setTipoResponsavel($tipoResponsavel)
+    public function setEmissor($emissor)
     {
-        $this->tipoResponsavel = $tipoResponsavel;
+        $this->emissor = $emissor;
     }
 
     /**
      * @return string
      */
-    public function getCodErp()
+    public function getCodExterno()
     {
-        return $this->codErp;
+        return $this->codExterno;
     }
 
     /**
-     * @param string $codErp
+     * @param string $codExterno
      */
-    public function setCodErp($codErp)
+    public function setCodExterno($codExterno)
     {
-        $this->codErp = $codErp;
+        $this->codExterno = $codExterno;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSystemDefault()
+    {
+        return empty($this->systemDefault);
+    }
+
+    /**
+     * @param bool $systemDefault
+     */
+    public function setSystemDefault($systemDefault)
+    {
+        $this->systemDefault = intval($systemDefault);
     }
 }

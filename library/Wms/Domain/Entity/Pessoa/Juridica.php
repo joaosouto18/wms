@@ -115,9 +115,13 @@ class Juridica extends Pessoa
         return $this;
     }
 
-    public function getCnpj()
+    /**
+     * @param bool $maskOn
+     * @return string
+     */
+    public function getCnpj($maskOn)
     {
-	return \Core\Util\String::mask($this->cnpj, '##.###.###/####-##');
+        return ($maskOn) ? \Core\Util\String::mask($this->cnpj, '##.###.###/####-##'): $this->cnpj;
     }
 
     public function setCnpj($cnpj)
@@ -126,16 +130,6 @@ class Juridica extends Pessoa
 	$this->cnpj = $cnpj;
         return $this;
     }
-
-    /*public function getPessoa()
-    {
-	return $this->pessoa;
-    }
-
-    public function setPessoa(Pessoa $pessoa)
-    {
-	$this->pessoa = $pessoa;
-    }*/
 
     public function getTipoOrganizacao()
     {
