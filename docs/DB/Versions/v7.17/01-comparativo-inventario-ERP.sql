@@ -2,13 +2,13 @@
 INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.17', '01-comparativo-inventario-ERP.sql');
 
 INSERT INTO RECURSO (DSC_RECURSO, COD_RECURSO, COD_RECURSO_PAI, NOM_RECURSO)
-     VALUES ('Exportação e Comparativo de Inventários', SQ_RECURSO_01.NEXTVAL,0,'inventario_novo:comparativo-inventario');
+     VALUES ('Comparativo e exportação de Inventários', SQ_RECURSO_01.NEXTVAL,0,'inventario_novo:comparativo-inventario');
 
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO)
      VALUES (SQ_RECURSO_ACAO_01.NEXTVAL,
              (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:comparativo-inventario'),
              (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index'),
-             'Exportar e comparar inventários WMS x ERP');
+             'Comparar e exportar inventários WMS x ERP');
 
 INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO, DSC_URL, DSC_TARGET, SHOW)
      VALUES (SQ_MENU_ITEM_01.NEXTVAL,
