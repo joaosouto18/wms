@@ -146,7 +146,9 @@
                                         </li>
 <!--                                        <li ng-if="inventario.status == --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?><!--"><a href="/inventario_novo/index/imprimir-enderecos-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Imprimir Endereços</a></li>-->
                                         <?php if($this->showCodInvErp):?>
-                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/export-inventario-ajax/id/{{inventario.id}}" class="" title="" target="_self">Exportar Inventario</a></li>
+                                            <?php if($this->showExportInventario):?>
+                                                <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/export-inventario-ajax/id/{{inventario.id}}" class="" title="" target="_self">Exportar Inventario</a></li>
+                                            <?php endif;?>
                                         <li ><a href="/inventario_novo/index/view-vincular-cod-erp-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="" target="_self">Vincular inventário do ERP</a></li>
                                         <?php endif;?>
                                     </ul>
