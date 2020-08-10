@@ -6,9 +6,9 @@ use Wms\Module\Web\Form;
 
 class ComparativoInventarioForm extends Form
 {
-    public function init($showExport = false)
+    public function init($showExport = false, $showObs = false)
     {
-        $this->addElement('text', 'codInventario', array(
+        $this->addElement('text', 'codInventarioERP', array(
                 'label' => 'Cód. Inventário (ERP)',
                 'class' => 'focus'
             ))
@@ -25,9 +25,19 @@ class ComparativoInventarioForm extends Form
                 'decorators' => array('ViewHelper'),
                 'attribs' => array('style' => 'margin-top:16px')
             ));
-
         }
-            $this->addDisplayGroup($this->getElements(), 'Buscar', array('legend' => 'Inventário ERP'));
+
+        $obs = "";
+        if ($showObs != false) {
+            $obs = "Atenção: Serão exportados apenas os produtos presentes simultaneamente nos inventários do WMS e do ERP";
+        }
+
+        $this->addElement('hidden','obs', array(
+            'value'=> $obs
+        ));
+
+        $this->addDisplayGroup($this->getElements(), 'Buscar', array('legend' => 'Inventário ERP'));
+        $this->setDecorators(array(array('ViewScript', array('viewScript' => 'comparativo-inventario/filtro.phtml'))));
     }
 
 }

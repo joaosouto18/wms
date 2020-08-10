@@ -1,5 +1,5 @@
 
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, 'x.xx', 'xx-comparativo-inventario-ERP.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.17', '01-comparativo-inventario-ERP.sql');
 
 INSERT INTO RECURSO (DSC_RECURSO, COD_RECURSO, COD_RECURSO_PAI, NOM_RECURSO)
      VALUES ('Comparativo de Inventários', SQ_RECURSO_01.NEXTVAL,0,'inventario_novo:comparativo-inventario');

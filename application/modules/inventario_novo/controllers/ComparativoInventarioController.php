@@ -40,7 +40,7 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
 
             $filtroForm = new \Wms\Module\InventarioNovo\Form\ComparativoInventarioForm();
             if (isset($params['btnSubmit']) || isset($params['btnExport'])) {
-                $idInventarioERP = $params['codInventario'];
+                $idInventarioERP = $params['codInventarioERP'];
                 $inventarioInternoEn = $invRepo->findOneBy(array('codErp' => $idInventarioERP));
                 if ($inventarioInternoEn == null) {
                     throw new \Exception('Nenhum inventário no WMS referenciado para o inventário do ERP código ' . $idInventarioERP );
@@ -60,8 +60,6 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
                 if (count($invERP) == 0) {
                     throw new \Exception("Inventário no ERP código " . $idInventarioERP . " não encontrado ou sem nenhum produto definido");
                 }
-
-                $filtroForm->init(true);
             }
 
             if (isset($params['btnSubmit'])) {
@@ -69,8 +67,11 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
                 $invWMS = $this->getServiceLocator()->getService("Inventario")->getResultadoInventarioComparativo($modeloExportacao,$idInventarioERP);
                 $result = $this->getServiceLocator()->getService("Inventario")->comparataInventarioWMSxERP($invWMS, $invERP);
 
+                $showObs = false;
+                if ((count($result['apenas-wms']) >0) || (count($result['apenas-erp']) >0)) $showObs = true;
                 if (count($result['apenas-wms']) >0) $this->addFlashMessage('info','Existem produtos que constam apenas no inventário do WMS');
                 if (count($result['apenas-erp']) >0) $this->addFlashMessage('info','Existem produtos que constam apenas no inventário do ERP');
+                $filtroForm->init(true, $showObs);
 
                 $resultForm = new \Wms\Module\InventarioNovo\Form\ResultadoComparativoInventarioForm();
                 $resultForm->init($result);
