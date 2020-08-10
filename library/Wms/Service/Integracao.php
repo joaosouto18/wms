@@ -204,6 +204,7 @@ class Integracao {
                 case AcaoIntegracao::INTEGRACAO_CORTES:
                     return $this->processaCorteERP($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                case AcaoIntegracao::INTEGRACAO_COMPARATIVO_INVENTARIO_ERP:
                 case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
