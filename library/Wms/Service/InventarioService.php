@@ -1196,7 +1196,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportarInventarioModelo1($id)
+    public function exportarInventarioModelo1($id, $produtosERP = null)
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
@@ -1218,6 +1218,19 @@ class InventarioService extends AbstractService
 
         $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true);
         $inventario = array();
+
+        if ($produtosERP != null) {
+            $result = array();
+            foreach ($contagens as $cont) {
+                foreach ($produtosERP as $prodERP) {
+                    if (($prodERP['COD_PRODUTO'] == $cont['COD_PRODUTO']) && ($prodERP['DSC_GRADE'] == $cont['DSC_GRADE'])) {
+                        $result[] = $cont;
+                        break;
+                    }
+                }
+            }
+            $contagens = $result;
+        }
 
         foreach ($contagens as $contagem) {
             $embs = $embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC'));
@@ -1321,7 +1334,7 @@ class InventarioService extends AbstractService
         fclose($file);
     }
 
-    public function exportarInventarioModelo3($id)
+    public function exportarInventarioModelo3($id, $produtosERP)
     {
         /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
         $inventarioEn = $this->find($id);
@@ -1344,6 +1357,19 @@ class InventarioService extends AbstractService
         $file = fopen($filename, 'w');
         $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true);
         $inventario = array();
+
+        if ($produtosERP != null) {
+            $result = array();
+            foreach ($contagens as $cont) {
+                foreach ($produtosERP as $prodERP) {
+                    if (($prodERP['COD_PRODUTO'] == $cont['COD_PRODUTO']) && ($prodERP['DSC_GRADE'] == $cont['DSC_GRADE'])) {
+                        $result[] = $cont;
+                        break;
+                    }
+                }
+            }
+            $contagens = $result;
+        }
 
         foreach ($contagens as $contagem) {
             $embs = $embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC'));
@@ -1400,7 +1426,7 @@ class InventarioService extends AbstractService
 
     }
 
-    public function exportarInventarioModelo4($id)
+    public function exportarInventarioModelo4($id, $produtosERP)
     {
         /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
         $inventarioEn = $this->find($id);
@@ -1454,6 +1480,19 @@ class InventarioService extends AbstractService
         }
 
         $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($produtosERP != null) {
+            $result = array();
+            foreach ($produtos as $cont) {
+                foreach ($produtosERP as $prodERP) {
+                    if (($prodERP['COD_PRODUTO'] == $cont['COD_PRODUTO']) && ($prodERP['DSC_GRADE'] == $cont['DSC_GRADE'])) {
+                        $result[] = $cont;
+                        break;
+                    }
+                }
+            }
+            $produtos = $result;
+        }
 
         foreach ($produtos as $produto) {
             $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);

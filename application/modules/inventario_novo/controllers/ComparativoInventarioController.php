@@ -41,15 +41,10 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
             $filtroForm = new \Wms\Module\InventarioNovo\Form\ComparativoInventarioForm();
             if (isset($params['btnSubmit']) || isset($params['btnExport'])) {
                 $idInventarioERP = $params['codInventario'];
-                $inv = $invRepo->findOneBy(array('codErp' => $idInventarioERP));
-                if ($inv == null) {
+                $inventarioInternoEn = $invRepo->findOneBy(array('codErp' => $idInventarioERP));
+                if ($inventarioInternoEn == null) {
                     throw new \Exception('Nenhum inventário no WMS referenciado para o inventário do ERP código ' . $idInventarioERP );
                 }
-            }
-
-            if (isset($params['btnSubmit'])) {
-                $idInventario = $params['codInventario'];
-                $invWMS = $this->getServiceLocator()->getService("Inventario")->getResultadoInventarioComparativo($modeloExportacao,$idInventario);
 
                 /*
                  * MOCK PARA TESTES E DEMONSTRAÇÃO
@@ -60,14 +55,18 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
                  $invERP[] = array('COD_PRODUTO' => '1013', 'DSC_GRADE' => 'UNICA', 'DSC_PRODUTO' => 'Produto de Teste 1013');
                  */
 
-                $options = array(0 => $idInventario);
+                $options = array(0 => $idInventarioERP);
                 $invERP = $acaoIntRepo->processaAcao($acaoEn,$options,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
                 if (count($invERP) == 0) {
-                    throw new \Exception("Inventário no ERP código " . $idInventario . " não encontrado ou sem nenhum produto definido");
+                    throw new \Exception("Inventário no ERP código " . $idInventarioERP . " não encontrado ou sem nenhum produto definido");
                 }
 
                 $filtroForm->init(true);
+            }
 
+            if (isset($params['btnSubmit'])) {
+
+                $invWMS = $this->getServiceLocator()->getService("Inventario")->getResultadoInventarioComparativo($modeloExportacao,$idInventarioERP);
                 $result = $this->getServiceLocator()->getService("Inventario")->comparataInventarioWMSxERP($invWMS, $invERP);
 
                 if (count($result['apenas-wms']) >0) $this->addFlashMessage('info','Existem produtos que constam apenas no inventário do WMS');
@@ -78,20 +77,18 @@ class Inventario_Novo_ComparativoInventarioController  extends Action
                 $resultForm->setDefaultsGrid($result);
                 $this->view->resultadoForm = $resultForm;
             } else if (isset($params['btnExport'])) {
-                $idInventario = $inv->getId();
-
-                $filtroForm->init(true);
+                $idInventario = $inventarioInternoEn->getId();
 
                 $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
                 if (empty($modelo))
                     throw new Exception("O modelo de exportação não foi definido! Por favor, defina em <b>Sistemas->Configurações->Inventário->Formato de Exportação do Inventário</b>");
 
                 if ($modelo == 1) {
-                    $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario);
+                    $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario, $invERP);
                 } elseif ($modelo == 3){
-                    $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo3($idInventario);
+                    $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo3($idInventario, $invERP);
                 } elseif ($modelo == 4){
-                    $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo4($idInventario);
+                    $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo4($idInventario, $invERP);
                 }
                 $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
 
