@@ -12,6 +12,22 @@ class ApontamentoMapaRepository extends EntityRepository {
 
     public function save($mapaSeparacao, $codUsuario) {
 
+        $apontamentos = $this->findBy(array('codMapaSeparacao'=> $mapaSeparacao->getId()));
+        if (count($apontamentos) >0) {
+            $find = false;
+            foreach ($apontamentos as $apontamento) {
+                if ($apontamento->getDataFimConferencia() == null) {
+                    $find = true;
+                    break;
+                }
+            }
+
+            if ($find == false) {
+                throw new \Exception("Mapa de separação " . $mapaSeparacao->getId() . " ja se encontra com o apontamento de separação finalizado");
+            }
+
+        }
+
         $apontar = false;
         $em = $this->getEntityManager();
         $usuarioEn = $em->getReference('wms:Usuario',$codUsuario);
