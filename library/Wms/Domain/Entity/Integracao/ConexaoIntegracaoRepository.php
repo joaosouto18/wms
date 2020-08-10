@@ -26,7 +26,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return self::firebirdQuery($query, $conexao, $update);
             case ConexaoIntegracao::PROVEDOR_POSTGRE:
                 return self::postgreQuery($query, $conexao);
-
+            case ConexaoIntegracao::PROVEDOR_DB2:
+                return self::db2Query($query, $conexao);
             default:
                 throw new \Exception("Provedor não específicado");
         }
@@ -288,4 +289,62 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         }
     }
 
+    private function db2Query($query, $conexao)
+    {
+
+        try {
+            ini_set('memory_limit', '-1');
+            $err = "";
+
+            if ($conexao == null) {
+                throw new \Exception("Objeto de conexão não informado");
+            }
+
+            $database = $conexao->getDbName();
+            $usuario = $conexao->getUsuario();
+            $senha = $conexao->getSenha();
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+
+            $conn_string = "DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;" .
+                "HOSTNAME=$servidor;PORT=$porta;PROTOCOL=TCPIP;UID=$usuario;PWD=$senha; ";
+
+            $conn = db2_connect($conn_string, $usuario, $senha);
+            if (!$conn) {
+                $err = "Não foi possível se conectar no banco $database no servidor $usuario/$servidor:$porta - Motivo: " . db2_conn_errormsg();
+                db2_close($conn);
+                throw new \Exception($err);
+            }
+
+            $stmt = db2_prepare($conn, $query);
+            if (!$stmt) {
+                $err = "Falha preparando SQL" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt);
+                db2_close($conn);
+                throw new \Exception($err);
+            }
+
+            $r = db2_execute($stmt);
+            if ($r === false) {
+                $err = "Falha executando SQL" . db2_stmt_error($stmt) . " - " .  db2_stmt_errormsg($stmt);
+                db2_close($conn);
+                throw new \Exception($err);
+            }
+
+            $result = array();
+            while ($row = db2_fetch_assoc($stmt)) {
+                $iRow = array();
+                foreach ($row as $key => $cell) {
+                    $iRow[$key] = utf8_encode($cell);
+                }
+                $result[] = $iRow;
+            }
+            db2_close($conn);
+
+            return $result;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+    }
 }

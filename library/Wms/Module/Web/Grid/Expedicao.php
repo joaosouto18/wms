@@ -191,6 +191,7 @@ class Expedicao extends Grid
                 'pkIndex' => 'id',
                 'params' => array('origin' => 'expedicao'),
                 'cssClass' => 'dialogAjax',
+                'extraParams' => ['data-dialog-width' => 1000],
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO";
                 }

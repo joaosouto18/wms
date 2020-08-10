@@ -220,15 +220,16 @@ class Mobile_ExpedicaoController extends Action {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
             if ($sessao->bloquearOs == 'S' && !$Expedicao->osLiberada()) {
-                $form = new SenhaLiberacao();
-                $form->setDefault('idExpedicao', $idExpedicao);
-
                 $response = [
                     'resposta' => 'bloqued_os',
-                    'errorMsg' => $Expedicao->getMessage(),
-                    'warningMsg' => $Expedicao->getOs()->getBloqueio(),
-                    'blockOsForm' => $form->render()
+                    'errorMsg' => '',
+                    'warningMsg' => $Expedicao->getOs()->getBloqueio()
                 ];
+                if ($checkout== 'S') {
+                    $form = new SenhaLiberacao();
+                    $form->setDefault('idExpedicao', $idExpedicao);
+                    $response['blockOsForm'] = $form->render();
+                }
 
                 $vetRetorno = array('retorno' => $response);
                 $this->_helper->json($vetRetorno);
@@ -322,25 +323,29 @@ class Mobile_ExpedicaoController extends Action {
 
                 }
             } catch (\Exception $e) {
-                if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $e->getMessage(), \Wms\Domain\Entity\OrdemServico::BLOCK_MAPA);
-                    $form = new SenhaLiberacao();
-                    $form->setDefault('idExpedicao', $idExpedicao);
-                    $htmlForm = $form->render();
-
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+                $motivo = $e->getMessage();
+                if ($sessao->bloquearOs == 'S') {
+                    $motivo = "OS bloqueada: $motivo";
+                    $this->bloqueioOs($idExpedicao, $motivo, \Wms\Domain\Entity\OrdemServico::BLOCK_MAPA);
                     $response = [
                         'resposta' => 'bloqued_os',
-                        'errorMsg' => "OS bloqueada",
-                        'warningMsg' => $e->getMessage(),
-                        'blockOsForm' => $htmlForm
+                        'errorMsg' => "OS bloqueada:",
+                        'warningMsg' => $e->getMessage()
                     ];
+                    if ($checkout== 'S') {
+                        $form = new SenhaLiberacao();
+                        $form->setDefault('idExpedicao', $idExpedicao);
+                        $response['blockOsForm'] = $form->render();
+                    }
 
                     $vetRetorno = array('retorno' => $response);
-                    $this->_helper->json($vetRetorno);
                 } else {
                     $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
-                    $this->_helper->json($vetRetorno);
                 }
+                $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+                $andamentoRepo->save($motivo, $idExpedicao, false, true, null, $codBarras, false, $idMapa);
+                $this->_helper->json($vetRetorno);
             }
         }
 
@@ -1251,9 +1256,11 @@ class Mobile_ExpedicaoController extends Action {
         $volume = $this->getRequest()->getParam('volume', null);
         $tipoConferencia = $this->getRequest()->getParam('tipo-conferencia', null);
         $idTipoVolume = $this->getRequest()->getParam('idTipoVolume', null);
+        $checkout = $this->getRequest()->getParam("checkout", false);
         $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $response = [];
         if ($request->isPost()) {
             $senhaDigitada = $request->getParam('senha');
 
@@ -1261,12 +1268,26 @@ class Mobile_ExpedicaoController extends Action {
                 $os = $this->desbloqueioOs($idExpedicao, 'Ordem de serviço liberada');
                 if ($os->bloqueioEtiqueta()) {
                     $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa, 'tipo-conferencia' => $tipoConferencia, 'volume' => $volume, 'idTipoVolume' => $idTipoVolume));
+                } elseif ($checkout){
+                     $response = ['status' => 'ok'];
                 } else {
                     $this->redirect("index");
                 }
             } else {
-                $this->addFlashMessage('error', 'Senha informada não é válida');
+                if ($checkout) {
+                    $response = [
+                        'status' => 'error',
+                        'msg' => 'Senha informada não é válida'
+                    ];
+                } else {
+                    $this->addFlashMessage('error', 'Senha informada não é válida');
+                }
             }
+        }
+
+        if ($checkout) {
+            $vetRetorno = array('retorno' => $response);
+            $this->_helper->json($vetRetorno);
         }
 
         $form = new SenhaLiberacao();

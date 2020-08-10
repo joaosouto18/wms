@@ -12,6 +12,30 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
     public function confByDanfeAction()
     {
         $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
+        $em = $this->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+        $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
+        $em->beginTransaction();
+        try {
+            $pedidoEntities = $pedidoRepository->getPedidosFinalizadosNaoFaturados();
+            foreach ($pedidoEntities as $pedidoEntity) {
+                $params['pedido'] = $pedidoEntity->getCodExterno();
+                $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
+                if ($result) {
+                    $pedidoEntity->setFaturado('S');
+                    $em->merge($pedidoEntity);
+                    $em->flush();
+                }
+            }
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            $this->addFlashMessage("error", $e->getMessage() . ' - ' .$e->getTraceAsString());
+        }
     }
 
     public function getInfoDanfeAction()
@@ -83,6 +107,16 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
     {
         $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
         $this->view->expedicoes =  $this->em->getRepository(ConferenciaCarregamento::class)->getExpedicoesToConf();
+    }
+
+    public function findExpedicaoByFilterAjaxAction()
+    {
+        $filter = $this->getRequest()->getParam('filter');
+        $value = $this->getRequest()->getParam('value');
+
+        $exp = $this->_em->getRepository(\Wms\Domain\Entity\Expedicao::class)->findExpedicaoByFilters($filter, $value);
+
+        $this->_helper->json(['status'=> 'ok', 'result' => ['expedicao' => $exp]]);
     }
 
     public function newConfAction()

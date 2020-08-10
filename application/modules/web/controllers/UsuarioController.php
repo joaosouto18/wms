@@ -29,8 +29,6 @@ class Web_UsuarioController extends Crud
                     ->select('distinct pf.id, u.login, u.isAtivo, pf.nome, u.isSenhaProvisoria')
                     ->from('wms:Usuario', 'u')
                     ->innerJoin('u.pessoa', 'pf')
-                    ->leftJoin('u.depositos', 'd')
-                    ->leftJoin('u.perfis', 'p')
                     ->orderBy('pf.nome');
             // caso tenha deposito e perfis verifico condicoes
             if (!empty($isAtivo)) {
@@ -38,12 +36,13 @@ class Web_UsuarioController extends Crud
                         ->setParameter('isAtivo', $isAtivo);
             }
             if (!empty($idPerfil))
-                $source->andWhere("p.id = " . $idPerfil);
+                $source->leftJoin('u.perfis', 'p')
+                    ->andWhere("p.id = " . $idPerfil);
             if (!empty($idDeposito))
-                $source->andWhere("d.id = " . $idDeposito);
+                $source->leftJoin('u.depositos', 'd')
+                    ->andWhere("d.id = " . $idDeposito);
             if (!empty($nome)) {
-                $nomeUpp = strtoupper($nome);
-                $source->andWhere("UPPER(pf.nome) LIKE '%$nomeUpp%'");
+                $source->andWhere("UPPER(pf.nome) LIKE UPPER('%$nomeUpp%')");
             }
             if (!$usuarioSessao->isRoot()) {
                 $source->andWhere("u.root = 0");

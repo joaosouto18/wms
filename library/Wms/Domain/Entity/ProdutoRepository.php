@@ -1388,7 +1388,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
 
         if (!isset($produtoEn)) {
-            throw new \Exception("Produto não encontrado");
+            throw new \Exception("Produto não encontrado pelo código $codigo");
         }
 
         return $produtoEn;

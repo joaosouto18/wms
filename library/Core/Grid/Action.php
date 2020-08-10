@@ -83,6 +83,11 @@ class Action
     protected $cssCondictional;
 
     /**
+     * @var array
+     */
+    protected $extraParams;
+
+    /**
      * contructor of the grid
      * @param array $options
      * @return Column 
@@ -366,4 +371,37 @@ class Action
         $this->target = $target;
     }
 
+    /**
+     * @return array
+     */
+    public function getExtraParams()
+    {
+        return $this->extraParams;
+    }
+
+    /**
+     * @param array $extraParams
+     */
+    public function setExtraParams(array $extraParams)
+    {
+        if (!is_array($extraParams)) throw new \Exception("ExtraParams precisa ser um array");
+        foreach ($extraParams as $param => $value) {
+            if (is_array($value)) throw new \Exception("ExtraParams precisa ser um array Key => Value");
+            if (empty($value)) unset($extraParams[$param]);
+        }
+        $this->extraParams = $extraParams;
+    }
+
+    public function getFormatExtraParams()
+    {
+        $return = "";
+        if (!empty($this->extraParams)) {
+            $params = [];
+            foreach ($this->extraParams as $param => $value) {
+                $params[] = "$param=\"$value\"";
+            }
+            $return = implode(" ", $params);
+        }
+        return $return;
+    }
 }

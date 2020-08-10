@@ -151,6 +151,11 @@ class Pedido
     protected $dth;
 
     /**
+     * @Column(name="DSC_OBSERVACAO_INTEGRACAO", type="string", nullable=true)
+     */
+    protected $observacao;
+
+    /**
      * @param mixed $bairro
      */
     public function setBairro($bairro)
@@ -582,6 +587,20 @@ class Pedido
         $this->motorista = $motorista;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getObservacao()
+    {
+        return $this->observacao;
+    }
 
+    /**
+     * @param mixed $observacao
+     */
+    public function setObservacao($observacao)
+    {
+        $this->observacao = $observacao;
+    }
 
 }

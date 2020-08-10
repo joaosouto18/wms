@@ -196,7 +196,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                                 QTD,
                                 VLR_VENDA,
                                 NOM_MOTORISTA,
-                                TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                                TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH,
+                                DSC_OBSERVACAO_INTEGRACAO
                 FROM INTEGRACAO_PEDIDO 
                 ORDER by CARGA, PEDIDO, PRODUTO";
                 break;
@@ -340,6 +341,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_POSTGRE) {
                         $options[] = $data->format("d/m/Y H:i:s");
                     } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MSSQL
+                        || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_DB2
                         || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_SQLSRV) {
                         $options[] = $data->format("Y-m-d H:i:s");
                     }

@@ -525,6 +525,52 @@ class MapaSeparacao extends eFPDF {
         $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
         $this->Cell($wPage * 2, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
         $this->InFooter = false;
+
+        $observacoes = $this->pedidoRepo->getObservacaoPedido($this->idExpedicao);
+        if (!is_null($observacoes)) {
+            $this->AddPage();
+            $carga = 0;
+            $cliente = 0;
+            $pedido = 0;
+            foreach ($observacoes as $observacao) {
+
+                if ($carga != $observacao['codCarga']) {
+                    $this->SetFont('Arial', 'B', 17);
+                    $this->Cell(20,12,"Carga: ",0,0);
+
+                    $this->SetFont('Arial', '', 17);
+                    $this->Cell(20,12,$observacao['codCargaExterno'],0,1);
+                }
+                if ($cliente != $observacao['codCliente']) {
+                    $this->SetFont('Arial', 'B', 15);
+                    $this->Cell(20,12,"Cliente: ",0,0);
+
+                    $this->SetFont('Arial', '', 15);
+                    $this->Cell(20,12,utf8_decode("$observacao[codClienteExterno] - $observacao[nome]"),0,1);
+                }
+
+                if ($pedido != $observacao['codPedido']) {
+                    $this->SetFont('Arial', 'B', 15);
+                    $this->Cell(20,8,"Pedido: ",0,0);
+
+                    $this->SetFont('Arial', '', 15);
+                    $this->Cell(20,8, $observacao['codExterno'],0,1);
+                }
+
+                $this->SetFont('Arial', 'B', 12);
+                $this->Cell(20,5,"Obs.: ",0,0);
+
+                $this->SetFont('Arial', '', 12);
+                $this->MultiCell(160, 5, utf8_decode($observacao['observacao']),0,'L');
+                $this->Line(0,$this->getY(),200,$this->getY());
+                $this->Ln(7);
+
+                $carga   = $observacao['codCarga'];
+                $cliente = $observacao['codCliente'];
+                $pedido  = $observacao['codPedido'];
+
+            }
+        }
     }
 
     private function layoutModelo2($mapa, $produtos, $tipoQuebra, $arrDataCargas) {

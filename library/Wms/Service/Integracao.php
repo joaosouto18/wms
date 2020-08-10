@@ -204,6 +204,7 @@ class Integracao {
                 case AcaoIntegracao::INTEGRACAO_CORTES:
                     return $this->processaCorteERP($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                case AcaoIntegracao::INTEGRACAO_COMPARATIVO_INVENTARIO_ERP:
                 case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
@@ -228,6 +229,10 @@ class Integracao {
         $pedidos = array();
         $notasFiscais = array();
         $idProdutos = array();
+
+        if (count($dados) <= 0) {
+            return false;
+        }
 
         foreach ($dados as $key => $notaFiscal) {
             /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
@@ -326,12 +331,12 @@ class Integracao {
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
             $nfSaida->pedidos = $pedidos;
+            $nfSaida->dtEmissao = $nf['dtEmissao'];
             $nfSaida->chaveAcesso = $nf['chaveAcesso'];
             $nfs[] = $nfSaida;
         }
         $wsExpedicao = new \Wms_WebService_Expedicao();
         $wsExpedicao->informarNotaFiscal($nfs, true);
-
         return true;
     }
 
@@ -570,7 +575,8 @@ class Integracao {
                         'linhaEntrega' => $row['DSC_ROTA'],
                         'tipoPedido' => $tipoPedido,
                         'codProprietario' => null,
-                        'idCarga' => $idCarga
+                        'idCarga' => $idCarga,
+                        'observacao' => (!empty($row['DSC_OBSERVACAO_INTEGRACAO'])) ? $row['DSC_OBSERVACAO_INTEGRACAO'] : null
                     );
 
                     $pedidos[] = $pedido;
@@ -984,6 +990,7 @@ class Integracao {
                     $pedido->setQtd(str_replace(",", ".", $row['QTD']));
                     $pedido->setVlrVenda(str_replace(",", ".", $row['VLR_VENDA']));
                     $pedido->setDth(isset($row['DTH']) && !empty($row['DTH']) ? \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']): new \DateTime());
+                    $pedido->setObservacao((isset($row['DSC_OBSERVACAO_INTEGRACAO']) && !empty($row['DSC_OBSERVACAO_INTEGRACAO'])) ? $row['DSC_OBSERVACAO_INTEGRACAO'] : null);
                     $this->_em->persist($pedido);
                     break;
             }

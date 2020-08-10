@@ -205,7 +205,7 @@ $attribs = $grid->getAttribs();
                                 <ul>
                                     <?php foreach ($grid->getActionsByRow($row) as $action) { ?>
                                         <?php if ($action->getCondition($row)) { ?>
-                                        <li><a href="<?php echo $action->getUrl($row);?>" class="<?php echo $action->getCssClass($row);?>" title="<?php echo $action->getTitle();?>" target="<?php echo $action->getTarget();?>"><?php echo $action->getLabel();?></a></li>
+                                        <li><a href="<?php echo $action->getUrl($row);?>" <?php echo $action->getFormatExtraParams();?> class="<?php echo $action->getCssClass($row);?>" title="<?php echo $action->getTitle();?>" target="<?php echo $action->getTarget();?>"><?php echo $action->getLabel();?></a></li>
                                         <?php } ?>
                                     <?php } ?>
                                 </ul>
