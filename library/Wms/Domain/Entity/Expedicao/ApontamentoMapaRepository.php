@@ -70,9 +70,11 @@ class ApontamentoMapaRepository extends EntityRepository {
 
     public function update($apontamentoMapaEn) {
         $em = $this->getEntityManager();
-        $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
-        $em->persist($apontamentoMapaEn);
-        $em->flush();
+        if ($apontamentoMapaEn->getDataFimConferencia() == null) {
+            $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
+            $em->persist($apontamentoMapaEn);
+            $em->flush();
+        }
 
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
@@ -495,20 +497,22 @@ class ApontamentoMapaRepository extends EntityRepository {
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
 
-                $ordemServicoEntity->setDataFinal(new \DateTime());
-                $this->getEntityManager()->persist($ordemServicoEntity);
+                if ($ordemServicoEntity->getDataFinal() == null) {
+                    $ordemServicoEntity->setDataFinal(new \DateTime());
+                    $this->getEntityManager()->persist($ordemServicoEntity);
 
-                $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
-                while ($contador < $qtdPorPessoa) {
-                    $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
-                    $codMapaSeparacao = $mapaSeparacaoEn->getId();
-                    $codOs = $ordemServicoEntity->getId();
-                    $qtdSeparar = (($mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar() * $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem()) - $mapaSeparacaoProdutoEntities[$contador]->getQtdCortado()) / $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
-                    $idEmbalagem = $mapaSeparacaoProdutoEntities[$contador]->getProdutoEmbalagem()->getId();
-                    $qtdEmb = $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
-                    $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
+                    $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
+                    while ($contador < $qtdPorPessoa) {
+                        $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
+                        $codMapaSeparacao = $mapaSeparacaoEn->getId();
+                        $codOs = $ordemServicoEntity->getId();
+                        $qtdSeparar = (($mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar() * $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem()) - $mapaSeparacaoProdutoEntities[$contador]->getQtdCortado()) / $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
+                        $idEmbalagem = $mapaSeparacaoProdutoEntities[$contador]->getProdutoEmbalagem()->getId();
+                        $qtdEmb = $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
+                        $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
 
-                    $contador = $contador + 1;
+                        $contador = $contador + 1;
+                    }
                 }
             }
 
