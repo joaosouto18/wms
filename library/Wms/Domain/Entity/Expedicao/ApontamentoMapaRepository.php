@@ -512,10 +512,24 @@ class ApontamentoMapaRepository extends EntityRepository {
 
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
-
                 if ($ordemServicoEntity->getDataFinal() == null) {
                     $ordemServicoEntity->setDataFinal(new \DateTime());
                     $this->getEntityManager()->persist($ordemServicoEntity);
+
+                    foreach ($mapaSeparacaoProdutoEntities as $msp) {
+                        $produtoEn = $msp->getProduto();
+                        $codMapaSeparacao = $mapaSeparacaoEn->getId();
+                        $codOs = $ordemServicoEntity->getId();
+                        $qtdSeparar = (($msp->getQtdSeparar() * $msp->getQtdEmbalagem()) - $msp->getQtdCortado()) / $msp->getQtdEmbalagem();
+                        $qtdSeparar = Math::dividir($qtdSeparar, count($ordemServicoEntities));
+                        $idEmbalagem = $msp->getProdutoEmbalagem()->getId();
+                        $qtdEmb = $msp->getQtdEmbalagem();
+                        $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
+                    }
+
+                    /*
+                     * Calculo antigo de produtividade, tinha falha quando o mapa tinha 2 produtos e apontava 3 separadores
+                     *
 
                     $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
                     while ($contador < $qtdPorPessoa) {
@@ -529,6 +543,8 @@ class ApontamentoMapaRepository extends EntityRepository {
 
                         $contador = $contador + 1;
                     }
+
+                     */
                 }
             }
 
