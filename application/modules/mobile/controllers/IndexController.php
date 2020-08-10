@@ -23,10 +23,12 @@ class Mobile_IndexController  extends Action
                 'url' => '/mobile/ressuprimento',
                 'label' => 'RESSUPRIMENTO',
             ),
+            /*
             5 => array(
                 'url' => '/mobile/ordem-servico/conferencia-inventario',
                 'label' => 'INVENTÁRIO'
             ),
+            */
             6 => array(
                 'url' => '/mobile/consulta-produto',
                 'label' => 'CONSULTA PRODUTO',
@@ -53,7 +55,7 @@ class Mobile_IndexController  extends Action
             ),
             12 => array(
                 'url' => '/mobile/inventario-novo/listagem-inventarios',
-                'label' => 'NOVO INVENTÁRIO'
+                'label' => 'INVENTÁRIO'
             )
 
         );
