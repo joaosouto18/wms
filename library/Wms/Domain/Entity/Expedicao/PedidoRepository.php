@@ -1271,4 +1271,19 @@ class PedidoRepository extends EntityRepository
 
         return null;
     }
+
+    public function getPedidosFinalizadosNaoFaturados()
+    {
+        $queryBuilder = $this->_em->createQueryBuilder()
+            ->select('p')
+            ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->innerJoin('e.status','s')
+            ->where('s.id = :codStatus')
+            ->andWhere("p.faturado = 'N' ")
+            ->setParameter('codStatus', Expedicao::STATUS_FINALIZADO);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

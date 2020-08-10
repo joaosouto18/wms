@@ -230,6 +230,10 @@ class Integracao {
         $notasFiscais = array();
         $idProdutos = array();
 
+        if (count($dados) <= 0) {
+            return false;
+        }
+
         foreach ($dados as $key => $notaFiscal) {
             /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
             $idProdutos[] = $notaFiscal['COD_PRODUTO'];
@@ -327,12 +331,12 @@ class Integracao {
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
             $nfSaida->pedidos = $pedidos;
+            $nfSaida->dtEmissao = $nf['dtEmissao'];
             $nfSaida->chaveAcesso = $nf['chaveAcesso'];
             $nfs[] = $nfSaida;
         }
         $wsExpedicao = new \Wms_WebService_Expedicao();
         $wsExpedicao->informarNotaFiscal($nfs);
-
         return true;
     }
 

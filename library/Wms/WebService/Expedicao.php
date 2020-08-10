@@ -1509,7 +1509,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
 
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
-
                 if ($nfEn == null) {
 
                     $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
@@ -1520,6 +1519,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $nfEntity->setPessoa($pessoaEn);
                     $nfEntity->setSerieNf($notaFiscal->serieNf);
                     $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                    $nfEntity->setDataFaturamento(new DateTime($notaFiscal->dtEmissao));
                     $nfEntity->setChaveAcesso($notaFiscal->chaveAcesso);
                     $nfEntity->setStatus($statusEn);
                     $this->_em->persist($nfEntity);

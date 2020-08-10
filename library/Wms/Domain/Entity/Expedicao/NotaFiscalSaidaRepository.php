@@ -21,31 +21,26 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         }
     }
 
-    public function getNotaFiscalOuCarga($data) {
+    public function getNotaFiscalSaida($data) {
 
         if ($this->getSystemParameterValue('IND_UTILIZA_INTEGRACAO_NF_SAIDA') == 'S') {
-            if ((isset($data['notaFiscal']) && !empty($data['notaFiscal'])) || (!empty($data['carga']) && isset($data['carga']))) {
-                $options = array();
+            $options = array();
 
-                if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
-                    $options[] = $data['notaFiscal'];
-                } else {
-                    $options[] = 0;
-                }
+            if (isset($data['pedido']) && !empty($data['pedido'])) {
+                $options[] = $data['pedido'];
+            } elseif (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
+                $options[] = $data['notaFiscal'];
+            } elseif (isset($data['carga']) && !empty($data['carga'])) {
+                $options[] = $data['carga'];
+            } else
+                $options[] = 0;
 
-                if (isset($data['carga']) && !empty($data['carga'])) {
-                    $options[] = $data['carga'];
-                } else {
-                    $options[] = 0;
-                }
+            $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
 
-                $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
-
-                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-                $acaoEn = $acaoIntRepo->find($idIntegracao);
-                $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
-            }
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
         }
 
         $sql = $this->getEntityManager()->createQueryBuilder()
@@ -62,6 +57,8 @@ class NotaFiscalSaidaRepository extends EntityRepository {
             $sql->andWhere("nfs.numeroNf IN (".$data['notaFiscal'].")");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
             $sql->andWhere("c.codCargaExterno = ('". $data['carga'] ."')");
+        } elseif (isset($data['pedido']) && !empty($data['pedido'])) {
+            $sql->andWhere("p.codExterno = ('". $data['pedido'] ."')");
         }
 
         if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {

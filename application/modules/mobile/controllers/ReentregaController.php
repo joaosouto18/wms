@@ -25,7 +25,7 @@ class Mobile_ReentregaController extends Action {
         if ((!empty($params['carga']) && isset($params['carga'])) || (!empty($params['notaFiscal']) && isset($params['notaFiscal']))) {
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
             $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
-            $result = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
+            $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
 
             if (count($result) > 0) {
                 $selecionado = "N";
