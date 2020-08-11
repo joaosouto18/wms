@@ -18,6 +18,7 @@ class ConexaoIntegracao
     const PROVEDOR_SQLSRV = "SQLSRV";
     const PROVEDOR_FIREBIRD = "FIREBIRD";
     const PROVEDOR_POSTGRE = "POSTGRE";
+    const PROVEDOR_DB2 = "DB2";
 
     /**
      * @Id

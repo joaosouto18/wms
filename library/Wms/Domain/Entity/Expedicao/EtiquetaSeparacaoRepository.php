@@ -1214,7 +1214,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $value['qtd'],
                                     $value['volumeEn'],
                                     null,
-                                    array($pedidoProduto),
+                                    [$pedidoProduto->getId() => ['entity' => $pedidoProduto, 'qtd' => $value['qtd']]],
                                     $depositoEnderecoEn,
                                     null,
                                     $pedidoEntity,

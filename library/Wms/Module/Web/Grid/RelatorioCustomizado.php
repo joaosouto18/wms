@@ -24,7 +24,7 @@ class RelatorioCustomizado extends Grid
             ));
         }
 
-        $pager = new Pager((count($arrayResult) - 1),0,count($arrayResult));
+        $pager = new Pager((count($arrayResult) ),0,count($arrayResult));
         $this->setPager($pager);
         $this->showExport = false;
 
