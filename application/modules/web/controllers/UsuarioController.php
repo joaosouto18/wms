@@ -42,7 +42,7 @@ class Web_UsuarioController extends Crud
                 $source->leftJoin('u.depositos', 'd')
                     ->andWhere("d.id = " . $idDeposito);
             if (!empty($nome)) {
-                $source->andWhere("UPPER(pf.nome) LIKE UPPER('%$nomeUpp%')");
+                $source->andWhere("UPPER(pf.nome) LIKE UPPER('%$nome%')");
             }
             if (!$usuarioSessao->isRoot()) {
                 $source->andWhere("u.root = 0");
