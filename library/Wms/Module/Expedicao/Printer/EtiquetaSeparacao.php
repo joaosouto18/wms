@@ -873,7 +873,7 @@ class EtiquetaSeparacao extends Pdf
                 $this->layoutModelo15($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
                 break;
             case 14: // LAYOUT PLANETA
-                $this->layoutModelo14($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
+                $this->layoutModelo14($etiqueta,$countEtiquetas,$reimpressao,$modelo);
                 break;
             case 13:
                 $this->layoutModelo13($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
