@@ -41,9 +41,10 @@ class AtorRepository extends EntityRepository {
     /**
      * Persiste os dados pessoais e retorna a pessoa
      * 
-     * @param PessoaInterface $pessoa
-     * @param array $dados
+     * @param AtorInterface $ator
+     * @param array $values
      * @return Pessoa
+     * @throws \Exception
      */
     public function persistirPessoa(AtorInterface $ator, array $values) {
         $em = $this->getEntityManager();

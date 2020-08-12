@@ -11,6 +11,7 @@ use Doctrine\ORM\Query;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Pessoa\Papel\Emissor;
 use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\Entity\Produto\LoteRepository;
 use Wms\Math;
@@ -499,20 +500,23 @@ class NotaFiscalRepository extends EntityRepository {
     /**
      * Retorna Nota fiscal que esteja nos status Integrada, Em Recebimento ou Recebida pelo WMS.
      *
-     * @param string $idFornecedor Codigo interno do fornecedor
+     * @param Emissor $emissor Emissor da Nota fiscal
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
+     * @param NotaFiscalEntity\Tipo $tipo Tipo de nota
      * @return mixed NotaFiscalEntity ou null
      */
-    public function getAtiva($idFornecedor, $numero, $serie, $dataEmissao) {
+    public function getAtiva($emissor, $numero, $serie, $dataEmissao, $tipo) {
         return $this->getEntityManager()->createQueryBuilder()
                         ->select('nf')
                         ->from('wms:NotaFiscal', 'nf')
-                        ->where('nf.fornecedor = ?1')
-                        ->setParameter(1, $idFornecedor)
+                        ->where('nf.emissor = :emissor')
+                        ->setParameter('emissor', $emissor)
                         ->andWhere('nf.numero = :numero')
                         ->setParameter('numero', $numero)
+                        ->andWhere('nf.tipo = :tipo')
+                        ->setParameter('tipo', $tipo)
                         ->andWhere('nf.serie = :serie')
                         ->setParameter('serie', $serie)
                         ->andWhere('TRUNC(nf.dataEmissao) = ?2')
@@ -1030,7 +1034,21 @@ class NotaFiscalRepository extends EntityRepository {
         return $entity;
     }
 
-    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $tipoNota = null, $cnpjProprietario = null) {
+    /**
+     * @param $emissor Emissor
+     * @param $tipoNota NotaFiscalEntity\Tipo
+     * @param $numero
+     * @param $serie
+     * @param $dataEmissao
+     * @param $placa
+     * @param $itens
+     * @param $bonificacao
+     * @param null $observacao
+     * @param null $cnpjDestinatario
+     * @param null $cnpjProprietario
+     * @throws \Exception
+     */
+    public function salvarNota($emissor, $tipoNota, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $cnpjProprietario = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -1054,14 +1072,8 @@ class NotaFiscalRepository extends EntityRepository {
                 $cnpj = str_replace(array(".", "-", "/"), "", $cnpjDestinatario);
                 $filial = $filialRepo->getFilialByCnpj($cnpj);
             } else {
-                /** @var Filial $filial */
                 $filial = $filialRepo->getFilialPrincipal();
             }
-
-            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-
-            if ($fornecedorEntity == null)
-                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
             // VALIDO SE OS PRODUTOS EXISTEM NO SISTEMA
             if (count($itens) > 0) {
@@ -1085,7 +1097,6 @@ class NotaFiscalRepository extends EntityRepository {
                 throw new \Exception('Indicação de bonificação inválida. Deve ser N para não ou S para sim.');
 
             $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
-            $tipoNotaEntiy = $em->getRepository('wms:Util\Sigla')->findOneBy(array('sigla' => $tipoNota));
 
             $objDataEmissao = null;
             if (strpos($dataEmissao, "/") > -1) {
@@ -1101,14 +1112,14 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
             $notaFiscalEntity->setDataEmissao($objDataEmissao);
-            $notaFiscalEntity->setFornecedor($fornecedorEntity);
+            $notaFiscalEntity->setEmissor($emissor);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
             $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
             $notaFiscalEntity->setFilial($filial);
-            $notaFiscalEntity->setTipoNotaFiscal($tipoNotaEntiy);
+            $notaFiscalEntity->setTipo($tipoNota);
             $pesoTotal = 0;
             $itens = $this->unificarItens($itens);
             if (count($itens) > 0) {

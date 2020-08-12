@@ -3,7 +3,6 @@
 namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
@@ -11,17 +10,13 @@ use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Pessoa\Fisica;
 use Wms\Domain\Entity\Pessoa\Juridica;
-use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Produto\Embalagem;
-use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\Entity\Produto\NormaPaletizacao;
 use Wms\Domain\Entity\Produto\Volume;
-use Wms\Domain\Entity\Produto\VolumeRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
-use Wms\Module\Expedicao\Form\ModeloSeparacao;
 use Wms\Service\OndaRessuprimentoService;
 
 class ExpedicaoRepository extends EntityRepository {
@@ -140,7 +135,7 @@ class ExpedicaoRepository extends EntityRepository {
                 LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                 INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                 INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
+                INNER JOIN CLIENTE CL ON CL.COD_EMISSOR = P.COD_PESSOA
                 INNER JOIN PESSOA PESS ON PESS.COD_PESSOA = P.COD_PESSOA
                 WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                     AND (CASE WHEN (PPL.DSC_LOTE IS NOT NULL) THEN
@@ -3869,7 +3864,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null, $filial = null) {
         $source = $this->_em->createQueryBuilder()
-                ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
+                ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codExterno codClienteExterno, es.codProduto, es.dscGrade,
              e.dataInicio, e.dataFinalizacao, p.codExterno as idPedido")
                 ->from("wms:Expedicao\EtiquetaSeparacao", "es")
                 ->innerJoin('es.pedido', 'p')
@@ -3966,8 +3961,8 @@ class ExpedicaoRepository extends EntityRepository {
                 LEFT JOIN PRODUTO_VOLUME VOL ON MSC.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
                 LEFT JOIN PRODUTO_EMBALAGEM EMB ON MSC.COD_PRODUTO_EMBALAGEM = EMB.COD_PRODUTO_EMBALAGEM
                 INNER JOIN EXPEDICAO_VOLUME_PATRIMONIO EVP ON EVP.COD_EXPEDICAO = MS.COD_EXPEDICAO AND EVP.COD_VOLUME_PATRIMONIO = MSC.COD_VOLUME_PATRIMONIO
-                LEFT JOIN CLIENTE CL ON CL.COD_CLIENTE_EXTERNO = EVP.COD_TIPO_VOLUME
-                INNER JOIN PESSOA CL2 ON CL.COD_PESSOA = CL2.COD_PESSOA
+                LEFT JOIN CLIENTE CL ON CL.COD_EXTERNO = EVP.COD_TIPO_VOLUME
+                INNER JOIN PESSOA CL2 ON CL.COD_EMISSOR = CL2.COD_PESSOA
                 LEFT JOIN ESTOQUE ES1 ON ES1.COD_PRODUTO = MSC.COD_PRODUTO AND ES1.COD_PRODUTO_EMBALAGEM = EMB.COD_PRODUTO_EMBALAGEM
                 LEFT JOIN ESTOQUE ES2 ON ES2.COD_PRODUTO = MSC.COD_PRODUTO AND ES2.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
                 INNER JOIN PESSOA CONF ON EVP.COD_USUARIO = CONF.COD_PESSOA
@@ -4057,7 +4052,7 @@ class ExpedicaoRepository extends EntityRepository {
                                END AS \"TIPO CONFERENCIA\",
                                ES.COD_OS_TRANSBORDO \"OS TRANSBORDO\",
                                CONFERENTE_TRANSBORDO.NOM_PESSOA \"CONFERENTE TRANSBORDO\",
-                               CLIENTE.COD_CLIENTE_EXTERNO \"CODIGO CLIENTE\",
+                               CLIENTE.COD_EXTERNO \"CODIGO CLIENTE\",
                                CLIENTE.NOM_PESSOA \"CLIENTE\",
                                ENDERECO.DSC_ENDERECO \"ENDERECO CLIENTE\",
                                ENDERECO.NOM_LOCALIDADE \"CIDADE CLIENTE\",
@@ -4089,12 +4084,12 @@ class ExpedicaoRepository extends EntityRepository {
                          LEFT JOIN PESSOA CONFERENTE_TRANSBORDO ON CONFERENTE_TRANSBORDO.COD_PESSOA = OS.COD_PESSOA
                         LEFT JOIN PEDIDO_ENDERECO ENDERECO ON ENDERECO.COD_PEDIDO = P.COD_PEDIDO
                         LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
-                        LEFT JOIN (SELECT CL.COD_PESSOA,
-                                          CL.COD_CLIENTE_EXTERNO,
+                        LEFT JOIN (SELECT CL.COD_EMISSOR,
+                                          CL.COD_EXTERNO,
                                           PE.NOM_PESSOA
                                      FROM CLIENTE CL
-                                    INNER JOIN PESSOA PE ON CL.COD_PESSOA = PE.COD_PESSOA) CLIENTE
-                          ON P.COD_PESSOA = CLIENTE.COD_PESSOA
+                                    INNER JOIN PESSOA PE ON CL.COD_EMISSOR = PE.COD_PESSOA) CLIENTE
+                          ON P.COD_PESSOA = CLIENTE.COD_EMISSOR
                WHERE (E.COD_STATUS <> $statusCancelado)
                  AND ((E.DTH_INICIO >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
                  AND (E.DTH_INICIO <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
@@ -4108,7 +4103,7 @@ class ExpedicaoRepository extends EntityRepository {
         $source = $this->_em->createQueryBuilder()
                 ->select("
                       ped.sequencia,
-                      cli.codClienteExterno                 as codCliente,
+                      cli.codExterno                 as codCliente,
                       it.descricao                          as itinerario,
                       NVL(pe.localidade,endere.localidade)  as cidade,
                       NVL(pe.bairro,endere.bairro)          as bairro,
@@ -4128,7 +4123,7 @@ class ExpedicaoRepository extends EntityRepository {
                 ->leftJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.pedido = ped.id')
                 ->distinct(true)
                 ->where("prod.linhaSeparacao != 15")
-                ->groupBy("cli.codClienteExterno, pe.localidade, pj.nomeFantasia, pe.bairro, pe.descricao, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia")
+                ->groupBy("cli.codExterno, pe.localidade, pj.nomeFantasia, pe.bairro, pe.descricao, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia")
                 ->orderBy('ped.sequencia, cidade, bairro, rua, cliente, codCliente');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
@@ -4313,7 +4308,7 @@ class ExpedicaoRepository extends EntityRepository {
                   FROM CLIENTE C
                 INNER JOIN PESSOA_ENDERECO PE ON C.COD_PESSOA = PE.COD_PESSOA
                 LEFT JOIN PRACA_FAIXA PF ON PE.NUM_CEP BETWEEN PF.FAIXA_CEP1 AND PF.FAIXA_CEP2
-                  WHERE C.COD_CLIENTE_EXTERNO = '$idCliente'
+                  WHERE C.COD_EXTERNO = '$idCliente'
       ";
 
         $result = $this->getEntityManager()->getConnection()->query($dql)->fetch(\PDO::FETCH_ASSOC);
@@ -4718,7 +4713,7 @@ class ExpedicaoRepository extends EntityRepository {
                   ELSE 
                     P.COD_EXTERNO
                 END as COD_PEDIDO,
-               CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+               CLI.COD_EXTERNO as COD_CLIENTE,
                PES.NOM_PESSOA as CLIENTE,
                E.COD_EXPEDICAO,
                C.COD_CARGA_EXTERNO,
@@ -4753,7 +4748,7 @@ class ExpedicaoRepository extends EntityRepository {
         $SQL = "
         SELECT DISTINCT
                P.COD_PEDIDO,
-               CLI.COD_CLIENTE_EXTERNO as CLIENTE,
+               CLI.COD_EXTERNO as CLIENTE,
                PES.NOM_PESSOA,
                PE.DSC_ENDERECO,
                PE.NOM_BAIRRO,
@@ -4778,7 +4773,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $clienteExternoArr[] = "'$codCliente'";
             }
             $clientes = implode(',',$clienteExternoArr);
-            $SQL .= " AND CLI.COD_CLIENTE_EXTERNO IN ($clientes) ";
+            $SQL .= " AND CLI.COD_EXTERNO IN ($clientes) ";
         }
 
         if (isset($params['pedidos']) && ($params['pedidos'] != null)) {
@@ -5451,7 +5446,7 @@ class ExpedicaoRepository extends EntityRepository {
                        TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI:SS') as FIM_EXPEDICAO,
                        C.COD_CARGA_EXTERNO as CARGA,
                        P.COD_PEDIDO,
-                       CL.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       CL.COD_EXTERNO as COD_CLIENTE,
                        CLI.NOM_PESSOA as CLIENTE,
                        PP.COD_PRODUTO,
                        NVL(PP.QUANTIDADE,0) as QTD_PEDIDO,
@@ -5480,7 +5475,7 @@ class ExpedicaoRepository extends EntityRepository {
                   WHERE 1 = 1
                         AND P.CENTRAL_ENTREGA = $central
                         $whereFinal
-                  ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_CLIENTE_EXTERNO, COD_PEDIDO, COD_PRODUTO";
+                  ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_EXTERNO, COD_PEDIDO, COD_PRODUTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -5734,7 +5729,7 @@ class ExpedicaoRepository extends EntityRepository {
         $sql = "SELECT E.COD_EXPEDICAO, 
                        C.COD_CARGA_EXTERNO, 
                        P.COD_EXTERNO as COD_PEDIDO,
-                       C.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       C.COD_EXTERNO as COD_CLIENTE,
                        PES.NOM_PESSOA as CLIENTE,
                        PP.COD_PRODUTO, 
                        PP.DSC_GRADE, 
@@ -5857,7 +5852,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $sql = " SELECT P.COD_PEDIDO,
-                        C.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                        C.COD_EXTERNO as COD_CLIENTE,
                         PES.NOM_PESSOA as CLIENTE,
                         $sqlCampoQuantidadePedido
                         $sqlCampoQuantidadeCortada

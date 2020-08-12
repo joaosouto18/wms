@@ -32,7 +32,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     {
         $idFornecedor = trim($idFornecedor);
 
-        $fornecedorEntity = $this->__getServiceLocator()->getService('Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+        $fornecedorEntity = $this->__getServiceLocator()->getService('Fornecedor')->findOneBy(array('codExterno' => $idFornecedor));
 
         if ($fornecedorEntity == null)
             throw new \Exception('Fornecedor não encontrado');
@@ -57,7 +57,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         try {
             $em->beginTransaction();
             $this->__getServiceLocator()->getService('Fornecedor')->save([
-                'idExterno' => trim($idFornecedor),
+                'codExterno' => trim($idFornecedor),
                 'cnpj' => trim($cnpj),
                 'insc' => trim($insc),
                 'nome' => trim($nome),
@@ -87,7 +87,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
-        $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
+        $fornecedorEntity = $fornecedorSvc->findOneBy(array('codExterno' => $idFornecedor));
 
         if ($fornecedorEntity == null)
             throw new \Exception('Fornecedor não encontrado');
@@ -124,7 +124,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     private function parseObjWS(\Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity) {
 
         $for = new fornecedor();
-        $for->idFornecedor = $fornecedorEntity->getIdExterno();
+        $for->idFornecedor = $fornecedorEntity->getCodExterno();
         $for->nome =  $fornecedorEntity->getNome();
         $pessoa = $fornecedorEntity->getPessoa();
         if (is_a($pessoa, \Wms\Domain\Entity\Pessoa\Juridica::class)) {

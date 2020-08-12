@@ -110,7 +110,7 @@ class ConferenciaCarregamentoRepository extends EntityRepository
         $strCliente = implode(", ", $arrClientes);
 
         $sql = "SELECT 
-                    CONFCARREG.COD_CONF_CARREG, P.NOM_PESSOA, CL.COD_CLIENTE_EXTERNO AS ID_CLIENTE
+                    CONFCARREG.COD_CONF_CARREG, P.NOM_PESSOA, CL.COD_EXTERNO AS ID_CLIENTE
                 FROM CONFERENCIA_CARREGAMENTO CONFCARREG
                 INNER JOIN CONF_CARREG_CLIENTE CCC on CONFCARREG.COD_CONF_CARREG = CCC.COD_CONF_CARREG
                 INNER JOIN CLIENTE CL ON CL.COD_PESSOA = CCC.COD_CLIENTE

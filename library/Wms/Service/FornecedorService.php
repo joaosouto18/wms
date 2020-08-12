@@ -13,7 +13,7 @@ class FornecedorService extends AbstractService
     {
         try {
             /** @var Fornecedor $entity */
-            $entity = $this->findOneBy(['idExterno' => $data['idExterno']]);
+            $entity = $this->findOneBy(['codExterno' => $data['codExterno']]);
             $cpf = String::retirarMaskCpfCnpj($data['cpf']);
             $cnpj = String::retirarMaskCpfCnpj($data['cnpj']);
 
@@ -51,13 +51,13 @@ class FornecedorService extends AbstractService
 
                 $entity->setPessoa($pessoa);
                 $entity->setId($pessoa->getId());
-                $entity->setIdExterno($data['idExterno']);
+                $entity->setCodExterno($data['codExterno']);
                 $this->em->persist($entity);
             } else {
                 if (!in_array($entity->getCpfCnpj(false), [$cpf, $cnpj])) {
                     $cpfCnpj = (!empty($cpf)) ? $cpf : $cnpj;
                     $nome = $entity->getNome();
-                    throw new \Exception("O CPF/CNPJ: '$cpfCnpj' já está cadastrado no código '$data[idExterno]' para o fornecedor '$nome'");
+                    throw new \Exception("O CPF/CNPJ: '$cpfCnpj' já está cadastrado no código '$data[codExterno]' para o fornecedor '$nome'");
                 }
                 $this->em->getRepository(Fornecedor::class)->tryUpdate($entity->getPessoa(), $data);
             }

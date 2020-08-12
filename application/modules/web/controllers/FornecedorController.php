@@ -30,7 +30,7 @@ class Web_FornecedorController extends \Wms\Controller\Action
                     ->orderBy('p.nome');
 
             if (!empty($codigo)) {
-                $source->andWhere("f.idExterno = $codigo");
+                $source->andWhere("f.codExterno = $codigo");
             }
             if (!empty($nome)) {
                 $nomeFornecedor = mb_strtoupper($nome, 'UTF-8');
@@ -49,7 +49,7 @@ class Web_FornecedorController extends \Wms\Controller\Action
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
             $grid->addColumn(array(
                         'label' => 'Código',
-                        'index' => 'idExterno'
+                        'index' => 'codExterno'
                     ))
                     ->addColumn(array(
                         'label' => 'Razão Social',

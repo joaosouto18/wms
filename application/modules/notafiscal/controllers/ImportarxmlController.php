@@ -8,6 +8,7 @@ use \Wms\Domain\Entity\NotaFiscal,
     Zend\Dom\Query,
     Zend\Config\Xml,
     \Wms\Module\Web\Page;
+use Wms\Service\Importacao;
 
 /**
  * Description of Notafiscal_ImportarxmlController
@@ -106,8 +107,6 @@ class Notafiscal_ImportarxmlController extends Crud
 
     private function salvarNotaEntrada($result){
         try {
-            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-            $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
             $idFornecedor   = trim($result['NotaFiscal']['COD_FORNECEDOR']);
             $numero         = trim($result['NotaFiscal']['NUM_NOTA_FISCAL']);
             $serie          = trim($result['NotaFiscal']['COD_SERIE_NOTA_FISCAL']);
@@ -115,7 +114,8 @@ class Notafiscal_ImportarxmlController extends Crud
             $placa          = trim($result['NotaFiscal']['DSC_PLACA_VEICULO']);
             $bonificacao    = 'N';
             $itens          = $result['NotaFiscalItem'];
-            $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, null, 0);
+            $importacaoService = new Importacao(true);
+            $importacaoService->saveNotaFiscal($this->_em, $idFornecedor, $numero, $serie,$dataEmissao, $placa, $itens, $bonificacao,null, true, 'E' );
             $this->addFlashMessage("success", "Nota Fiscal $numero / $serie importada com sucesso");
 
         } catch (Exception $e) {

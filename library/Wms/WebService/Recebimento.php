@@ -178,7 +178,7 @@ class Wms_WebService_Recebimento extends Wms_WebService
             if ($salvarNotas && isset($notasFiscais->notas)) {
                 ///itera nas notas fiscais enviadas
                 foreach ($notasFiscais->notas as $dadosNota) {
-                    $fornecedor = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $dadosNota->idFornecedor));
+                    $fornecedor = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('codExterno' => $dadosNota->idFornecedor));
 
                     if ($fornecedor == null)
                         throw new \Exception('Fornecedor não encontrado');

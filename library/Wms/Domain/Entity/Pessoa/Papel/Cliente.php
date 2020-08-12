@@ -11,25 +11,13 @@ use Wms\Domain\Entity\Pessoa,
  * @Table(name="CLIENTE")
  * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\ClienteRepository")
  */
-class Cliente implements Ator, EmissorInterface {
+class Cliente extends Emissor implements Ator {
 
     /**
-     * @var integer $id
-     * @Column(name="COD_PESSOA", type="integer", nullable=false)
-     * @Id
+     * @var string
+     * @Column(name="COD_EXTERNO", type="string", nullable=false)
      */
-    protected $id;
-
-    /**
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa")
-     * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_PESSOA")
-     */
-    protected $pessoa;
-
-    /**
-     * @Column(name="COD_CLIENTE_EXTERNO", type="string", nullable=false)
-     */
-    protected $codClienteExterno;
+    protected $codExterno;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\MapaSeparacao\Praca")
@@ -43,48 +31,14 @@ class Cliente implements Ator, EmissorInterface {
      */
     protected $rota;
 
-    public function setCodClienteExterno($codClienteExterno)
+    public function setCodExterno($codExterno)
     {
-        $this->codClienteExterno = $codClienteExterno;
-    }
-
-    public function getCodClienteExterno()
-    {
-        return $this->codClienteExterno;
+        $this->codExterno = $codExterno;
     }
 
     public function getCodExterno()
     {
-        return $this->codClienteExterno;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function setPessoa($pessoa)
-    {
-        $this->pessoa = $pessoa;
-    }
-
-    /**
-     * @return Pessoa
-     */
-    public function getPessoa()
-    {
-        return $this->pessoa;
+        return $this->codExterno;
     }
 
     public function getPraca()
@@ -113,32 +67,4 @@ class Cliente implements Ator, EmissorInterface {
         $this->rota = $rota;
     }
 
-    /**
-     * @param bool $maskOn
-     * @return string
-     * @throws \Exception
-     */
-    public function getCpfCnpj($maskOn = true)
-    {
-        if (is_a($this->pessoa, Pessoa\Fisica::class)) {
-            return $this->pessoa->getCpf($maskOn);
-        } else if (is_a($this->pessoa, Pessoa\Juridica::class)) {
-            return $this->pessoa->getCnpj($maskOn);
-        }
-        throw new \Exception("Tipo Pessoa não identificado!");
-    }
-
-    /**
-     * @return string
-     * @throws \Exception
-     */
-    public function getNome()
-    {
-        if (is_a($this->pessoa, Pessoa\Fisica::class)) {
-            return $this->pessoa->getNome();
-        } else if (is_a($this->pessoa, Pessoa\Juridica::class)){
-            return ($this->pessoa->getNomeFantasia() != null) ? $this->pessoa->getNomeFantasia() : $this->pessoa->getNome();
-        }
-        throw new \Exception("Tipo Pessoa não identificado!");
-    }
 }

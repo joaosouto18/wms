@@ -619,7 +619,7 @@ class Mobile_ExpedicaoController extends Action {
 
         $codCliente = $expVolumePatrimonioEn->getTipoVolume();
         $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
-        $clienteEn = $clienteRepo->findBy(array('codClienteExterno' => $codCliente));
+        $clienteEn = $clienteRepo->findBy(array('codExterno' => $codCliente));
 
         $dscVolume = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio')->find($volume)->getDescricao();
 

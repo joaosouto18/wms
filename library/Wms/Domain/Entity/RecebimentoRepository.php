@@ -1647,7 +1647,7 @@ class RecebimentoRepository extends EntityRepository
                 $options = array(
                     0 => $notaFiscalEntity->getNumero(),
                     1 => $notaFiscalEntity->getSerie(),
-                    2 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                    2 => $notaFiscalEntity->getFornecedor()->getCodExterno(),
                     3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
                     4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                     5 => $notaFiscalEntity->getCodRecebimentoErp(),
@@ -2355,7 +2355,7 @@ class RecebimentoRepository extends EntityRepository
                 $options = [];
                 $options[] = $nota->getSerie();
                 $options[] = $nota->getNumero();
-                $options[] = $nota->getFornecedor()->getIdExterno();
+                $options[] = $nota->getFornecedor()->getCodExterno();
                 $options[] = date_format($nota->getDataEmissao(), $formatoData);
                 $options[] = $usuario->getCodErp();
 
@@ -2506,7 +2506,7 @@ class RecebimentoRepository extends EntityRepository
                     $options = array(
                         0 => $notaFiscalEntity->getNumero(),
                         1 => $notaFiscalEntity->getSerie(),
-                        2 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                        2 => $notaFiscalEntity->getFornecedor()->getCodExterno(),
                         3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
                         4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                         5 => $notaFiscalEntity->getCodRecebimentoErp(),
@@ -2568,7 +2568,7 @@ class RecebimentoRepository extends EntityRepository
 
                 foreach ($nfsEntity as $notaFiscalEntity) {
                     $nfResult = $wsNotaFiscal->buscarNf(
-                            $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                            $notaFiscalEntity->getFornecedor()->getCodExterno(),
                             $notaFiscalEntity->getNumero(),
                             $notaFiscalEntity->getSerie(),
                             $notaFiscalEntity->getDataEmissao()
@@ -2585,7 +2585,7 @@ class RecebimentoRepository extends EntityRepository
                             7 => $notaFiscalEntity->getNumero(),
                             8 => $notaFiscalEntity->getSerie(),
                             9 => $notaFiscalEntity->getDataEmissao(),
-                            10 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                            10 => $notaFiscalEntity->getFornecedor()->getCodExterno(),
                             11 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj()
                         );
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);

@@ -6,18 +6,16 @@ use Core\Grid\Exception;
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Query;
 use Wms\Domain\Entity\Armazenagem\Unitizador;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Enderecamento\VSaldoCompleto;
 use Wms\Domain\Entity\Enderecamento\VSaldoCompletoRepository;
 use Wms\Domain\Entity\Expedicao;
-use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Inventario;
-use Wms\Domain\Entity\NotaFiscal as NFEntity;
+use Wms\Domain\Entity\NotaFiscal\Tipo as TipoNotaFiscal;
+use Wms\Domain\Entity\NotaFiscal as NotaFiscal;
 use Wms\Domain\Entity\NotaFiscalRepository;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -25,15 +23,13 @@ use Wms\Domain\Entity\Pessoa\Juridica;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
-use Wms\Domain\Entity\Produto\Classe;
 use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Domain\Entity\Util\SiglaRepository;
 use Wms\Math;
-use Wms\Module\Web\Controller\Action;
 use Wms\Util\CodigoBarras;
 use Core\Util\Produto as ProdutoUtil;
 use Zend\Stdlib\Configurator;
-use Wms\Util\Endereco as EnderecoUtil;
+use \Wms\Domain\Entity\Pessoa\Papel as Papel;
 
 class Importacao
 {
@@ -143,7 +139,7 @@ class Importacao
             $entity = new Cliente();
             $entity->setPessoa($pessoa);
             $entity->setId($pessoa->getId());
-            $entity->setCodClienteExterno($codExterno);
+            $entity->setCodExterno($codExterno);
             $em->persist($entity);
             return $entity;
         }catch (\Exception $e){
@@ -164,7 +160,7 @@ class Importacao
             $entity = new Fornecedor();
             $entity->setPessoa($pessoa);
             $entity->setId($pessoa->getId());
-            $entity->setIdExterno($codExterno);
+            $entity->setCodExterno($codExterno);
             $em->persist($entity);
             return true;
         }catch (\Exception $e){
@@ -186,7 +182,7 @@ class Importacao
             /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
             $ClienteRepo = $repositorios['clienteRepo'];
             if (isset($cliente['codClienteExterno'])) {
-                $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
+                $entityCliente = $ClienteRepo->findOneBy(array('codExterno' => $cliente['codClienteExterno']));
             } else {
                 $entityCliente = null;
             }
@@ -257,7 +253,7 @@ class Importacao
                 }
 
                 $entityCliente->setId($entityPessoa->getId());
-                $entityCliente->setCodClienteExterno($cliente['codClienteExterno']);
+                $entityCliente->setCodExterno($cliente['codClienteExterno']);
 
                 $em->persist($entityCliente);
 
@@ -299,8 +295,8 @@ class Importacao
 
         $entityFornecedor = null;
 
-        if (isset($fornecedor['idExterno'])) {
-            $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $fornecedor['idExterno']));
+        if (isset($fornecedor['codExterno'])) {
+            $entityFornecedor = $fornecedorRepo->findOneBy(array('codExterno' => $fornecedor['codExterno']));
         }
 
         $entityPessoa = null;
@@ -380,7 +376,7 @@ class Importacao
 
             try {
                 $entityFornecedor->setId($entityPessoa->getId());
-                $entityFornecedor->setIdExterno($fornecedor['idExterno']);
+                $entityFornecedor->setCodExterno($fornecedor['codExterno']);
                 $entityFornecedor->setPessoa($entityPessoa);
 
                 $em->persist($entityFornecedor);
@@ -389,26 +385,36 @@ class Importacao
                 return $e->getMessage();
             }
         }
-        return "Já existe fornecedor com este código ". $fornecedor['idExterno'];
+        return "Já existe fornecedor com este código ". $fornecedor['codExterno'];
 
     }
 
-    public function saveNotaFiscal($em, $idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $showExpt = true, $tipoNota = null)
+    public function saveNotaFiscal($em, $idEmissor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $showExpt = true, $tipoNota = null)
     {
-        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+        /** @var NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-        /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
-        $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
-        if (isset($idFornecedor)) {
-            $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $idFornecedor));
+
+        if (!empty($tipoNota)) {
+            $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['codExterno' => $tipoNota]);
+            if (empty($tipoNota))
+                throw new Exception("Tipo de nota '$tipoNota' não identificado");
+        } else {
+            $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['recebimentoDefault' => true]);
+        }
+
+        /** @var $tipoNotaEn TipoNotaFiscal */
+        if ($tipoNotaEn->getEmissor() === Papel\Emissor::EMISSOR_FORNECEDOR) {
+            $emissorEntity = $em->getRepository(Papel\Fornecedor::class)->findOneBy(array('codExterno' => $idEmissor));
+        } else {
+            $emissorEntity = $em->getRepository(Papel\Cliente::class)->findOneBy(array('codExterno' => $idEmissor));
         }
         /** @var NotaFiscal $notaFiscalEn */
-        $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $entityFornecedor->getId()));
+        $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'emissor' => $emissorEntity, 'tipo' => $tipoNotaEn));
         if (!$notaFiscalEn) {
-            $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao,null, $tipoNota);
+            $notaFiscalRepo->salvarNota($emissorEntity, $tipoNotaEn, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao,null);
         } else {
             $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
-            if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
+            if ($statusNotaFiscal == NotaFiscal::STATUS_RECEBIDA) {
                 if ($showExpt) {
                     throw new \Exception ("Não é possível alterar, NF " . $notaFiscalEn->getNumero() . " já recebida");
                 } else {
@@ -416,8 +422,8 @@ class Importacao
                 }
             }
 
-            if ($notaFiscalEn->getStatus()->getId() == \Wms\Domain\Entity\NotaFiscal::STATUS_CANCELADA) {
-                $statusEntity = $em->getReference('wms:Util\Sigla', \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA);
+            if ($notaFiscalEn->getStatus()->getId() == NotaFiscal::STATUS_CANCELADA) {
+                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscal::STATUS_INTEGRADA);
                 $notaFiscalEn->setRecebimento(null);
                 $notaFiscalEn->setStatus($statusEntity);
                 $em->persist($notaFiscalEn);
@@ -492,7 +498,7 @@ class Importacao
             if (empty($pedido['carga']))
                 throw new \Exception("Carga: $pedido[codCargaExterno] não foi encontrada");
 
-            $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
+            $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codExterno' => $pedido['codCliente']));
 
             if (empty($pedido['pessoa']) && !empty($pedido['cpf_cnpj'])) {
                 $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($pedido['cpf_cnpj']);
@@ -519,7 +525,7 @@ class Importacao
                         if (empty($result)){
                             $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
                         } else {
-                            $result->setCodClienteExterno($pedido['codCliente']);
+                            $result->setCodExterno($pedido['codCliente']);
                             $em->persist($result);
                             $em->flush($result);
                         }
@@ -558,7 +564,7 @@ class Importacao
                         if (empty($result)) {
                             $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
                         } else {
-                            $result->setCodClienteExterno($pedido['codCliente']);
+                            $result->setCodExterno($pedido['codCliente']);
                             $em->persist($result);
                             $em->flush($result);
                         }

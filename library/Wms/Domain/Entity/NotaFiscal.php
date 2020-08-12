@@ -5,7 +5,7 @@ namespace Wms\Domain\Entity;
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\NotaFiscal\Item;
 use Wms\Domain\Entity\NotaFiscal\Tipo;
-use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
+use Wms\Domain\Entity\Pessoa\Papel\Emissor;
 
 /**
  * Nota fiscal
@@ -53,25 +53,16 @@ class NotaFiscal
     /**
      * Emissor da nota fiscal
      * 
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Fornecedor", cascade={"persist"})
-     * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_FORNECEDOR")
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Emissor", cascade={"persist"})
+     * @JoinColumn(name="COD_EMISSOR", referencedColumnName="COD_EMISSOR")
      * @var \Wms\Domain\Entity\Pessoa\Papel\EmissorInterface
      */
-    protected $fornecedor;
-
-    /**
-     * Emissor da nota fiscal de devolução
-     *
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Cliente", cascade={"persist"})
-     * @JoinColumn(name="COD_CLIENTE", referencedColumnName="COD_PESSOA")
-     * @var \Wms\Domain\Entity\Pessoa\Papel\EmissorInterface
-     */
-    protected $cliente;
+    protected $emissor;
 
     /**
      * Data de emissão da nota fiscal
      * 
-     * @var date $dataEmissao
+     * @var \DateTime $dataEmissao
      * @Column(name="DAT_EMISSAO", type="date", nullable=false)
      */
     protected $dataEmissao;
@@ -112,7 +103,7 @@ class NotaFiscal
     /**
      * Data e hora da entrada da nota
      * 
-     * @var datetime $dataEntrada
+     * @var \DateTime $dataEntrada
      * @Column(name="DTH_ENTRADA", type="datetime", nullable=false)
      */
     protected $dataEntrada;
@@ -220,14 +211,18 @@ class NotaFiscal
         return $this;
     }
 
-    public function getFornecedor()
+    public function getEmissor()
     {
-        return $this->fornecedor;
+        return $this->emissor;
     }
 
-    public function setFornecedor($fornecedor)
+    /**
+     * @param $emissor Emissor
+     * @return $this
+     */
+    public function setEmissor($emissor)
     {
-        $this->fornecedor = $fornecedor;
+        $this->emissor = $emissor;
         return $this;
     }
 
@@ -267,11 +262,6 @@ class NotaFiscal
     {
         $this->status = $status;
         return $this;
-    }
-
-    public function getIdFornecedor()
-    {
-        return $this->idFornecedor;
     }
     
     public function setDataEntrada(\DateTime $dataEntrada)
@@ -391,17 +381,17 @@ class NotaFiscal
     /**
      * @return mixed
      */
-    public function getTipoNotaFiscal()
+    public function getTipo()
     {
-        return $this->tipoNotaFiscal;
+        return $this->tipo;
     }
 
     /**
-     * @param mixed $tipoNotaFiscal
+     * @param Tipo $tipo
      */
-    public function setTipoNotaFiscal($tipoNotaFiscal)
+    public function setTipo($tipo)
     {
-        $this->tipoNotaFiscal = $tipoNotaFiscal;
+        $this->tipo = $tipo;
     }
 
     /**
@@ -418,49 +408,5 @@ class NotaFiscal
     public function setDivergencia($divergencia)
     {
         $this->divergencia = $divergencia;
-    }
-
-    /**
-     * @return EmissorInterface
-     */
-    public function getCliente()
-    {
-        return $this->cliente;
-    }
-
-    /**
-     * @param EmissorInterface $cliente
-     */
-    public function setCliente($cliente)
-    {
-        $this->cliente = $cliente;
-    }
-
-    /**
-     * @return Tipo
-     */
-    public function getTipo()
-    {
-        return $this->tipo;
-    }
-
-    /**
-     * @param Tipo $tipo
-     */
-    public function setTipo($tipo)
-    {
-        $this->tipo = $tipo;
-    }
-
-    /**
-     * @return EmissorInterface
-     */
-    public function getEmissor()
-    {
-        if ($this->tipo->getTipoResponsavel() === Tipo::EMISSOR_FORNECEDOR) {
-            return self::getFornecedor();
-        } else {
-            return self::getCliente();
-        }
     }
 }
