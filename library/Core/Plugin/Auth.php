@@ -62,25 +62,24 @@ class Auth extends \Zend_Controller_Plugin_Abstract {
         $module = $request->getModuleName();
 
         try {
-            if (!$this->auth->hasIdentity()) {
-                $controller = $this->notLoggedRoute['controller'];
-                $action = $this->notLoggedRoute['action'];
-                $module = $this->notLoggedRoute['module'];
-            } else if (in_array($action, $this->allowedAction)) {
-            // open action
-            } elseif(strstr($action, 'json') || strstr($action, 'ajax') || strstr($action, 'pdf')) {
-                //esse if garante que paginas com json declarado nao precisam passar por autenticacao
-            } elseif (!$this->isAuthorized($controller, $action, $request)) {
-                $controller = $this->forbiddenRoute['controller'];
-                $action = $this->forbiddenRoute['action'];
-                $module = $this->forbiddenRoute['module'];
-                $module = $this->notLoggedRoute['module'];
+            if (!in_array($action, $this->allowedAction) &&
+                //essa validação garante que paginas com json,ajax ou pdf declarado nao precisam passar por autenticacao
+                !(strstr($action, 'json') || strstr($action, 'ajax') || strstr($action, 'pdf'))) {
+                if (!$this->auth->hasIdentity()) {
+                    $controller = $this->notLoggedRoute['controller'];
+                    $action = $this->notLoggedRoute['action'];
+                    $module = $this->notLoggedRoute['module'];
+                } elseif (!$this->isAuthorized($controller, $action, $request)) {
+                    $controller = $this->forbiddenRoute['controller'];
+                    $action = $this->forbiddenRoute['action'];
+                    $module = $this->forbiddenRoute['module'];
+                    $module = $this->notLoggedRoute['module'];
 
-                $request->setParam('forbiddenModule',$request->getModuleName());
-                $request->setParam('forbiddenController',$request->getControllerName());
-                $request->setParam('forbiddenAction',$request->getActionName());
+                    $request->setParam('forbiddenModule',$request->getModuleName());
+                    $request->setParam('forbiddenController',$request->getControllerName());
+                    $request->setParam('forbiddenAction',$request->getActionName());
+                }
             }
-            
         } catch (\Zend_Acl_Role_Registry_Exception $e) {
             //problemas com identity invalida, limpo auth e peco para logar novamente
             \Wms\Service\Auth::logout();

@@ -196,11 +196,17 @@ class Bootstrap extends \Zend_Application_Bootstrap_Bootstrap //BaseBootstrap
     public function integracaoInitFunction()
     {
         $front = Zend_Controller_Front::getInstance();
-        $front->registerPlugin(new \Core\Plugin\Auth)
-            ->registerPlugin(new \Core\Plugin\SenhaProvisoria)
-            ->registerPlugin(new \Core\Plugin\NavigationTitle)
-            ->registerPlugin(new \Core\Plugin\Defaults)
-            ->registerPlugin(new \Wms\Plugin\Deposito);
+        $request = $front->getRequest();
+        $module = $request->getModuleName();
+        $controller = $request->getControllerName();
+        $action = $request->getActionName();
+        if ($module !== 'integracao' || $controller !== 'index' || $action !== 'run') {
+            $front->registerPlugin(new \Core\Plugin\Auth)
+                ->registerPlugin(new \Core\Plugin\SenhaProvisoria)
+                ->registerPlugin(new \Core\Plugin\NavigationTitle)
+                ->registerPlugin(new \Core\Plugin\Defaults)
+                ->registerPlugin(new \Wms\Plugin\Deposito);
+        }
     }
 
     public function inventarioInitFunction()
