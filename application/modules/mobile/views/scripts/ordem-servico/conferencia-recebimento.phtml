@@ -9,7 +9,7 @@
             if (!$nomFornecedor) : ?>
                 <p><span style="background-color: #ff9c00; font-size: 18px">Todas as notas do recebimento <?php echo $recebimento->getId() ?> foram removidas, cancele este recebimento</span></p>
             <?php else : ?>
-                <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?> - F: <?php echo $this->repo->getFornecedorbyRecebimento($recebimento->getId()) ?> </a>
+                <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?> - <?php echo $this->repo->getFornecedorbyRecebimento($recebimento->getId()) ?> </a>
             <?php endif; ?>
         <?php endforeach; ?>
 
@@ -22,7 +22,7 @@
                 if (!$nomFornecedor) : ?>
                     <p><span style="background-color: #ff9c00; font-size: 18px">Todas as notas do recebimento <?php echo $recebimento->getId() ?> foram removidas, cancele este recebimento</span></p>
                 <?php else : ?>
-                    <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?> - F: <?php echo $this->repo->getFornecedorbyRecebimento($recebimento->getId()) ?> </a>
+                    <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?> - <?php echo $this->repo->getFornecedorbyRecebimento($recebimento->getId()) ?> </a>
                 <?php endif; ?>
         <?php endforeach; ?>
     </div>

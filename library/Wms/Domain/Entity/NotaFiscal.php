@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\NotaFiscal\Item;
 use Wms\Domain\Entity\NotaFiscal\Tipo;
 use Wms\Domain\Entity\Pessoa\Papel\Emissor;
+use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
 
 /**
  * Nota fiscal
@@ -52,9 +53,27 @@ class NotaFiscal
 
     /**
      * Emissor da nota fiscal
-     * 
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Emissor", cascade={"persist"})
-     * @JoinColumn(name="COD_EMISSOR", referencedColumnName="COD_EMISSOR")
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Cliente", cascade={"persist"})
+     * @JoinColumn(name="COD_EMISSOR", referencedColumnName="COD_PESSOA")
+     * @var \Wms\Domain\Entity\Pessoa\Papel\Cliente
+     */
+    protected $cliente;
+
+    /**
+     * Emissor da nota fiscal
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Fornecedor", cascade={"persist"})
+     * @JoinColumn(name="COD_EMISSOR", referencedColumnName="COD_FORNECEDOR")
+     * @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor
+     */
+    protected $fornecedor;
+
+    /**
+     * Emissor da nota fiscal
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa", cascade={"persist"})
+     * @JoinColumn(name="COD_EMISSOR", referencedColumnName="COD_PESSOA")
      * @var \Wms\Domain\Entity\Pessoa\Papel\EmissorInterface
      */
     protected $emissor;
@@ -156,7 +175,7 @@ class NotaFiscal
     /**
      *
      * @ManyToOne(targetEntity="Wms\Domain\Entity\NotaFiscal\Tipo")
-     * @JoinColumn(name="COD_TIPO_NOTA_FISCAL", referencedColumnName="COD_TIPO")
+     * @JoinColumn(name="COD_TIPO_NOTA_FISCAL", referencedColumnName="COD_TIPO_NOTA_ENTRADA")
      * @var NotaFiscal\Tipo
      */
     protected $tipo;
@@ -211,18 +230,64 @@ class NotaFiscal
         return $this;
     }
 
+    /**
+     * @return \Wms\Domain\Entity\Pessoa\Papel\Fornecedor| \Wms\Domain\Entity\Pessoa\Papel\Cliente
+     */
     public function getEmissor()
     {
-        return $this->emissor;
+        if (self::getTipo()->getEmissor() === EmissorInterface::EMISSOR_CLIENTE) {
+            return $this->cliente;
+        } else {
+            return $this->fornecedor;
+        }
     }
 
     /**
-     * @param $emissor Emissor
+     * @return Pessoa\Papel\Fornecedor
+     */
+    public function getFornecedor()
+    {
+        return $this->fornecedor;
+    }
+
+    /**
+     * @param Pessoa\Papel\Fornecedor $fornecedor
+     */
+    public function setFornecedor($fornecedor)
+    {
+        $this->fornecedor = $fornecedor;
+    }
+
+    /**
+     * @return Pessoa\Papel\Cliente
+     */
+    public function getCliente()
+    {
+        return $this->cliente;
+    }
+
+    /**
+     * @param Pessoa\Papel\Cliente $cliente
+     */
+    public function setCliente($cliente)
+    {
+        $this->cliente = $cliente;
+    }
+
+    /**
+     * @param $emissor \Wms\Domain\Entity\Pessoa\Papel\Fornecedor| \Wms\Domain\Entity\Pessoa\Papel\Cliente
      * @return $this
      */
-    public function setEmissor($emissor)
+    public function setEmissor(EmissorInterface $emissor)
     {
-        $this->emissor = $emissor;
+        $this->emissor = $emissor->getPessoa();
+//        if (empty(self::getTipo()))
+//            throw new \Exception("O tipo da nota fiscal precisa ser atribuído antes do emissor");
+//        if (self::getTipo()->getEmissor() === EmissorInterface::EMISSOR_CLIENTE) {
+//            self::setCliente($emissor);
+//        } else {
+//            self::setFornecedor($emissor);
+//        }
         return $this;
     }
 
@@ -303,6 +368,7 @@ class NotaFiscal
     public function setObservacao($observacao)
     {
         $this->observacao = $observacao;
+        return $this;
     }
 
     /**
@@ -327,6 +393,7 @@ class NotaFiscal
     public function setPesoTotal($pesoTotal)
     {
         $this->pesoTotal = $pesoTotal;
+        return $this;
     }
 
     /**
@@ -343,6 +410,7 @@ class NotaFiscal
     public function setCodRecebimentoErp($codRecebimentoErp)
     {
         $this->codRecebimentoErp = $codRecebimentoErp;
+        return $this;
     }
 
     /**
@@ -359,6 +427,7 @@ class NotaFiscal
     public function setRecebimentoFinalizado($recebimentoFinalizado)
     {
         $this->recebimentoFinalizado = $recebimentoFinalizado;
+        return $this;
     }
 
 
@@ -368,6 +437,7 @@ class NotaFiscal
     public function setCodPessoaProprietario($codPessoaProprietario)
     {
         $this->codPessoaProprietario = $codPessoaProprietario;
+        return $this;
     }
 
     /**
@@ -379,7 +449,7 @@ class NotaFiscal
     }
 
     /**
-     * @return mixed
+     * @return Tipo
      */
     public function getTipo()
     {
@@ -392,6 +462,7 @@ class NotaFiscal
     public function setTipo($tipo)
     {
         $this->tipo = $tipo;
+        return $this;
     }
 
     /**
@@ -408,5 +479,6 @@ class NotaFiscal
     public function setDivergencia($divergencia)
     {
         $this->divergencia = $divergencia;
+        return $this;
     }
 }

@@ -173,12 +173,13 @@ class RecebimentoRepository extends EntityRepository
                 $parametroRecebimentoERP = $this->getSystemParameterValue('ID_INTEGRACAO_RECEBIMENTO_ERP');
 
                 $acaoEn = $acaoIntRepo->find($parametroRecebimentoERP);
+                /** @var NotaFiscalEntity $notaFiscal */
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $notasFiscais[0]);
                 $options = array(
                     0 => $notaFiscal->getEmissor()->getCodExterno(),
                     1 => $notaFiscal->getSerie(),
                     2 => $notaFiscal->getNumero(),
-                    3 => $notaFiscal->getFornecedor()->getPessoa()->getCnpj()
+                    3 => $notaFiscal->getEmissor()->getCpfCnpj()
                 );
                 $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn, $options, "E", "P", null, 611);
                 $serviceIntegracao = new Integracao($em, array('acao' => $acaoEn,
@@ -795,9 +796,10 @@ class RecebimentoRepository extends EntityRepository
     public function getFornecedorbyRecebimento($idRecebimento)
     {
         $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+        /** @var NotaFiscalEntity $nf */
         $nf = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
         if (empty($nf)) return false;
-        $fornecedor = $nf->getFornecedor()->getPessoa()->getNome();
+        $fornecedor = $nf->getEmissor()->getNome();
         return $fornecedor;
     }
 
@@ -1363,7 +1365,7 @@ class RecebimentoRepository extends EntityRepository
         extract($params);
 
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('r, b.descricao as dscBox, b, s.sigla as status, s.id as idStatus, p.nome as fornecedor, os.id idOrdemServicoManual,
+            ->select('r, b.descricao as dscBox, b, s.sigla as status, s.id as idStatus, p.nome as emissor, os.id idOrdemServicoManual,
                     os2.id idOrdemServicoColetor, NVL(os.id, os2.id) idOrdemServico, \'S\' AS indImprimirCB')
             ->addSelect("
                     (
@@ -1386,8 +1388,8 @@ class RecebimentoRepository extends EntityRepository
             ->innerJoin('r.status', 's')
             ->leftJoin('r.box', 'b')
             ->leftJoin('r.notasFiscais', 'nf3')
-            ->leftJoin('nf3.fornecedor', 'f')
-            ->leftJoin('f.pessoa', 'p')
+            ->leftJoin('nf3.emissor', 'e')
+            ->leftJoin('e.pessoa', 'p')
             ->leftJoin('r.ordensServicos', 'os', 'WITH', 'os.formaConferencia = :manual AND os.dataFinal IS NULL')
             ->leftJoin('r.ordensServicos', 'os2', 'WITH', 'os2.formaConferencia = :coletor AND os2.dataFinal IS NULL')
             ->orderBy('r.id')
@@ -1647,8 +1649,8 @@ class RecebimentoRepository extends EntityRepository
                 $options = array(
                     0 => $notaFiscalEntity->getNumero(),
                     1 => $notaFiscalEntity->getSerie(),
-                    2 => $notaFiscalEntity->getFornecedor()->getCodExterno(),
-                    3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
+                    2 => $notaFiscalEntity->getEmissor()->getCodExterno(),
+                    3 => $notaFiscalEntity->getEmissor()->getCpfCnpj(),
                     4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                     5 => $notaFiscalEntity->getCodRecebimentoErp(),
                     6 => $notaFiscalEntity->getRecebimento()->getId(),
@@ -2010,7 +2012,7 @@ class RecebimentoRepository extends EntityRepository
                 R.COD_RECEBIMENTO,
                 R.DTH_INICIO_RECEB,
                 B.DSC_BOX AS BOX,
-                F.FORNECEDOR as NOM_FANTASIA
+                F.EMISSOR as NOM_FANTASIA
            FROM RECEBIMENTO R
            INNER JOIN DEPOSITO D ON D.COD_DEPOSITO = R.COD_DEPOSITO
            LEFT JOIN ($sqlRecebimentosConferencia
@@ -2032,13 +2034,12 @@ class RecebimentoRepository extends EntityRepository
                  AND P.DSC_GRADE = V.DSC_GRADE
                  AND P.DSC_LOTE = V.DSC_LOTE
            LEFT JOIN BOX B ON R.COD_BOX = B.COD_BOX
-           LEFT JOIN (SELECT COD_RECEBIMENTO, MAX(FORNECEDOR) as FORNECEDOR
+           LEFT JOIN (SELECT COD_RECEBIMENTO, MAX(EMISSOR) as EMISSOR
                         FROM (SELECT DISTINCT
                                      NF.COD_RECEBIMENTO,
-                                     NVL(PJ.NOM_FANTASIA, PES.NOM_PESSOA) as FORNECEDOR
+                                     PES.NOM_PESSOA as EMISSOR
                                 FROM NOTA_FISCAL NF
-                                LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = NF.COD_FORNECEDOR
-                                LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_FORNECEDOR)
+                                LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_EMISSOR)
                        GROUP BY COD_RECEBIMENTO) F ON F.COD_RECEBIMENTO = R.COD_RECEBIMENTO
           WHERE NVL(D.IND_USA_ENDERECAMENTO, 'S') = 'S' AND (NVL(V.QTD,0) - NVL(P.QTD,0) >0)
             AND R.COD_STATUS NOT IN (" . Recebimento::STATUS_DESFEITO . "," . Recebimento::STATUS_CANCELADO . ")
@@ -2080,8 +2081,8 @@ class RecebimentoRepository extends EntityRepository
         } elseif (isset($uma) && !empty($uma)) {
             $where .= " AND R.COD_RECEBIMENTO IN (SELECT DISTINCT COD_RECEBIMENTO FROM PALETE WHERE UMA = $uma)";
         }
-        if (isset($idFornecedor) && !empty($idFornecedor)) {
-            $where .= " AND NF.COD_FORNECEDOR =  $idFornecedor ";
+        if (isset($idEmissor) && !empty($idEmissor)) {
+            $where .= " AND NF.COD_EMISSOR =  $idEmissor ";
 
         }
 
@@ -2100,15 +2101,15 @@ class RecebimentoRepository extends EntityRepository
                    OS.COD_OS AS idOrdemServicoManual,
                    OS2.COD_OS AS idOrdemServicoColetor,
                    'S' AS indImprimirCB,
-                   ST.DSC_SIGLA AS siglaTipoNota,
+                   TNF.DSC_TIPO_NOTA_ENTRADA AS DSCTIPONOTA,
                    REPLACE(REPLACE(NVL(RA.DSC_OBSERVACAO,''),'Recebimento iniciado pelo Usuário. ',''),'<br />','') as DSC_OBSERVACAO,
                    (
                         SELECT 
-                        LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_FORNECEDOR) AS fornecedor
-                        FROM (SELECT DISTINCT COD_FORNECEDOR, COD_RECEBIMENTO FROM NOTA_FISCAL)  NF4
-                        INNER JOIN PESSOA P ON (NF4.COD_FORNECEDOR = P.COD_PESSOA)
+                        LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_EMISSOR) AS emissor
+                        FROM (SELECT DISTINCT COD_EMISSOR, COD_RECEBIMENTO FROM NOTA_FISCAL)  NF4
+                        INNER JOIN PESSOA P ON (NF4.COD_EMISSOR = P.COD_PESSOA)
                         WHERE NF4.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-                    ) AS fornecedor,
+                    ) AS emissor,
                     (
                         SELECT 
                         COUNT(NF2.COD_NOTA_FISCAL)
@@ -2145,13 +2146,13 @@ class RecebimentoRepository extends EntityRepository
                      ) AS qtdMenor,
                     NVL(DE.IND_USA_ENDERECAMENTO, 'S') ENDERECA
                  FROM NOTA_FISCAL NF
+           INNER JOIN TIPO_NOTA_ENTRADA TNF ON TNF.COD_TIPO_NOTA_ENTRADA = NF.COD_TIPO_NOTA_FISCAL
            RIGHT JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
-           LEFT JOIN RECEBIMENTO_ANDAMENTO RA ON (RA.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 456) 
+            LEFT JOIN RECEBIMENTO_ANDAMENTO RA ON (RA.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 456) 
            INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
             LEFT JOIN FILIAL FL ON FL.COD_FILIAL = NF.COD_FILIAL
             LEFT JOIN DEPOSITO DE ON DE.COD_FILIAL = FL.COD_FILIAL
             LEFT JOIN BOX B ON (R.COD_BOX = B.COD_BOX)
-            LEFT JOIN SIGLA ST ON ST.COD_SIGLA = NF.COD_TIPO_NOTA_FISCAL
             LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
             LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                 WHERE CASE WHEN FL.COD_FILIAL IS NOT NULL AND FL.IND_ATIVO = 'S' THEN CASE WHEN DE.COD_DEPOSITO = $idDeposito THEN 1 ELSE 0 END ELSE 1 END = 1 " . $where . " ORDER BY TO_NUMBER(R.COD_RECEBIMENTO) DESC";
@@ -2355,7 +2356,7 @@ class RecebimentoRepository extends EntityRepository
                 $options = [];
                 $options[] = $nota->getSerie();
                 $options[] = $nota->getNumero();
-                $options[] = $nota->getFornecedor()->getCodExterno();
+                $options[] = $nota->getEmissor()->getCodExterno();
                 $options[] = date_format($nota->getDataEmissao(), $formatoData);
                 $options[] = $usuario->getCodErp();
 
@@ -2420,11 +2421,10 @@ class RecebimentoRepository extends EntityRepository
     {
         $sql = "SELECT DISTINCT TR.RECEBIMENTOFISICOBENNER
                   FROM NOTA_FISCAL NF
-                  LEFT JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
                  INNER JOIN TR_NOTA_FISCAL_ENTRADA TR 
                     ON NF.NUM_NOTA_FISCAL = TR.NUM_NOTA_FISCAL
                    AND NF.COD_SERIE_NOTA_FISCAL = TR.COD_SERIE_NOTA_FISCAL
-                   AND F.COD_EXTERNO = TR.COD_FORNECEDOR
+                   AND NF.COD_EMISSOR = TR.COD_FORNECEDOR
                    AND TR.RECEBIMENTOFISICOBENNER IS NOT NULL
                  WHERE NF.COD_RECEBIMENTO = " . $idRecebimento;
         $idsBenner = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -2506,8 +2506,8 @@ class RecebimentoRepository extends EntityRepository
                     $options = array(
                         0 => $notaFiscalEntity->getNumero(),
                         1 => $notaFiscalEntity->getSerie(),
-                        2 => $notaFiscalEntity->getFornecedor()->getCodExterno(),
-                        3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
+                        2 => $notaFiscalEntity->getEmissor()->getCodExterno(),
+                        3 => $notaFiscalEntity->getEmissor()->getCpfCnpj(),
                         4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                         5 => $notaFiscalEntity->getCodRecebimentoErp(),
                         6 => $notaFiscalEntity->getDivergencia(),
@@ -2568,7 +2568,7 @@ class RecebimentoRepository extends EntityRepository
 
                 foreach ($nfsEntity as $notaFiscalEntity) {
                     $nfResult = $wsNotaFiscal->buscarNf(
-                            $notaFiscalEntity->getFornecedor()->getCodExterno(),
+                            $notaFiscalEntity->getEmissor()->getCodExterno(),
                             $notaFiscalEntity->getNumero(),
                             $notaFiscalEntity->getSerie(),
                             $notaFiscalEntity->getDataEmissao()
@@ -2585,8 +2585,8 @@ class RecebimentoRepository extends EntityRepository
                             7 => $notaFiscalEntity->getNumero(),
                             8 => $notaFiscalEntity->getSerie(),
                             9 => $notaFiscalEntity->getDataEmissao(),
-                            10 => $notaFiscalEntity->getFornecedor()->getCodExterno(),
-                            11 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj()
+                            10 => $notaFiscalEntity->getEmissor()->getCodExterno(),
+                            11 => $notaFiscalEntity->getEmissor()->getCpfCnpj()
                         );
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                         if (!$resultAcao === true) {

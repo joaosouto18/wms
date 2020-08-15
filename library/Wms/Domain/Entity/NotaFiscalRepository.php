@@ -56,8 +56,11 @@ class NotaFiscalRepository extends EntityRepository {
         $sessao = new \Zend_Session_Namespace('deposito');
         $idDeposito = $sessao->idDepositoLogado;
 
+        $emisCLI = Pessoa\Papel\EmissorInterface::EMISSOR_CLIENTE;
+        $emisFOR = Pessoa\Papel\EmissorInterface::EMISSOR_FORNECEDOR;
+
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('nf, p.nomeFantasia fornecedor')
+                ->select('nf, p.nome emissor')
                 ->addSelect("
                         (
                             SELECT SUM(nfi.quantidade)
@@ -68,8 +71,10 @@ class NotaFiscalRepository extends EntityRepository {
                         AS qtdProduto
                     ")
                 ->from('wms:NotaFiscal', 'nf')
-                ->leftJoin('nf.fornecedor', 'f')
-                ->leftJoin('f.pessoa', 'p')
+                ->innerJoin("nf.tipo", 't')
+                ->leftJoin('nf.cliente', 'c', 'WITH', "t.emissor = '$emisCLI'" )
+                ->leftJoin('nf.fornecedor', 'f', 'WITH', "t.emissor = '$emisFOR'" )
+                ->innerJoin(Pessoa::class, 'p', 'WITH', 'c.id = p OR f.id = p')
                 ->leftJoin("nf.filial", "fl")
                 ->leftJoin("wms:Deposito", "dep", "WITH", "dep.filial = fl")
                 ->where('nf.recebimento IS NULL')
@@ -78,8 +83,8 @@ class NotaFiscalRepository extends EntityRepository {
                 ->setParameter(1, NotaFiscalEntity::STATUS_INTEGRADA)
                 ->orderBy('nf.placa, nf.dataEmissao, nf.numero');
 
-        if ($idFornecedor)
-            $dql->andWhere("nf.fornecedor = '" . $idFornecedor . "'");
+        if ($idEmissor)
+            $dql->andWhere("nf.emissor = '" . $idEmissor . "'");
 
         if ($numero)
             $dql->andWhere("nf.numero = '" . $numero . "'");
@@ -442,7 +447,7 @@ class NotaFiscalRepository extends EntityRepository {
                                                            AND RC2.DSC_GRADE = NFI.DSC_GRADE 
                                                            AND NVL(RC2.DSC_LOTE, 0) = NVL(NFIL.DSC_LOTE, 0)
                                                            AND NVL(RC2.COD_NOTA_FISCAL, 0) = NVL(NFI.COD_NOTA_FISCAL, 0))
-                WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
+                WHERE NF.COD_EMISSOR = '$idFornecedor' 
                                 AND NF.NUM_NOTA_FISCAL = '$numero' 
                                 AND NF.COD_SERIE_NOTA_FISCAL = '$serie'
                                 AND NF.COD_STATUS = '$idStatus' 
@@ -892,7 +897,7 @@ class NotaFiscalRepository extends EntityRepository {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select("nf.numero as numNota, nf.serie,
                           nfi.id as idNotaFiscalItem, $str as qtdItem,
-                          pj.nomeFantasia as fornecedor,
+                          pes.nome as emissor,
                           p.id as idProduto, p.grade, p.descricao as dscProduto, p.validade,
                           ls.descricao as dscLinhaSeparacao,
                           fb.nome as fabricante,
@@ -905,8 +910,8 @@ class NotaFiscalRepository extends EntityRepository {
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
-                ->innerJoin('nf.fornecedor', 'f')
-                ->innerJoin('f.pessoa', 'pj')
+                ->innerJoin('nf.emissor', 'e')
+                ->innerJoin('e.pessoa', 'pes')
                 ->innerJoin('nfi.produto', 'p')
                 ->innerJoin('p.tipoComercializacao', 'tc')
                 ->leftJoin('p.linhaSeparacao', 'ls')
@@ -1112,6 +1117,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
             $notaFiscalEntity->setDataEmissao($objDataEmissao);
+            $notaFiscalEntity->setTipo($tipoNota);
             $notaFiscalEntity->setEmissor($emissor);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);
@@ -1119,7 +1125,6 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setPlaca($placa);
             $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
             $notaFiscalEntity->setFilial($filial);
-            $notaFiscalEntity->setTipo($tipoNota);
             $pesoTotal = 0;
             $itens = $this->unificarItens($itens);
             if (count($itens) > 0) {
@@ -1340,14 +1345,13 @@ class NotaFiscalRepository extends EntityRepository {
     public function getTipoNotaByUma($idUma)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('tp.sigla, tp.id')
+            ->select('tp.descricao, tp.id')
             ->from('wms:Enderecamento\Palete', 'p')
-            ->innerJoin('p.recebimento', 'r')
-            ->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
-            ->innerJoin('nf.tipoNotaFiscal', 'tp')
+            ->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = p.recebimento')
+            ->innerJoin('nf.tipo', 'tp')
             ->where("p.id = $idUma")
-            ->andWhere('tp.id = '.NotaFiscal::DEVOLUCAO_CLIENTE)
-            ->groupBy('tp.sigla, tp.id');
+            ->andWhere('tp.devolucaoDefault = 1')
+            ->groupBy('tp.descricao, tp.id');
 
         $result = $sql->getQuery()->getResult();
 

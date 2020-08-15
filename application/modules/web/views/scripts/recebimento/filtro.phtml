@@ -9,7 +9,7 @@
                     <td>Data Inicio do Recebimento:</td>
                     <td>Data Final do Recebimento:</td>
                     <td>Status do Recebimento:</td>
-                    <td>Fornecedor:</td>
+                    <td>Emissor:</td>
                     <td><?php if(strpos($_SERVER['REQUEST_URI'], 'relatorio_uma') > 0) {echo 'Ordenação:';} ?></td>
                     <td rowspan="2"><?php echo $this->element->submit; ?></td>
                 </tr>
@@ -19,8 +19,8 @@
                     <td><?php echo $this->element->dataInicial1; ?> a <?php echo $this->element->dataInicial2; ?></td>
                     <td><?php echo $this->element->dataFinal1; ?> a <?php echo $this->element->dataFinal2; ?></td>
                     <td><?php echo $this->element->status; ?></td>
-                    <td><?php echo $this->element->fornecedor; ?></td>
-                    <td><?php echo $this->element->idFornecedor; ?></td>
+                    <td><?php echo $this->element->emissor; ?></td>
+                    <td><?php echo $this->element->idEmissor; ?></td>
                     <td><?php if(strpos($_SERVER['REQUEST_URI'], 'relatorio_uma') > 0) {echo $this->element->ordem;} ?></td>
                 </tr>
             </table>

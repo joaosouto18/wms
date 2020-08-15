@@ -1014,15 +1014,20 @@ class Integracao {
         $erpRecebimento = array();
         $qtdNotasComBonus = 0;
         foreach ($notasFiscaisWms as $idNotaFiscal) {
+            /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscal */
             $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
             $constaNoErp = false;
 
-            $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+            $idFornecedor = $notaFiscal->getEmissor()->getCodExterno();
             $numeroSerie = $notaFiscal->getSerie();
             $numeroNota = $notaFiscal->getNumero();
+            $tipoNota = $notaFiscal->getTipo()->getCodExterno();
 
             foreach ($notasFiscaisErp as $key => $erpNotaFiscal) {
-                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota &&
+                    $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie &&
+                    $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor &&
+                    $erpNotaFiscal['TIPO_NOTA_FISCAL'] == $tipoNota) {
                     $constaNoErp = true;
                     unset($notasFiscaisErp[$key]);
                     break;
@@ -1030,7 +1035,7 @@ class Integracao {
             }
             if ($constaNoErp == false) {
                 if ($qtdNotasComBonus > 0) {
-                    throw new \Exception('Nota Fiscal número ' . $numeroNota . ' série ' . $numeroSerie . ' não consta no recebimento do ERP!');
+                    throw new \Exception("Nota Fiscal número $numeroNota série $numeroSerie do tipo $tipoNota não consta no recebimento do ERP!");
                 }
             } else {
                 $qtdNotasComBonus = $qtdNotasComBonus + 1;
@@ -1042,18 +1047,22 @@ class Integracao {
             foreach ($notasFiscaisWms as $key => $idNotaFiscal) {
                 $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
 
-                $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+                $idFornecedor = $notaFiscal->getEmissor()->getCodExterno();
                 $numeroSerie = $notaFiscal->getSerie();
                 $numeroNota = $notaFiscal->getNumero();
+                $tipoNota = $notaFiscal->getTipo()->getCodExterno();
 
-                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota &&
+                    $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie &&
+                    $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor &&
+                    $erpNotaFiscal['TIPO_NOTA_FISCAL'] == $tipoNota) {
                     $constaNoWms = true;
                     unset($notasFiscaisWms[$key]);
                     break;
                 }
             }
             if ($constaNoWms == false) {
-                throw new \Exception('Nota Fiscal número ' . $erpNotaFiscal['NUM_NOTA'] . ' série ' . $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] . ' não consta no recebimento do WMS!');
+                throw new \Exception("Nota Fiscal número $erpNotaFiscal[NUM_NOTA] série $erpNotaFiscal[COD_SERIE_NOTA_FISCAL] do tipo $erpNotaFiscal[TIPO_NOTA_FISCAL] não consta no recebimento do WMS!");
             }
         }
         return true;
@@ -1163,15 +1172,17 @@ class Integracao {
         //CONEXAO DE BANCO PARA ATUALIZAR O ESTOQUE
         $conexaoEn = $acaoEn->getConexao();
 
+        /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
         foreach ($notasFiscaisEntities as $notaFiscalEntity) {
             //OBTEM DADOS NECESSARIOS DA NOTA FISCAL
-            $idFornecedor = $notaFiscalEntity->getFornecedor()->getIdExterno();
+            $idFornecedor = $notaFiscalEntity->getEmissor()->getCodExterno();
             $numero = $notaFiscalEntity->getNumero();
             $serie = $notaFiscalEntity->getSerie();
+            $tipoNota = $notaFiscalEntity->getTipo()->getCodExterno();
             $dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
 
             //BUSCA CONFERENCIA DOS ITENS DA NOTA FISCAL
-            $result = $wsNotaFiscal->buscarNf($idFornecedor, $numero, $serie, $dataEmissao);
+            $result = $wsNotaFiscal->buscarNf($idFornecedor, $numero, $serie, $dataEmissao, $tipoNota);
             $possuiDivergencia = true;
             foreach ($result->itens as $chave => $item) {
                 //QUERY DO BANCO DE DADOS

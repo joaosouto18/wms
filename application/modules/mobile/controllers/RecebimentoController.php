@@ -108,11 +108,12 @@ class Mobile_RecebimentoController extends Action
             if (!$recebimentoEntity->inOperacao())
                 throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
 
+            /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
 
             if ($notaFiscalEntity) {
                 $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
-                $this->view->fornecedor     = $notaFiscalEntity->getEmissor()->getPessoa()->getNome();
+                $this->view->emissor     = $notaFiscalEntity->getEmissor()->getNome();
             }
 
             // verifica se tem ordem de servico aberto

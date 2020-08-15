@@ -3,6 +3,7 @@
 namespace Wms\Module\Web\Form\NotaFiscal;
 
 use Wms\Domain\Entity\Pessoa\Papel\Emissor;
+use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
 use Wms\Module\Web\Form;
 use \Wms\Domain\Entity\NotaFiscal\Tipo as TipoNF;
 
@@ -28,8 +29,8 @@ class Tipo extends Form
                 'required' => true,
                 'mostrarSelecione' => false,
                 'label' => 'Tipo Emissor',
-                'multiOptions' => Emissor::$arrResponsaveis,
-                'value' => Emissor::EMISSOR_FORNECEDOR,
+                'multiOptions' => TipoNF::$arrResponsaveis,
+                'value' => EmissorInterface::EMISSOR_FORNECEDOR,
             ))
             ->addDisplayGroup(
                 array('descricao', 'emissor', 'codExterno'), 'group', array('legend' => 'Tipo de Nota de Entrada')

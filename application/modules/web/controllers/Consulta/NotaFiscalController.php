@@ -2,7 +2,7 @@
 
 use Wms\Domain\Entity\NotaFiscal,
     Wms\Module\Web\Page,
-    Wms\Module\Web\Controller\Action\Crud,
+    \Wms\Domain\Entity\Pessoa as Pessoa,
     Wms\Module\Web\Form\Subform\FiltroNotaFiscal,
     Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity;
 
@@ -25,8 +25,11 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action {
 
             extract($values);
 
+            $emisCLI = Pessoa\Papel\EmissorInterface::EMISSOR_CLIENTE;
+            $emisFOR = Pessoa\Papel\EmissorInterface::EMISSOR_FORNECEDOR;
+
             $source = $this->em->createQueryBuilder()
-                    ->select('nf, r.id codRecebimento, p.nomeFantasia fornecedor, s.sigla as status')
+                    ->select('nf, r.id codRecebimento, p.nome emissor, s.sigla as status')
                     ->addSelect("
                         (
                             SELECT SUM(nfi.quantidade)
@@ -38,15 +41,18 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action {
                     ")
                     ->from('wms:NotaFiscal', 'nf')
                     ->leftJoin('nf.recebimento', 'r')
-                    ->innerJoin('nf.fornecedor', 'f')
-                    ->innerJoin('f.pessoa', 'p')
+                    ->innerJoin("nf.tipo", 't')
+                    ->leftJoin('nf.cliente', 'c', 'WITH', "t.emissor = '$emisCLI'" )
+                    ->leftJoin('nf.fornecedor', 'f', 'WITH', "t.emissor = '$emisFOR'" )
+                    ->innerJoin(Pessoa::class, 'p', 'WITH', 'c.id = p OR f.id = p')
                     ->leftJoin('nf.status', 's')
                     ->orderBy('nf.id', 'DESC');
 
-            if ($idFornecedor)
-                $source->andWhere("nf.fornecedor = '" . $idFornecedor . "'");
-            else if ($fornecedor)
-                $source->andWhere("p.nome LIKE '" . $fornecedor . "%'");
+            if ($idEmissor)
+                $source->andWhere("nf.emissor = '" . $idEmissor . "'");
+
+            else if ($emissor)
+                $source->andWhere("p.nome LIKE UPPER('%" . $emissor . "%')");
 
             if ($numero)
                 $source->andWhere("nf.numero = '" . $numero . "'");
@@ -94,8 +100,8 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action {
                         'render' => 'DataTime',
                     ))
                     ->addColumn(array(
-                        'label' => 'Fornecedor',
-                        'index' => 'fornecedor',
+                        'label' => 'Emissor',
+                        'index' => 'emissor',
                     ))
                     ->addColumn(array(
                         'label' => 'Status',
@@ -162,14 +168,18 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action {
      */
     public function viewNotaAjaxAction() {
         $id = $this->getRequest()->getParam('id');
-        $em = $this->em;
+
+        $emisCLI = Pessoa\Papel\EmissorInterface::EMISSOR_CLIENTE;
+        $emisFOR = Pessoa\Papel\EmissorInterface::EMISSOR_FORNECEDOR;
 
         // busco notas fiscais
         $dql = $this->em->createQueryBuilder()
-                ->select('nf.id, nf.numero, nf.serie, nf.dataEmissao, pj.nomeFantasia, s.sigla as status, s.id as idStatus')
+                ->select('nf.id, nf.numero, nf.serie, nf.dataEmissao, p.nome, s.sigla as status, s.id as idStatus')
                 ->from('wms:NotaFiscal', 'nf')
-                ->innerJoin('nf.fornecedor', 'f')
-                ->innerJoin('f.pessoa', 'pj')
+                ->innerJoin("nf.tipo", 't')
+                ->leftJoin('nf.cliente', 'c', 'WITH', "t.emissor = '$emisCLI'" )
+                ->leftJoin('nf.fornecedor', 'f', 'WITH', "t.emissor = '$emisFOR'" )
+                ->innerJoin(Pessoa::class, 'p', 'WITH', 'c.id = p OR f.id = p')
                 ->leftJoin('nf.status', 's')
                 ->where('nf.id = :id')
                 ->setParameter('id', $id);

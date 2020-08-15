@@ -45,7 +45,7 @@ class Web_Relatorio_ProdutosConferidosSenhaController extends \Wms\Controller\Ac
                     'index' => 'DATA_VALIDADE_DIGITADA',
                 ))
                 ->addColumn(array(
-                    'label' => 'ShelfLive',
+                    'label' => 'ShelfLife',
                     'index' => 'DIAS_SHELF_LIFE',
                 ))
                 ->addColumn(array(
