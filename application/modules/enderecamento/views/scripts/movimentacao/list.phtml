@@ -40,6 +40,7 @@
         if($this->controlaLote == 'S'){
             $colspan = 4;
         }
+        $this->possuiInativo = "N";
         foreach ($this->enderecos as $key => $endereco) {
             if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
 
@@ -60,7 +61,7 @@
                 $qtdReservaSaida = 0;
                 ?>
 
-                <tr class ="gTTitle">
+                <tr class ="gTTitle" >
                     <td><b><?php echo "CÓDIGO: " . $endereco['COD_PRODUTO'] ?></b></td>
                     <td><b><?php echo "GRADE: " . $endereco['DSC_GRADE'] ?></b></td>
                     <td colspan="3"><b><?php echo "PRODUTO: " . $endereco['DSC_PRODUTO'] ?></b></td>
@@ -72,7 +73,7 @@
                     </td>
                 </tr>
 
-                <tr class ="gTTitle">
+                <tr class ="gTTitle" >
                     <td><b>Endereço</b></td>
                     <td><b>Tipo</b></td>
                     <?php
@@ -91,8 +92,20 @@
                 <?php
                 $count++;
             }
-            ?><tr>
-                <td><?php echo $endereco['ENDERECO'] ?></td>
+            ?><tr  <?php
+                if ($endereco['SITUACAO'] == 'INATIVO') {
+                    $this->possuiInativo = "S";
+                    echo 'style="background-color:#f1b0b7"';
+                } else if ($endereco['SITUACAO'] != "DISPONIVEL") {
+                    echo 'style="background-color:#F1F1C3"';
+                }
+
+                ?>>
+                <td><?php if ($endereco['SITUACAO'] == "DISPONIVEL") {
+                    echo $endereco['ENDERECO'];
+                } else {
+                    echo $endereco['ENDERECO']. " (". $endereco['SITUACAO'].  ")";
+                }?></td>
                 <td><?php echo $endereco['TIPO'] ?></td>
                 <?php
                 if($this->controlaLote == 'S'){
@@ -125,7 +138,9 @@
                     ?></td>
             </tr>
             <?php
-            $qtdEstoque = $qtdEstoque + $endereco['QTD'];
+            if ($endereco['SITUACAO'] != 'INATIVO') {
+                $qtdEstoque = $qtdEstoque + $endereco['QTD'];
+            }
             $qtdReservaEntrada = $qtdReservaEntrada + $endereco['RESERVA_ENTRADA'];
             $qtdReservaSaida = $qtdReservaSaida + $endereco['RESERVA_SAIDA'];
             $codProdutoAnterior = $endereco['COD_PRODUTO'];
@@ -134,7 +149,13 @@
 
             if ($endereco == $this->enderecos[count($this->enderecos) - 1]) {
                 ?><tr>
-                    <td colspan="<?php echo $colspan + 2 ?>" style="text-align: center"><b>Total</b></td>
+                    <td colspan="<?php echo $colspan + 2 ?>" style="text-align: center"><b>
+                            <?php if ($this->possuiInativo == "N") {
+                                echo "Total";
+                            } else {
+                                echo "Total (Considera apenas os endereços ativos)";
+                            } ?>
+                        </b></td>
                     <td><b><?php
                             $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($endereco['COD_PRODUTO'], $endereco['DSC_GRADE'], $qtdReservaEntrada);
                             if(is_array($vetEstoque)) {
