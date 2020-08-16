@@ -1216,4 +1216,94 @@ class EnderecoRepository extends EntityRepository {
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
+
+    public function verificaAlocacaoPickingDinamico($enderecoAntigoEn, $enderecoNovoEn, $embVolEn){
+
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::PICKING_DINAMICO;
+
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
+        if ($embVolEn == null) {
+            throw new \Exception("Nenhuma embalagem nem volume informados");
+        }
+
+        $tipo = "U";
+        if ($embVolEn->getProduto()->getTipoComercializacao()->getId() != 1) $tipo = "V";
+        $produtoEn = $embVolEn->getProduto();
+
+        /*
+         * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
+         *
+        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+            if ($tipo == "U") {
+                $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
+                foreach ($embalagens as $embalagemEn) {
+                    $embalagemEn->setEndereco($enderecoNovoEn);
+                    $this->getEntityManager()->persist($embalagemEn);
+                }
+                $this->getEntityManager()->flush();
+            } else {
+                $embVolEn->setEndereco($enderecoNovoEn);
+                $this->getEntityManager()->persist($embVolEn);
+                $this->getEntityManager()->flush();
+            }
+        }
+        */
+
+        if ($enderecoAntigoEn->getIdCaracteristica() == $idCaracteristicaPicking ||
+            $enderecoAntigoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+            if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking && $enderecoAntigoEn->getId() != $enderecoNovoEn->getId()) {
+                throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
+            }
+            if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
+                if ($tipo == "U") {
+                    $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
+                    foreach ($embalagens as $embalagemEn) {
+                        $embalagemEn->setEndereco($enderecoNovoEn);
+                        $this->getEntityManager()->persist($embalagemEn);
+                    }
+                    $this->getEntityManager()->flush();
+                } else {
+                    $embVolEn->setEndereco($enderecoNovoEn);
+                    $this->getEntityManager()->persist($embVolEn);
+                    $this->getEntityManager()->flush();
+                }
+            }
+        } else {
+            //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+            if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
+                if ( is_null($embVolEn->getEndereco()) ) {
+                    throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                }
+            }
+
+            //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+            if (($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+                if (!is_null($embVolEn->getEndereco()) && ($enderecoNovoEn->getId() !== $embVolEn->getEndereco()->getId())) {
+                    throw new \Exception("Produto ja cadastrado no Picking " . $embVolEn->getEndereco()->getDescricao() . "!");
+                }
+            }
+
+            //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+            if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
+                if (is_null($embVolEn->getEndereco())) {
+                    if ($tipo = "U") {
+                        $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
+                        foreach ($embalagens as $embalagemEn) {
+                            $embalagemEn->setEndereco($enderecoNovoEn);
+                            $this->getEntityManager()->persist($embalagemEn);
+                        }
+                        $this->getEntityManager()->flush();
+                    } else {
+                        $embVolEn->setEndereco($enderecoNovoEn);
+                        $this->getEntityManager()->persist($embVolEn);
+                        $this->getEntityManager()->flush();
+                    }
+                }
+            }
+
+        }
+    }
+
 }

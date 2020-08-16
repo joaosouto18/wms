@@ -1067,82 +1067,10 @@ class Mobile_EnderecamentoController extends Action
                         $params['lote'] = $estoque->getLote();
                     }
 
-                    /*
-                     * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
-                     *
-                    if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if (isset($embalagemEn)) {
-                            $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
-                            foreach ($embalagens as $embalagemEn) {
-                                $embalagemEn->setEndereco($enderecoNovoEn);
-                                $this->getEntityManager()->persist($embalagemEn);
-                            }
-                            $this->getEntityManager()->flush();
-                        } else if (isset($volumeEn)) {
-                            $volumeEn->setEndereco($enderecoNovoEn);
-                            $this->getEntityManager()->persist($volumeEn);
-                            $this->getEntityManager()->flush();
-                        }
-                    }
-                    */
+                    $embVol = $embalagemEn;
+                    if ($embVol == null) $embVol = $volumeEn;
 
-                    if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
-                        $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoNovoEn->getId()) {
-                            throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
-                        }
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
-                            if (isset($embalagemEn)) {
-                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
-                                foreach ($embalagens as $embalagemEn) {
-                                    $embalagemEn->setEndereco($enderecoNovoEn);
-                                    $this->getEntityManager()->persist($embalagemEn);
-                                }
-                                $this->getEntityManager()->flush();
-                            } else if (isset($volumeEn)) {
-                                $volumeEn->setEndereco($enderecoNovoEn);
-                                $this->getEntityManager()->persist($volumeEn);
-                                $this->getEntityManager()->flush();
-                            }
-                        }
-                    } else {
-                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
-                            if ((isset($embalagemEn) && is_null($embalagemEn->getEndereco())) || isset($volumeEn) && is_null($volumeEn->getEndereco())) {
-                                throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
-                            }
-                        }
-
-                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
-                            if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
-                                foreach ($embalagens as $embalagemEn) {
-                                    $embalagemEn->setEndereco($enderecoNovoEn);
-                                    $this->getEntityManager()->persist($embalagemEn);
-                                }
-                                $this->getEntityManager()->flush();
-                            } else if (isset($volumeEn) && is_null($volumeEn->getEndereco())) {
-                                $volumeEn->setEndereco($enderecoNovoEn);
-                                $this->getEntityManager()->persist($volumeEn);
-                                $this->getEntityManager()->flush();
-                            }
-                        }
-
-                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
-                        if (($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
-                            if (isset($embalagemEn)) {
-                                if ($enderecoNovoEn->getId() !== $embalagemEn->getEndereco()->getId()) {
-                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
-                                }
-                            } else if (isset($volumeEn)) {
-                                if ($enderecoNovoEn->getId() !== $volumeEn->getEndereco()->getId()) {
-                                    throw new \Exception("Produto ja cadastrado no Picking " . $volumeEn->getEndereco()->getDescricao() . "!");
-                                }
-                            }
-                        }
-                    }
-
+                    $enderecoRepo->verificaAlocacaoPickingDinamico($enderecoAntigo, $enderecoNovoEn, $embVol);
 
                     if ($produtoEn->getValidade() == 'S' ) {
                         $validade = $estoque->getValidade();
