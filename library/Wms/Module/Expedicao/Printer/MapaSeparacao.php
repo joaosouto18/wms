@@ -304,22 +304,22 @@ class MapaSeparacao extends eFPDF {
 
         $linhaSeparacao = implode(', ',$itinerarios);
 
-        $this->SetFont('Arial', 'B', 10);
+        $this->SetFont('Arial', 'B', 14);
         $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1, "C");
         $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
         $this->Cell(20, 3, "", 0, 1);
-        $this->SetFont('Arial', 'B', 10);
-        $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
-        $this->SetFont('Arial', null, 10);
-        $this->Cell(4, 4, utf8_decode($this->idExpedicao) . " - $arrDataCargas[txt]: $arrDataCargas[str] - $linhaSeparacao", 0, 1);
-        $this->SetFont('Arial', 'B', 10);
-        $this->Cell(20, 4, utf8_decode("CLIENTE: "), 0, 0);
-        $this->SetFont('Arial', null, 10);
-        $this->Cell(20, 4, utf8_decode($nomeFantasia), 0, 1);
-        $this->SetFont('Arial', 'B', 10);
-        $this->Cell(25, 4, utf8_decode("PLACA/BOX: "), 0, 0);
-        $this->SetFont('Arial', null, 10);
-        $this->Cell(20, 4, $cargaEn->getPlacaCarga().'/'.$dscBox, 0, 1);
+        $this->SetFont('Arial', 'B', 14);
+        $this->Cell(35, 5.5, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+        $this->SetFont('Arial', null, 14);
+        $this->Cell(4, 5.5, utf8_decode($this->idExpedicao) . " - $arrDataCargas[txt]: $arrDataCargas[str] - $linhaSeparacao", 0, 1);
+        $this->SetFont('Arial', 'B', 14);
+        $this->Cell(35, 5.5, utf8_decode("CLIENTE: "), 0, 0);
+        $this->SetFont('Arial', null, 14);
+        $this->Cell(20, 5.5, utf8_decode($nomeFantasia), 0, 1);
+        $this->SetFont('Arial', 'B', 14);
+        $this->Cell(35, 5.5, utf8_decode("PLACA/BOX: "), 0, 0);
+        $this->SetFont('Arial', null, 14);
+        $this->Cell(20, 5.5, $cargaEn->getPlacaCarga().'/'.$dscBox, 0, 1);
         $this->Cell(20, 4, "", 0, 1);
 
         $this->SetFont('Arial', 'B', 9);
