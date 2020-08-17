@@ -293,6 +293,7 @@ class Expedicao_CorteController extends Action {
 
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
+            $this->em->clear();
 
             $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE COD_EXPEDICAO = " . $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
             $this->getEntityManager()->getConnection()->query($query)->execute();
@@ -330,7 +331,6 @@ class Expedicao_CorteController extends Action {
             $grade = $this->_getParam('grade');
             $codProduto = $this->_getParam('codProduto');
             $idPedido = $this->_getParam('idPedido');
-            $quebraEndereco = json_decode($this->_getParam('quebraEndereco'));
 
             if (!empty($codProduto)){
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
@@ -344,7 +344,7 @@ class Expedicao_CorteController extends Action {
             $controlaLote = ($produtoEn->getIndControlaLote() == 'S');
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido, $quebraEndereco, $controlaLote);
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido, $controlaLote);
 
             $values = array();
             if ($produtoEn->isUnitario()) {

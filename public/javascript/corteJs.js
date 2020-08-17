@@ -1,7 +1,7 @@
 
-var itens = [];
-var embs = [];
-var groups = {};
+let itens = [];
+let embs = [];
+const groups = {};
 
 function testShowGrid() {
     let grid = $("#gridCorte");
@@ -13,36 +13,37 @@ function testShowGrid() {
 }
 
 function agroupItens() {
-    groups = {maxByMap: [], maxByCli: []};
+    groups.maxByMap = [];
+    groups.maxByCli = [];
     $.each(itens, function (i, item) {
+        let prop = '';
+        let uniqIndex = '';
         if (isEmpty(item.consolidado)) {
-            if (item.mapa in groups.maxByMap) {
-                groups.maxByMap[item.mapa].qtd += parseFloat(item.quantidadeUnitaria);
-                groups.maxByMap[item.mapa].corte += parseFloat(item.qtdCortadaUnitaria);
-            } else {
-                groups.maxByMap[item.mapa] = {
-                    qtd: parseFloat(item.quantidadeUnitaria),
-                    corte: parseFloat(item.qtdCortadaUnitaria),
-                    conf: parseFloat(item.qtdConf)
-                };
-            }
+            prop = 'maxByMap';
+            uniqIndex = item.mapa;
         } else {
-            let uniqIndex = item.codcli + "-*-" + item.mapa;
-            if (uniqIndex in groups.maxByCli) {
-                groups.maxByCli[uniqIndex].qtd += parseFloat(item.quantidadeUnitaria);
-                groups.maxByCli[uniqIndex].corte += parseFloat(item.qtdCortadaUnitaria);
-            } else {
-                groups.maxByCli[uniqIndex] = {
-                    qtd: parseFloat(item.quantidadeUnitaria),
-                    corte: parseFloat(item.qtdCortadaUnitaria),
-                    conf: parseFloat(item.qtdConf)
-                };
+            uniqIndex = item.codcli + "-*-" + item.mapa;
+            prop = 'maxByCli';
+        }
+        let index = groups[prop].findIndex(i => i.unikId === uniqIndex)
+        if (index < 0) {
+            const obj = {
+                unikId: uniqIndex,
+                qtd: parseFloat(item.quantidadeUnitaria),
+                corte: parseFloat(item.qtdCortadaUnitaria),
+                conf: parseFloat(item.qtdConf)
             }
+            groups[prop].push(obj);
+        } else {
+            let obj = groups[prop][index];
+            obj.qtd += parseFloat(item.quantidadeUnitaria);
+            obj.corte += parseFloat(item.qtdCortadaUnitaria);
+            groups[prop][index] = obj;
         }
     })
 }
 
-function updateList(showColEnd, showColLote)
+function updateList(showColLote)
 {
     let newTd = function (content) {
         return $("<td style='text-align:left'></td>").append( content );
@@ -59,7 +60,7 @@ function updateList(showColEnd, showColLote)
         newRow.append( newTd( item.carga ) );
         newRow.append( newTd( item.id ) );
         newRow.append( newTd( item.mapa ) );
-        if (showColEnd) newRow.append( newTd( item.dscEndereco ) );
+        newRow.append( newTd( item.dscEndereco ) );
         newRow.append( newTd( item.codcli ) );
         newRow.append( newTd( item.cliente ) );
         newRow.append( newTd( item.itinerario ) );
@@ -97,14 +98,14 @@ function getSaldoCorte(index, returnCorte) {
     }
 
     if (!isEmpty(item.consolidado)) {
-        obj = groups.maxByCli[item.codcli + "-*-" + item.mapa];
+        obj = groups.maxByCli.find(i => i.unikId === item.codcli + "-*-" + item.mapa);
     } else {
         $.each(itens, function (i, itemList) {
             if (item.mapa === itemList.mapa && item.id !== itemList.id) {
                 totalCorte += getCorte(i);
             }
         });
-        obj = groups.maxByMap[item.mapa]
+        obj = groups.maxByMap.find(i => i.unikId === item.mapa);
     }
 
     let fator = parseFloat(embs[0].fator);
@@ -220,16 +221,17 @@ $("#corteTotal").live("click", function  () {
     event.preventDefault();
     let temConf = false;
     $.each(itens, function (i, item) {
+        let prop = '';
+        let uniqIndex = '';
         if (isEmpty(item.consolidado)) {
-            if (!isEmpty(groups.maxByMap[item.mapa].conf) && groups.maxByMap[item.mapa].conf > 0) {
-                temConf = true;
-            }
+            prop = 'maxByMap';
+            uniqIndex = item.mapa;
         } else {
-            let uniqIndex = item.codcli + "-*-" + item.mapa;
-            if (!isEmpty(groups.maxByCli[uniqIndex].conf) && groups.maxByCli[uniqIndex].conf > 0) {
-                temConf = true;
-            }
+            prop = 'maxByCli';
+            uniqIndex = item.codcli + "-*-" + item.mapa;
         }
+        temConf = (groups[prop].findIndex(i => i.unikId === uniqIndex && i.conf > 0) > -1)
+
         if (temConf) return false;
         $("#emb-"+i).val($("emb-"+i+" option:first").val());
         $("#qtdCortar-"+i).val(getSaldoCorte(i, true));
@@ -241,7 +243,6 @@ $("#corteTotal").live("click", function  () {
 });
 
 function executeRequest() {
-    let checkQuebra = $("#quebraEndereco").prop("checked");
     itens = [];
     testShowGrid();
     $.ajax({
@@ -250,8 +251,7 @@ function executeRequest() {
         data: {
             id: $("#gridCorte #idExpedicaoCorte").val(),
             codProduto: $('#codProduto').val(),
-            grade: $('#grade').val(),
-            quebraEndereco: checkQuebra
+            grade: $('#grade').val()
         },
         success: function (data) {
             if (data.status === "error") {
@@ -260,7 +260,7 @@ function executeRequest() {
             } else {
                 itens = data.itens;
                 embs = data.embs;
-                updateList(checkQuebra, data.controlaLote);
+                updateList(data.controlaLote);
                 if (data.controlaLote) {
                     $("#colLote").show();
                 } else {
@@ -271,11 +271,6 @@ function executeRequest() {
             }
         }
     });
-    if (checkQuebra) {
-        $("#colEnd").show();
-    } else {
-        $("#colEnd").hide();
-    }
 }
 
 $('#btnSubmit').live("click", function () {

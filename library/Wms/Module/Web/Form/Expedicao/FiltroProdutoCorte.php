@@ -17,16 +17,12 @@ class FiltroProdutoCorte extends Form
                 'label' => 'Grade',
                 'value' => 'UNICA'
             ))
-            ->addElement('checkbox', 'quebraEndereco', array(
-                'label' => 'Quebrar por endereços (Apenas se tiver mapas)',
-                'checkedValue' => 'true'
-            ))
             ->addElement('button', 'btnSubmit', array(
                 'class' => 'btn',
                 'label' => 'Buscar',
                 'decorators' => array('ViewHelper'),
                 'attribs' => array('style' => 'margin-top:16px')
             ))
-            ->addDisplayGroup(array('codProduto', 'grade', 'quebraEndereco', 'btnSubmit'), 'Buscar', array('legend' => 'Buscar por Produto'));
+            ->addDisplayGroup(array('codProduto', 'grade', 'btnSubmit'), 'Buscar', array('legend' => 'Buscar por Produto'));
     }
 }

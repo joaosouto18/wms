@@ -4980,10 +4980,6 @@ class ExpedicaoRepository extends EntityRepository {
             $whereArr[] = "REP.DSC_LOTE = '$lote'";
         }
 
-        if (!empty($idEndereco)) {
-            $whereArr[] = "RE.COD_DEPOSITO_ENDERECO = $idEndereco";
-        }
-
         $where = (!empty($whereArr)) ? " AND " . implode(" AND ", $whereArr ): "";
 
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
@@ -4994,25 +4990,23 @@ class ExpedicaoRepository extends EntityRepository {
                    AND REP.COD_PRODUTO = '$codProduto'
                    AND REP.DSC_GRADE = '$grade'
                    AND RE.IND_ATENDIDA = 'N'
+                   AND RE.COD_DEPOSITO_ENDERECO = $idEndereco
                    $where
                  ORDER BY $ordenacao";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $reservas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $valToNext = 0;
         $qtdRemoveReserva = $qtdCortar;
-        $mapeamentoCorte = [];
-        foreach ($result as $item) {
+        foreach ($reservas as $item) {
             $check = Math::adicionar($qtdRemoveReserva, $item['QTD']);
             /** @var ReservaEstoqueProduto[] $entityReservaEstoqueProduto */
             $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $item['ID']));
             $reservaEstoque = $entityReservaEstoqueProduto[0]->getReservaEstoque();
-            $qtdACortarMapa = 0;
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 if (Math::compare($check, 0, '>=')) {
                     $reservaEstoqueProduto->setQtd(0);
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
                     if ($reservaEstoque->getAtendida() == 'N') {
-                        $qtdACortarMapa = Math::subtrair($qtdRemoveReserva, $check);
                         $reservaEstoque->setAtendida('C');
                         $this->getEntityManager()->persist($reservaEstoque);
                         $valToNext = $check;
@@ -5021,20 +5015,7 @@ class ExpedicaoRepository extends EntityRepository {
                     $reservaEstoqueProduto->setQtd($check);
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
                     $valToNext = 0;
-                    $qtdACortarMapa = $qtdRemoveReserva;
                 }
-            }
-
-            $idEnd = $reservaEstoque->getEndereco()->getId();
-            $lote = $entityReservaEstoqueProduto[0]->getLote();
-            if (!isset($mapeamentoCorte[$idEnd."#!#".$lote])) {
-                $mapeamentoCorte[$idEnd . "#!#" . $lote] = [
-                    'endereco' => $idEnd,
-                    'qtdCortada' => $qtdACortarMapa,
-                    'lote' => $lote
-                ];
-            } else {
-                $mapeamentoCorte[$idEnd . "#!#" . $lote]['qtdACortar'] = Math::adicionar($mapeamentoCorte[$idEnd . "#!#" . $lote]['qtdACortar'], $qtdACortarMapa);
             }
 
             $qtdRemoveReserva = $valToNext;
@@ -5055,6 +5036,8 @@ class ExpedicaoRepository extends EntityRepository {
                 }
                 $pedProdLoteEn->setQtdCorte(Math::adicionar($pedProdLoteEn->getQtdCorte(), $qtdCortar));
                 $this->getEntityManager()->persist($pedProdLoteEn);
+            } else {
+                throw new \Exception("Não foi encontrado registro deste produto $codProduto grade '$grade' no lote '$lote' no pedido $codPedido");
             }
         }
         if ($corteAutomatico == 'S') {
@@ -5092,54 +5075,52 @@ class ExpedicaoRepository extends EntityRepository {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
 
-            foreach ($mapeamentoCorte as $item) {
-                $dql = $this->getEntityManager()->createQueryBuilder();
-                $dql->select("msp")
-                    ->from(Expedicao\MapaSeparacaoProduto::class, 'msp')
-                    ->leftJoin(Expedicao\PedidoProduto::class, 'pp', 'WITH', 'msp.pedidoProduto = pp.id')
-                    ->leftJoin('pp.pedido', 'p')
-                    ->where("msp.mapaSeparacao = $mapa")
-                    ->andWhere("msp.codProduto = '$codProduto'")
-                    ->andWhere("msp.dscGrade = '$grade'")
-                    ->andWhere("msp.depositoEndereco = ".$item['endereco'])
-                    ->andWhere("((msp.qtdEmbalagem * msp.qtdSeparar) - msp.qtdCortado) > 0")
-                ;
+            $dql = $this->getEntityManager()->createQueryBuilder();
+            $dql->select("msp")
+                ->from(Expedicao\MapaSeparacaoProduto::class, 'msp')
+                ->leftJoin(Expedicao\PedidoProduto::class, 'pp', 'WITH', 'msp.pedidoProduto = pp.id')
+                ->leftJoin('pp.pedido', 'p')
+                ->where("msp.mapaSeparacao = $mapa")
+                ->andWhere("msp.codProduto = '$codProduto'")
+                ->andWhere("msp.dscGrade = '$grade'")
+                ->andWhere("msp.depositoEndereco = $idEndereco")
+                ->andWhere("((msp.qtdEmbalagem * msp.qtdSeparar) - msp.qtdCortado) > 0")
+            ;
 
-                if (!empty($quebraConsolidado)) {
-                    $dql->andWhere("p.pessoa = " . $pedidoEn->getPessoa()->getId());
-                }
+            if (!empty($quebraConsolidado)) {
+                $dql->andWhere("p.pessoa = " . $pedidoEn->getPessoa()->getId());
+            }
 
-                if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
-                    $dql->andWhere("msp.produtoEmbalagem = $idEmbalagem");
-                }
+            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
+                $dql->andWhere("msp.produtoEmbalagem = $idEmbalagem");
+            }
 
-                if ($produtoEn->getIndControlaLote() == 'S' && !empty($item['lote'])) {
-                    $dql->andWhere("msp.lote = '$item[lote]'");
-                }
+            if ($produtoEn->getIndControlaLote() == 'S' && !empty($lote)) {
+                $dql->andWhere("msp.lote = '$lote'");
+            }
 
-                $dql->orderBy("msp.qtdEmbalagem");
+            $dql->orderBy("msp.qtdEmbalagem");
 
-                $qtd = $item['qtdCortada'];
-                /** @var Expedicao\MapaSeparacaoProduto $produtoMapa */
-                foreach ($dql->getQuery()->getResult() as $produtoMapa) {
-                    $qtdCortadaMapa = $produtoMapa->getQtdCortado();
-                    if (!empty($produtoMapa->getProdutoEmbalagem())) {
-                        $qtdSeparar = Math::multiplicar($produtoMapa->getQtdEmbalagem(), $produtoMapa->getQtdSeparar());
-                        $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
-                        if (Math::compare($qtdDisponivelDeCorte, $qtd, '>=')) {
-                            $produtoMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
-                            $qtd = 0;
-                        } else {
-                            $produtoMapa->setQtdCortado($qtdSeparar);
-                            $qtd = Math::subtrair($qtd, $qtdDisponivelDeCorte);
-                        }
-                    } else if (!empty($produtoMapa->getProdutoVolume())){
+            $qtd = $qtdCortar;
+            /** @var Expedicao\MapaSeparacaoProduto $produtoMapa */
+            foreach ($dql->getQuery()->getResult() as $produtoMapa) {
+                $qtdCortadaMapa = $produtoMapa->getQtdCortado();
+                if (!empty($produtoMapa->getProdutoEmbalagem())) {
+                    $qtdSeparar = Math::multiplicar($produtoMapa->getQtdEmbalagem(), $produtoMapa->getQtdSeparar());
+                    $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
+                    if (Math::compare($qtdDisponivelDeCorte, $qtd, '>=')) {
                         $produtoMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
+                        $qtd = 0;
+                    } else {
+                        $produtoMapa->setQtdCortado($qtdSeparar);
+                        $qtd = Math::subtrair($qtd, $qtdDisponivelDeCorte);
                     }
+                } else if (!empty($produtoMapa->getProdutoVolume())){
+                    $produtoMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
+                }
 
-                    if (empty($qtd)) {
-                        break;
-                    }
+                if (empty($qtd)) {
+                    break;
                 }
             }
         }
@@ -5147,7 +5128,7 @@ class ExpedicaoRepository extends EntityRepository {
         $codExterno = $pedidoEn->getCodExterno();
         $obsLote = (!empty($lote)) ? " lote: '$lote'" : "";
         $observacao = "Item $codProduto - $grade" . "$obsLote do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
-        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
+        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false, null, null, false, $mapa);
 
         $this->getEntityManager()->flush();
 

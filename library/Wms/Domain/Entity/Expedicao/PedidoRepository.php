@@ -830,12 +830,14 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null, $quebraEndereco = false, $controlaLote = false)
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null, $controlaLote = false)
     {
 
         try {
             $sqlQtdProduto = (!$controlaLote) ? "PP.QUANTIDADE" : "NVL(PPL.QUANTIDADE, PP.QUANTIDADE)";
             $sqlQtdProdutoCortado = (!$controlaLote) ? "NVL(PP.QTD_CORTADA, 0)" : "NVL(NVL(PPL.QTD_CORTE, PP.QTD_CORTADA), 0)";
+
+            $ncl = Lote::NCL;
 
             $sqlCampos = "
                     P.COD_EXTERNO as \"id\",
@@ -856,24 +858,13 @@ class PedidoRepository extends EntityRepository
                     P.NUM_SEQUENCIAL as \"numSequencial\",
                     NVL(MSC.QTD_CONFERIDA,0) as \"qtdConf\",
                     NVL(PP.QTD_CORTADA,0) as \"qtdCorteTotal\",
-                    NVL(PPL.DSC_LOTE, '') as \"lote\",
+                    NVL(PPL.DSC_LOTE, '$ncl') as \"lote\",
                     PP.FATOR_EMBALAGEM_VENDA as \"fatorEmbalagemVenda\",
-                    C.COD_CARGA_EXTERNO as \"carga\",";
-
-                if ($quebraEndereco || $controlaLote) {
-                    $sqlCampos .= "
+                    C.COD_CARGA_EXTERNO as \"carga\",
                     NVL(SUM(MSPROD.QTD_SEPARAR * MSPROD.QTD_EMBALAGEM), $sqlQtdProduto) as \"quantidade\",
-                    NVL(SUM(MSPROD.QTD_CORTADO), $sqlQtdProdutoCortado) as \"qtdCortada\"";
-                    if ($quebraEndereco) {
-                        $sqlCampos .= ",
+                    NVL(SUM(MSPROD.QTD_CORTADO), $sqlQtdProdutoCortado) as \"qtdCortada\",
                     DE.COD_DEPOSITO_ENDERECO as \"idEndereco\",
                     DE.DSC_DEPOSITO_ENDERECO as \"dscEndereco\"";
-                    }
-                } else {
-                    $sqlCampos .= "
-                    NVL(MSP.QTD, $sqlQtdProduto) as \"quantidade\",
-                    NVL(MSP.QTD_CORTADA, $sqlQtdProdutoCortado) as \"qtdCortada\"";
-                }
             }
 
             $sql = "SELECT DISTINCT $sqlCampos 
@@ -893,28 +884,20 @@ class PedidoRepository extends EntityRepository
                                  COD_PRODUTO, DSC_GRADE, 
                                  SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA, 
                                  NVL(MSC2.COD_PESSOA, 0) COD_CLIENTE,
-                                 NVL(MSC2.DSC_LOTE, '') DSC_LOTE
+                                 NVL(MSC2.DSC_LOTE, '$ncl') DSC_LOTE
                             FROM MAPA_SEPARACAO_CONFERENCIA MSC2 INNER JOIN MAPA_SEPARACAO M on MSC2.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
                            WHERE M.COD_EXPEDICAO in ($idExpedicao)
-                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(MSC2.COD_PESSOA, 0), NVL(MSC2.DSC_LOTE, '')) MSC
+                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(MSC2.COD_PESSOA, 0), NVL(MSC2.DSC_LOTE, '$ncl')) MSC
                          ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
-                           AND MSC.DSC_LOTE = NVL(PPL.DSC_LOTE, '')
+                           AND MSC.DSC_LOTE = NVL(PPL.DSC_LOTE, '$ncl')
                          AND CASE WHEN MSC.COD_CLIENTE = 0 THEN 1 ELSE CASE WHEN MSC.COD_CLIENTE = P.COD_PESSOA THEN 1 ELSE 0 END END = 1                          
-                   ";
-            }
-
-            if ($quebraEndereco || $controlaLote) {
-                $sql .= "
                LEFT JOIN MAPA_SEPARACAO_PRODUTO MSPROD 
                       ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO 
                      AND MSPROD.COD_PRODUTO = '$codProduto' 
                      AND MSPROD.DSC_GRADE = '$grade' 
                      AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-                     AND NVL(MSPROD.DSC_LOTE, 0) = NVL(PPL.DSC_LOTE, 0)
-                     ";
-                if ($quebraEndereco)
-                    $sql .= "
-                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = MSPROD.COD_DEPOSITO_ENDERECO";
+                     AND NVL(MSPROD.DSC_LOTE, '$ncl') = NVL(PPL.DSC_LOTE, '$ncl')
+                LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = MSPROD.COD_DEPOSITO_ENDERECO";
             }
 
             $where = " WHERE C.COD_EXPEDICAO IN ($idExpedicao)";
@@ -928,7 +911,7 @@ class PedidoRepository extends EntityRepository
             }
 
 
-            if (isset($codProduto) && !empty($codProduto)) {
+            if ( !empty($codProduto)) {
                 $where .= " AND PP.COD_PRODUTO = '$codProduto' AND PP.DSC_GRADE = '$grade'";
                 $groupBy = "GROUP BY
                     P.COD_PEDIDO,
@@ -942,20 +925,13 @@ class PedidoRepository extends EntityRepository
                     P.NUM_SEQUENCIAL,
                     NVL(MSC.QTD_CONFERIDA,0),
                     NVL(PP.QTD_CORTADA,0),
-                    NVL(PPL.DSC_LOTE, ''),
+                    NVL(PPL.DSC_LOTE, '$ncl'),
                     PP.FATOR_EMBALAGEM_VENDA,
                     C.COD_CARGA_EXTERNO,
                     $sqlQtdProduto,
-                    $sqlQtdProdutoCortado";
-                if ($quebraEndereco) {
-                    $groupBy .= ",
+                    $sqlQtdProdutoCortado,
                     DE.COD_DEPOSITO_ENDERECO,
                     DE.DSC_DEPOSITO_ENDERECO";
-                } else {
-                    $groupBy .= ",
-                    NVL(MSP.QTD, $sqlQtdProduto),
-                    NVL(MSP.QTD_CORTADA, $sqlQtdProdutoCortado)";
-                }
 
             } else {
                 $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_CLIENTE_EXTERNO';
@@ -964,8 +940,7 @@ class PedidoRepository extends EntityRepository
             $orderBy = "ORDER BY CL.COD_CLIENTE_EXTERNO, P.COD_EXTERNO";
 
             if (!empty($codProduto)) {
-                $orderBy .= ", MS.COD_MAPA_SEPARACAO";
-                if ($quebraEndereco) $orderBy .= ", DE.DSC_DEPOSITO_ENDERECO";
+                $orderBy .= ", MS.COD_MAPA_SEPARACAO, DE.DSC_DEPOSITO_ENDERECO";
             }
 
             $result = $this->_em->getConnection()->query("$sql $where $groupBy $orderBy")->fetchAll();
