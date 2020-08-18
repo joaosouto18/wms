@@ -86,6 +86,7 @@ class UsuarioRepository extends AtorRepository {
         $usuario->setLogin($login);
         $usuario->setIsAtivo($isAtivo);
         $usuario->setPercentReceb($percentReceb);
+        $usuario->setCodErp($codErp);
         $em->persist($usuario);
     }
 
@@ -170,6 +171,7 @@ class UsuarioRepository extends AtorRepository {
             ->innerJoin('u.depositos', 'd')
             ->innerJoin('u.perfis', 'p')
             ->orderBy('pf.nome')
+            ->andWhere("u.isAtivo = 'S'")
             ->andWhere("p.nome = '$perfil' OR p.id = '$idPerfil'");
 
         return $source->getQuery()->getResult();

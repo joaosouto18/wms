@@ -3,6 +3,7 @@
 namespace Wms\Module\Web\Grid\Expedicao;
           
 
+use Core\Grid\Pager;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento;
 
@@ -25,8 +26,7 @@ class Andamento extends Grid
         $result = $ExpedicaoRepo->getAndamentoByExpedicao($idExpedicao);
         $this->showPager = true;
         $this->setAttrib('title','Andamento Expedição');
-        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($result));
-        $this->setSource(new \Core\Grid\Source\Doctrine($result))
+        $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-andamento-grid')
                 ->setAttrib('caption', 'Andamento da expedição')
                 ->setAttrib('class', 'grid-andamento')
@@ -40,10 +40,15 @@ class Andamento extends Grid
                     'index' => 'nome',
                 ))
                 ->addColumn(array(
+                    'label' => 'Mapa',
+                    'index' => 'codMapa',
+                ))
+                ->addColumn(array(
                     'label' => 'Andamento',
                     'index' => 'dscObservacao',
                 ))
                 ->setShowExport(false);
+        $this->setPager(new Pager(count($result), 0, count($result)));
 
         return $this;
     }

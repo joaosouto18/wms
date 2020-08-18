@@ -1318,7 +1318,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     public function buscarProdutosImprimirCodigoBarras($codProduto, $grade, $idEmbalagens = null) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('
+                ->select("
                       p.id as idProduto,
                       p.grade,
                       p.descricao as dscProduto,
@@ -1332,19 +1332,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       pv.id as idVolume,
                       pv.codigoSequencial as codSequencialVolume,
                       pv.descricao as dscVolume,
-                      NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
+                      NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras,
+                      NVL(de.descricao, 'N/D') picking")
                 ->from('wms:Produto', 'p')
                 ->innerJoin('p.tipoComercializacao', 'tc')
                 ->leftJoin('p.linhaSeparacao', 'ls')
                 ->leftJoin('p.fabricante', 'fb');
 
         if (isset($codProduto) && !empty($codProduto)) {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade');
+            $dql->leftJoin('p.embalagens', 'pe');
         } else {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', "pe.isPadrao = 'S'");
         }
 
-            $dql->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+            $dql->leftJoin('p.volumes', 'pv')
+                ->leftJoin(Endereco::class, 'de', 'WITH', '(de = pv.endereco or de = pe.endereco)')
                 ->where('p.id = :codProduto')
                 ->andWhere("p.grade = :grade")
                 ->setParameter('codProduto', $codProduto)
@@ -1386,7 +1388,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
 
         if (!isset($produtoEn)) {
-            throw new \Exception("Produto não encontrado");
+            throw new \Exception("Produto não encontrado pelo código $codigo");
         }
 
         return $produtoEn;
@@ -1742,7 +1744,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
                 ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
                 ->leftJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = pv.endereco OR de = pe.endereco')
-                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
+                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
                 ->setParameters(array('codigoBarras' => $codigoBarras));
 
         return $dql->getQuery()->getArrayResult();
@@ -1950,7 +1952,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         THEN 'VENCIDO'
                       ELSE
                         TO_CHAR(TO_DATE(TO_CHAR(E.DTH_VALIDADE,'dd/mm/yyyy'),'dd/mm/yyyy') - TO_DATE(TO_CHAR(SYSDATE,'dd/mm/yyyy'),'dd/mm/yyyy'))
-                      END AS DIASVENCER
+                      END AS DIASVENCER,
+                      NVL(E.DSC_LOTE, 'N/D') LOTE
                   FROM ESTOQUE E 
                   INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE AND P.POSSUI_VALIDADE = 'S'
@@ -1968,7 +1971,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                   GROUP BY 
                       P.COD_PRODUTO, 
                       P.DSC_GRADE, 
-                      P.DSC_PRODUTO, 
+                      P.DSC_PRODUTO,
+                      NVL(E.DSC_LOTE, 'N/D'),
                       L.DSC_LINHA_SEPARACAO, 
                       F.NOM_FABRICANTE, 
                       DE.DSC_DEPOSITO_ENDERECO,

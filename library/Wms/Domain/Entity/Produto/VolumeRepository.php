@@ -177,7 +177,6 @@ class VolumeRepository extends EntityRepository
     {
         /** @var VolumeRepository $embalagemRepo */
         $volumeRepo = $this->_em->getRepository('wms:Produto\Volume');
-        $codBarras = Coletor::adequaCodigoBarras($codBarras);
         $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($volumeEn)) {

@@ -1088,7 +1088,7 @@ class Mobile_EnderecamentoController extends Action
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoNovoEn->getId()) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
@@ -1206,7 +1206,7 @@ class Mobile_EnderecamentoController extends Action
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $endereco->getId()) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $endereco->liberadoPraSerPicking()) {
@@ -1324,13 +1324,13 @@ class Mobile_EnderecamentoController extends Action
 
                         if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                             $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $endereco->getId()) {
                                 throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                             }
                             if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                                 if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                    $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
-                                    $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
+                                    if ($endereco->isBloqueadaEntrada()) $str[] = "Entrada";
+                                    if ($endereco->isBloqueadaSaida()) $str[] = "Saída";
                                     throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                                 }
                                 $volume->setEndereco($endereco);
@@ -1349,8 +1349,8 @@ class Mobile_EnderecamentoController extends Action
                             if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                                 if (isset($volume) && is_null($volume->getEndereco())) {
                                     if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                        $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
-                                        $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
+                                        if ($endereco->isBloqueadaEntrada()) $str[] = "Entrada";
+                                        if ($endereco->isBloqueadaSaida()) $str[] = "Saída";
                                         throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                                     }
                                     $volume->setEndereco($endereco);
@@ -1506,11 +1506,12 @@ class Mobile_EnderecamentoController extends Action
                 }
 
                 if ($enderecoEn->isBloqueadaEntrada() || $enderecoEn->isBloqueadaSaida()) {
-                    $str[] = ($enderecoEn->isBloqueadaEntrada()) ? "Entrada" : "";
-                    $str[] = ($enderecoEn->isBloqueadaSaida()) ? "Saída" : "";
+                    if ($enderecoEn->isBloqueadaEntrada()) $str[] = "Entrada";
+                    if ($enderecoEn->isBloqueadaSaida()) $str[] = "Saída";
                     throw new Exception('error', "O endereço ".$enderecoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                 }
 
+                $codBarras = ColetorUtil::adequaCodigoBarras($codBarras);
                 if (filter_var($isEmbalagem, FILTER_VALIDATE_BOOLEAN)) {
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
@@ -1530,6 +1531,17 @@ class Mobile_EnderecamentoController extends Action
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
+            } else {
+                if (!empty($codBarras)) {
+                    if (empty($capacidadePicking)) {
+                        $this->addFlashMessage('info', "Capacidade de picking não informada ou preenchido como 0");
+                    }
+                    if (empty($codigoBarrasEndereco)) {
+                        $this->addFlashMessage('info', "Endereço de picking não informado");
+                    }
+                    $this->addFlashMessage('info', "Nenhuma informação foi alterada");
+                }
+
             }
         } catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
@@ -1575,7 +1587,7 @@ class Mobile_EnderecamentoController extends Action
             $result['embalado']   = $embalagemEn->getEmbalado();
             $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
             $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
-            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] : 0;
+            $result['lastro']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_LASTRO'] * reset($normaPaletizacaoEntity)['QTD_EMBALAGEM'] / $embalagemEn->getQuantidade(): 0;
             $result['camada']     = is_array($normaPaletizacaoEntity) ? reset($normaPaletizacaoEntity)['NUM_CAMADAS'] : 0;
         } else {
             $enderecoVolume = $volumeEn->getEndereco();

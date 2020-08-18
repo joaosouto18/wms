@@ -295,10 +295,10 @@ class Expedicao
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_PRIMEIRA_CONFERENCIA);
             else
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
-        }
 
-        if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_INICIO_CONFERENCIA') == 'S' ) {
-            $this->_expedicaoRepo->executaIntegracaoBDInicioConferencia($this->_expedicaoEntity);
+            if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_INICIO_CONFERENCIA') == 'S' ) {
+                $this->_expedicaoRepo->executaIntegracaoBDInicioConferencia($this->_expedicaoEntity);
+            }
         }
     }
 
@@ -337,7 +337,7 @@ class Expedicao
         if ($osEntity != null) {
             if ($osEntity[0]->getBloqueio() != null) {
                 $this->setOs($osEntity[0]);
-                $this->setMessage('OS bloqueada');
+                $this->setMessage('OS bloqueada por:');
                 $this->setStatus('error');
                 $this->setRedirect("/mobile/expedicao/liberar-os/idExpedicao/$idExpedicao/placa/$placa");
                 return false;

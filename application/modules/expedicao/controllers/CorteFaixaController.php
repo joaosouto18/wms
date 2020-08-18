@@ -40,12 +40,13 @@ class Expedicao_CorteFaixaController  extends Action
                     try {
 
                         foreach ($etiquetas as $etiquetaEn) {
-                            if ($etiquetaEn->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
-                                $this->addFlashMessage('error',"Etiqueta já cortada!");
+                            if ($etiquetaEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
+                                $idEtiqueta = $etiquetaEn->getId();
+                                $this->addFlashMessage('error',"Etiqueta $idEtiqueta já cortada!");
                                 $this->redirect('index','corte-faixa','expedicao');
                             }
 
-                            $EtiquetaRepo->cortar($etiquetaEn, true, $motivoEn);
+                            $EtiquetaRepo->cortar($etiquetaEn, $motivoEn);
 
                             if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
                                 $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();

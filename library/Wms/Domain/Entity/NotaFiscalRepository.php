@@ -612,10 +612,10 @@ class NotaFiscalRepository extends EntityRepository {
                            NVL(PV.NUM_PROFUNDIDADE, NVL(PE.NUM_PROFUNDIDADE,PDL.NUM_PROFUNDIDADE)) PROFUNDIDADE,
                            
                            NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO) COD_NORMA,
-                           NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR) UNITIZADOR,
+                           U.DSC_UNITIZADOR UNITIZADOR,
                            NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) DESCRICAO,
-                           NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS) CAMADA,
-                           NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO) LASTRO
+                           NP.NUM_CAMADAS CAMADA,
+                           NP.NUM_LASTRO LASTRO
                     FROM NOTA_FISCAL NF
                     INNER JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
                     INNER JOIN PRODUTO P ON (P.COD_PRODUTO = NFI.COD_PRODUTO AND P.DSC_GRADE = NFI.DSC_GRADE)
@@ -623,10 +623,8 @@ class NotaFiscalRepository extends EntityRepository {
                     LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM
                     LEFT JOIN PRODUTO_VOLUME PV ON (P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE)
                     LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                    LEFT JOIN NORMA_PALETIZACAO NP1 ON PV.COD_NORMA_PALETIZACAO = NP1.COD_NORMA_PALETIZACAO
-                    LEFT JOIN NORMA_PALETIZACAO NP2 ON PDL.COD_NORMA_PALETIZACAO = NP2.COD_NORMA_PALETIZACAO
-                    LEFT JOIN UNITIZADOR U1 ON NP1.COD_UNITIZADOR = U1.COD_UNITIZADOR
-                    LEFT JOIN UNITIZADOR U2 ON NP2.COD_UNITIZADOR = U2.COD_UNITIZADOR
+                    LEFT JOIN NORMA_PALETIZACAO NP ON PV.COD_NORMA_PALETIZACAO = NP.COD_NORMA_PALETIZACAO OR PDL.COD_NORMA_PALETIZACAO = NP.COD_NORMA_PALETIZACAO
+                    LEFT JOIN UNITIZADOR U ON NP.COD_UNITIZADOR = U.COD_UNITIZADOR
                     WHERE NF.COD_RECEBIMENTO = " . $idRecebimento;
         } else {
             //SE NAO FOR INFORMADO RECEBIMENTO, VAI DIRETO NA TABELA PRODUTO
@@ -644,19 +642,17 @@ class NotaFiscalRepository extends EntityRepository {
                            NVL(PV.NUM_PROFUNDIDADE, NVL(PE.NUM_PROFUNDIDADE,PDL.NUM_PROFUNDIDADE)) PROFUNDIDADE,
 
                            NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO) COD_NORMA,
-                           NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR) UNITIZADOR,
+                           U.DSC_UNITIZADOR UNITIZADOR,
                            NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) DESCRICAO,
-                           NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS) CAMADA,
-                           NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO) LASTRO
+                           NP.NUM_CAMADAS CAMADA,
+                           NP.NUM_LASTRO LASTRO
                     FROM PRODUTO P
                     LEFT JOIN PRODUTO_EMBALAGEM PE ON (P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE)
                     LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM
                     LEFT JOIN PRODUTO_VOLUME PV ON (P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE)
                     LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                    LEFT JOIN NORMA_PALETIZACAO NP1 ON PV.COD_NORMA_PALETIZACAO = NP1.COD_NORMA_PALETIZACAO
-                    LEFT JOIN NORMA_PALETIZACAO NP2 ON PDL.COD_NORMA_PALETIZACAO = NP2.COD_NORMA_PALETIZACAO
-                    LEFT JOIN UNITIZADOR U1 ON NP1.COD_UNITIZADOR = U1.COD_UNITIZADOR
-                    LEFT JOIN UNITIZADOR U2 ON NP2.COD_UNITIZADOR = U2.COD_UNITIZADOR
+                    LEFT JOIN NORMA_PALETIZACAO NP ON PV.COD_NORMA_PALETIZACAO = NP.COD_NORMA_PALETIZACAO OR PDL.COD_NORMA_PALETIZACAO = NP.COD_NORMA_PALETIZACAO
+                    LEFT JOIN UNITIZADOR U ON NP.COD_UNITIZADOR = U.COD_UNITIZADOR
                      WHERE 1 = 1";
         }
 
@@ -680,10 +676,10 @@ class NotaFiscalRepository extends EntityRepository {
 
         if (isset($normaPaletizacao) && !empty($normaPaletizacao) && !($normaPaletizacao == 'T')) {
             if ($normaPaletizacao == 'S') {
-                $sql .= ' AND (NP1.NUM_NORMA > 0 OR NP2.NUM_NORMA > 0)';
+                $sql .= ' AND (NP.NUM_NORMA > 0)';
             } else if ($normaPaletizacao == 'N') {
                 $sql .= ' AND (((PV.COD_NORMA_PALETIZACAO IS NULL) AND (PDL.COD_NORMA_PALETIZACAO IS NULL))
-                                OR (NP1.NUM_NORMA = 0 OR NP1.NUM_NORMA = 0))';
+                                OR (NP.NUM_NORMA = 0))';
             }
         }
 
@@ -730,17 +726,16 @@ class NotaFiscalRepository extends EntityRepository {
                                                        AND (PDLX.NUM_CUBAGEM <> 0 OR PDLX.NUM_PESO <> 0)))";
             } else {
                 //produtos sem dados logisticos - embalagem e volumes
-                $sql .= " AND (((PE.NUM_CUBAGEM = 0 OR PE.NUM_PESO = 0) AND PE.IND_PADRAO = 'S') 
-                            OR (PE.NUM_CUBAGEM IS NULL OR PE.NUM_PESO IS NULL) AND PE.IND_PADRAO = 'S')
-                          AND ((PV.NUM_CUBAGEM = 0 OR PV.NUM_PESO = 0) OR (PV.NUM_CUBAGEM IS NULL OR PV.NUM_PESO IS NULL))
+                $sql .= " AND (((PE.NUM_CUBAGEM IN (0, NULL) OR PE.NUM_PESO IN (0, NULL)) AND PE.IND_PADRAO = 'S')
+                           OR (PV.NUM_CUBAGEM IN (0, NULL) OR PV.NUM_PESO IN (0, NULL)) OR (PE.COD_PRODUTO_EMBALAGEM IS NULL AND PV.COD_PRODUTO_VOLUME IS NULL))
                           GROUP BY P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO,
                               NVL(PV.COD_BARRAS, PE.COD_BARRAS), 
                               NVL(PV.NUM_ALTURA, NVL(PE.NUM_ALTURA, PDL.NUM_ALTURA)), 
                               NVL(PV.NUM_LARGURA, NVL(PE.NUM_LARGURA,PDL.NUM_LARGURA)), 
                               NVL(PV.NUM_PESO, NVL(PE.NUM_PESO,PDL.NUM_PESO)), 
                               NVL(PV.NUM_PROFUNDIDADE, NVL(PE.NUM_PROFUNDIDADE,PDL.NUM_PROFUNDIDADE)),
-                              NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO), NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR),
-                              NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS), NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO),
+                              NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO), U.DSC_UNITIZADOR,
+                              NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NP.NUM_CAMADAS, NP.NUM_LASTRO,
                               DE.DSC_DEPOSITO_ENDERECO, PV.CAPACIDADE_PICKING, PE.CAPACIDADE_PICKING, PV.PONTO_REPOSICAO, PE.PONTO_REPOSICAO";
             }
         }
@@ -901,7 +896,8 @@ class NotaFiscalRepository extends EntityRepository {
                           r.dataInicial as dataRecebimento,
                           pe.id as idEmbalagem, pe.descricao as dscEmbalagem, pe.quantidade,
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
-                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras")
+                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras,
+                          NVL(de.descricao, 'N/D') picking")
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
@@ -916,10 +912,11 @@ class NotaFiscalRepository extends EntityRepository {
                 ->setParameter('idRecebimento', $idRecebimento);
 
         if (empty($emb)) {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.isPadrao = \'S\' AND (pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)');
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', "pe.isPadrao = 'S' AND (pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)");
         } else {
             $dql->leftJoin('p.embalagens', 'pe', 'WITH', '(pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)');
         }
+        $dql->leftJoin(Endereco::class, 'de', 'WITH', '(de = pv.endereco or de = pe.endereco)');
 
         if ($codProduto == null) {
             $dql->andWhere('(pe.imprimirCB = \'S\' OR pv.imprimirCB = \'S\')');
@@ -1103,7 +1100,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setNumero($numero);
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
-            $notaFiscalEntity->setDataEmissao(new \DateTime);
+            $notaFiscalEntity->setDataEmissao($objDataEmissao);
             $notaFiscalEntity->setFornecedor($fornecedorEntity);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);
@@ -1119,7 +1116,10 @@ class NotaFiscalRepository extends EntityRepository {
                 /** @var LoteRepository $loteRepository */
                 $loteRepository = $em->getRepository('wms:Produto\Lote');
                 $notaFiscalItemLoteRepository = $em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
-                $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                $idPessoa = null;
+                if (\Zend_Auth::getInstance()->getIdentity() != null) {
+                    $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                }
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
                     $idProduto = ProdutoUtil::formatar($idProduto);

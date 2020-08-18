@@ -16,19 +16,23 @@ class EtiquetaEndereco extends Pdf
     public $y;
     public $count;
 
+    /*** @var \Doctrine\ORM\EntityManager */
+    private $em;
+
+    /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository  */
+    private $enderecoRepo;
+
     public function imprimir(array $enderecos = array(), $modelo, $unico = false, $quantidadeByPage = null)
     {
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $this->em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $this->enderecoRepo   = $this->em->getRepository('wms:Deposito\Endereco');
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(3, 0, 3);
         $this->AddPage();
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
 
         $this->lado = "E";
         $this->y=0;
@@ -40,7 +44,7 @@ class EtiquetaEndereco extends Pdf
             $codBarras = utf8_decode($endereco['DESCRICAO']);
             switch ((int)$modelo) {
                 case 1:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false,false,false);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras,false,false,false);
 
                     if ($quantidadeByPage != null) {
                         if ((($key) % $quantidadeByPage) == 0 && $key != 0) $this->AddPage();
@@ -60,7 +64,7 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo2(null,$codBarras);
                     break;
                 case 3:
-                    $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$codBarras));
+                    $enderecoEn = $this->enderecoRepo->findOneBy(array('descricao'=>$codBarras));
                     if ($enderecoEn != NULL) $this->layoutModelo3($enderecoEn);
                     break;
                 case 4:
@@ -71,15 +75,15 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo5($codBarras);
                     break;
                 case 6:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo6($produtos,$codBarras);
                     break;
                 case 7:
-                    $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $produto = $this->enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo7($produto,$codBarras);
                     break;
                 case 8:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras,false);
                     foreach ($produtos as $produto){
                         $this->layoutModelo8($produto,$codBarras);
                     }
@@ -88,7 +92,7 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 9:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,$unico);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras,$unico);
                     if (count($produtos) <= 0){
                         $this->layoutModelo9(null,$codBarras);
                     } else {
@@ -100,7 +104,7 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 10:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras,false);
                     if (empty($produtos)){
                         $arrPares[] = array('produtos' => null, 'codBarras' => $codBarras);
                         if (count($arrPares) == 3) {
@@ -130,7 +134,7 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 11:
-                    $produtosEndereco = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    $produtosEndereco = $this->enderecoRepo->getProdutoByEndereco($codBarras,false);
 
                     $produtos = array();
                     foreach ($produtosEndereco as $prod){
@@ -151,7 +155,7 @@ class EtiquetaEndereco extends Pdf
 
                     break;
                 case 15:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->SetAutoPageBreak(false);
                     if($key > 0) $this->AddPage();
                     $this->layoutModelo15($produtos,$codBarras);
@@ -161,7 +165,7 @@ class EtiquetaEndereco extends Pdf
                         $this->layoutModelo13($codBarras);
                     break;
                 case 14:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras);
                     if($key > 0) $this->AddPage();
                     $this->layoutModelo14($produtos,$codBarras);
                     break;
@@ -169,8 +173,12 @@ class EtiquetaEndereco extends Pdf
                     if($key > 0) $this->AddPage();
                         $this->layoutModelo16($codBarras);
                     break;
+                case 17:
+                    if($key > 0) $this->AddPage();
+                        $this->layoutModelo17($codBarras);
+                    break;
                 default:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras, false);
+                    $produtos = $this->enderecoRepo->getProdutoByEndereco($codBarras, false);
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
                     } else {
@@ -187,12 +195,7 @@ class EtiquetaEndereco extends Pdf
     }
 
     public function layoutModelo4($codBarras){
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = \Zend_Registry::get('doctrine')->getEntityManager();
-
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
-        $enderecoEntity = $enderecoRepo->findOneBy(array('descricao' => $codBarras));
+        $enderecoEntity = $this->enderecoRepo->findOneBy(array('descricao' => $codBarras));
 
         $rua = $enderecoEntity->getRua();
         $predio = $enderecoEntity->getPredio();
@@ -726,7 +729,7 @@ class EtiquetaEndereco extends Pdf
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
-        $dadosLogisticos = $em->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto' => reset($produto)['codProduto']), array('quantidade' => 'desc'));
+        $dadosLogisticos = $this->em->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto' => reset($produto)['codProduto']), array('quantidade' => 'desc'));
         $dadosLogisticos = reset($dadosLogisticos);
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+5, 90);
@@ -805,5 +808,33 @@ class EtiquetaEndereco extends Pdf
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 23, $this->GetY()+3 , 90);
         $this->Image(APPLICATION_PATH . '/../data/seta2.png', 6, $this->GetY(), 13,20);
         $this->InFooter = false;
+    }
+
+    public function layoutModelo17($codBarras){
+
+        $enderecoEntity = $this->enderecoRepo->findOneBy(array('descricao' => $codBarras));
+
+        $this->SetFont('Arial', 'B', 8);
+        $this->InFooter = true;
+
+        $format = Endereco::mascara(null, '0', Endereco::FORMATO_MATRIZ_ASSOC);
+        $xRua = $this->GetStringWidth($format['rua']) + 8;
+        $xPredio = $this->GetStringWidth($format['predio']) + 13;
+        $xNivel = $this->GetStringWidth($format['nivel']) + 13;
+        $xApto = $this->GetStringWidth($format['apartamento']) + 8;
+        $maxW = ($xRua + $xPredio + $xNivel + $xApto);
+        $center = ($this->GetPageWidth() / 2) - ($maxW / 2);
+
+        $this->SetXY( $center,1);
+        $this->Cell($xRua,13,utf8_decode("RUA"),0,0, 'C');
+        $this->Cell($xPredio,13,utf8_decode("PREDIO"),0,0, 'C');
+        $this->Cell($xNivel,13,utf8_decode("NIVEL"),0,0, 'C');
+        $this->Cell($xApto,13,utf8_decode("APTO"),0,1, 'C');
+
+        $this->SetXY( $center,12);
+        $this->SetFont('Arial', 'B', 30);
+        $this->Cell($maxW,5, $enderecoEntity->getDescricao(),0,1, 'C');
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$enderecoEntity->getDescricao())) , 10, 20 , 80, 15);
     }
 }

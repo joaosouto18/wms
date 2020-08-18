@@ -60,12 +60,23 @@ class AcompanhamentoSeparacao extends Grid
                 'label' => '% Sep.',
                 'index' => 'PERCENTUAL_SEPARACAO',
             ))->addColumn(array(
+                'label' => 'Separador',
+                'index' => 'SEPARADOR',
+            ))->addColumn(array(
                 'label' => 'Produtividade',
                 'index' => 'PRODUTIVIDADE_SEPARACAO',
             ))->addColumn(array(
                 'label' => 'Status',
                 'index' => 'STATUS_EXPEDICAO',
-            ));
+            ))->addAction(array(
+                'label' => 'Visualizar Separação',
+                'modelName' => 'expedicao',
+                'controllerName' => 'os',
+                'actionName' => 'consultar-separacao-ajax',
+                'cssClass' => 'dialogAjax',
+                'pkIndex' => 'COD_MAPA_SEPARACAO'
+            ))
+        ;
 
         $source->setShowExport(true)
                ->setShowMassActions($params);

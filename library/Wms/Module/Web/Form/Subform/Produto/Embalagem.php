@@ -83,13 +83,13 @@ class Embalagem extends SubForm
                     'label' => 'Ponto de Reposição',
                     'size' => 10,
                     'value' => 0,
-                   'alt' => 'centesimal',
+                   'alt' => 'numero',
                 ))
                 ->addElement('text', 'capacidadePicking', array(
                     'label' => 'Capacidade do Picking',
                     'size' => 10,
                     'value' => 0,
-                    'alt' => 'centesimal',
+                    'alt' => 'numero',
                 ))
                 ->addElement('text', 'altura', array(
                     'label' => 'Altura(m)',

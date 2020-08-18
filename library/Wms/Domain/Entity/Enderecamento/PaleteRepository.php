@@ -147,6 +147,8 @@ class PaleteRepository extends EntityRepository {
         if (isset($status) && (!empty($status))) {
             if ($status == $stsPaleteEnderecado) {
                 $query .= " AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) ";
+            } else {
+                $query .= " AND QTD_TOTAL.QTD_TOTAL != NVL(QTD_END.QTD,0) ";
             }
         }
 

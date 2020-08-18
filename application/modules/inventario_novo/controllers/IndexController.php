@@ -14,6 +14,9 @@ class Inventario_Novo_IndexController  extends Action
         $this->view->usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") === 'S');
         $this->view->showCodInvErp = ($importaInventario == 'S');
 
+        $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
+        $this->view->showExportInventario = (($modelo != "1") && ($modelo != "3") && ($modelo != "4"));
+
         $buttons[] = array(
             'label' => 'Novo Inventário por Endereço',
             'cssClass' => 'button',
@@ -299,6 +302,8 @@ class Inventario_Novo_IndexController  extends Action
                 $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario, $caminho);
             } elseif ($modelo == 3){
                 $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo3($idInventario);
+            } elseif ($modelo == 4){
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo4($idInventario);
             }
             $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
 

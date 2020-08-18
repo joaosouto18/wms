@@ -19,7 +19,7 @@ class Enderecamento_MovimentacaoController extends Action
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
         $this->view->controleProprietario = $controleProprietario;
 
-        $obsUserTrimmed = (!empty($data['obsUsuario'])) ? trim($data['obsUsuario']) : null;
+        $obsUserTrimmed = (!empty($data['obsUsuario'])) ? urlencode(trim($data['obsUsuario'])) : null;
         $params = array(
             'idProduto' => (!empty($data['idProduto']))? $data['idProduto'] : null,
             'grade' => (!empty($data['grade']))? $data['grade'] : null,
@@ -157,7 +157,7 @@ class Enderecamento_MovimentacaoController extends Action
 
             $EstoqueRepository->validaMovimentaçãoExpedicaoFinalizada($enderecoEn->getId(),$idProduto,$grade);
 
-            $params['obsUsuario'] = (!empty($data['obsUsuario'])) ? $data['obsUsuario'] : null;
+            $params['obsUsuario'] = (!empty($data['obsUsuario'])) ? urldecode($data['obsUsuario']) : null;
             $params['idMotMov'] = (!empty($data['idMotMov'])) ? $data['idMotMov'] : null;
 
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
@@ -534,6 +534,9 @@ class Enderecamento_MovimentacaoController extends Action
 
         $params = $this->_getAllParams();
 
+        ini_set('max_execution_time', 900);
+        ini_set('memory_limit', '-1');
+
         if ((isset($params['tipo'])) && ($params['tipo'] == 'C')) {
             /** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
             $SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
@@ -545,7 +548,6 @@ class Enderecamento_MovimentacaoController extends Action
         }
 
         $file = '';
-
         foreach($saldo as $produto) {
             $linha = $produto['codProduto'].';'.$produto['grade'].';'.$produto['dscLinhaSeparacao'].';'.$produto['qtd'].';'.$produto['dscEndereco'].';'.$produto['unitizador'].';'.$produto['descricao'].';'.$produto['volume'].';'.utf8_decode($produto['tipoComercializacao'].';'.$produto['caracteristica']);
             $file .= $linha . PHP_EOL;

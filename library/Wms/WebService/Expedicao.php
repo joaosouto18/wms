@@ -66,6 +66,8 @@ class produto {
     public $fatorEmbalagemVenda;
     /** @var string */
     public $proprietario;
+    /** @var string */
+    public $embalado;
 }
 
 class pedido {
@@ -152,6 +154,8 @@ class notaFiscal {
     public $valorVenda;
     /** @var notaFiscalProduto[] */
     public $itens;
+    /** @var string */
+    public $chaveAcesso;
 }
 
 class notaFiscalProduto {
@@ -350,6 +354,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
+        if ($isIntegracaoSQL == null) $isIntegracaoSQL = false;
+
         if ($isIntegracaoSQL === false) {
             $cargas = json_decode(json_encode($cargas), True);
             $cargas = $this->verificaEstruturaCarga($cargas);
@@ -802,6 +808,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                             $produto->quantidadeAtendida = 0;
                         }
                     }
+                    $produto->embalado = $item['EMBALADO'];
                     $pedido->produtos[] = $produto;
                 }
             }
@@ -890,6 +897,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $produto->quantidadeAtendida = 0;
                 }
             }
+            $produto->embalado = $item['EMBALADO'];
             $result->produtos[] = $produto;
         }
 
@@ -1004,7 +1012,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'pessoa' => $entityCliente,
             'pontoTransbordo' => $pedido['pontoTransbordo'],
             'codProprietario' => $pedido['codProprietario'],
-            'envioParaLoja' => (isset($pedido['envioParaLoja'])) ? $pedido['envioParaLoja'] : null
+            'envioParaLoja' => (isset($pedido['envioParaLoja'])) ? $pedido['envioParaLoja'] : null,
+            'observacao' => (!empty($pedido['observacao'])) ? $pedido['observacao'] : null
         );
 
         $entityPedido  = $this->findPedidoById($repositorios, $arrayPedido);
@@ -1500,7 +1509,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
 
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
-
                 if ($nfEn == null) {
 
                     $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
@@ -1511,6 +1519,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $nfEntity->setPessoa($pessoaEn);
                     $nfEntity->setSerieNf($notaFiscal->serieNf);
                     $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                    $nfEntity->setDataFaturamento(new DateTime($notaFiscal->dtEmissao));
+                    $nfEntity->setChaveAcesso($notaFiscal->chaveAcesso);
                     $nfEntity->setStatus($statusEn);
                     $this->_em->persist($nfEntity);
 

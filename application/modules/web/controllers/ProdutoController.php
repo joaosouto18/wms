@@ -84,6 +84,9 @@ class Web_ProdutoController extends Crud {
             case 4:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
                 break;
+            case 8:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(100, 35));
+                break;
             case 14:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(115, 55));
                 break;
@@ -218,6 +221,22 @@ class Web_ProdutoController extends Crud {
 
             /** @var ProdutoEntity $entity */
             if ($this->getRequest()->isPost()) {
+
+                if (isset($params['embalagens'])) {
+                    foreach (($params['embalagens']) as $embalagem) {
+                        if (($embalagem['endereco']) != "" && ($embalagem['capacidadePicking'] == 0)) {
+                            throw new \Exception("A definição da capacidade de picking é obrigatória para produtos separados no picking ");
+                        }
+                    }
+                }
+                if (isset($params['volumes'])) {
+                    foreach (($params['volumes']) as $volume) {
+                        if (($volume['endereco']) != "" && ($volume['capacidadePicking'] == 0)) {
+                            throw new \Exception("A definição da capacidade de picking é obrigatória para produtos separados no picking ");
+                        }
+                    }
+                }
+
 
                 $linhaEn = $entity->getLinhaSeparacao();
 
@@ -548,6 +567,9 @@ class Web_ProdutoController extends Crud {
                     break;
                 case 6:
                     $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 60));
+                    break;
+                case 8:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(100, 35));
                     break;
                 case 14:
                     $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(115, 55));

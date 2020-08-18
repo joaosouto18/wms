@@ -369,8 +369,8 @@ class EstoqueProprietarioRepository extends EntityRepository
                     PROP.NOM_EMPRESA \"nomProp\",
                     P.COD_PRODUTO \"codProduto\",
                     P.DSC_PRODUTO \"dscProduto\",
-                    NVL(RES.SALDO_FINAL, 0) \"qtdEstq\",
-                    NVL(RES.PEND, 0) \"qtdPend\"
+                    SUM(NVL(RES.SALDO_FINAL, 0)) \"qtdEstq\",
+                    SUM(NVL(RES.PEND, 0)) \"qtdPend\"
                 FROM EMPRESA PROP
                 INNER JOIN PESSOA_JURIDICA PJ ON PROP.IDENTIFICACAO = PJ.NUM_CNPJ
                 LEFT JOIN (
@@ -390,8 +390,8 @@ class EstoqueProprietarioRepository extends EntityRepository
                     UNION
                     SELECT
                           0 AS COD_ESTOQUE_PROPRIETARIO,
-                          0 AS SALDO_FINAL,
                           COD_PROPRIETARIO,
+                          0 AS SALDO_FINAL,
                           COD_PRODUTO,
                           DSC_GRADE,
                           PEND
@@ -406,8 +406,8 @@ class EstoqueProprietarioRepository extends EntityRepository
                     ) RES ON RES.COD_PROPRIETARIO = PJ.COD_PESSOA
                 LEFT JOIN PRODUTO P ON (P.COD_PRODUTO = RES.COD_PRODUTO AND P.DSC_GRADE = RES.DSC_GRADE)
                 $argsProp
-                ORDER BY
-                    PJ.NOM_FANTASIA, P.COD_PRODUTO DESC";
+                GROUP BY PJ.COD_PESSOA, P.COD_PRODUTO, PROP.NOM_EMPRESA, P.DSC_PRODUTO
+                ORDER BY PROP.NOM_EMPRESA, P.COD_PRODUTO DESC";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

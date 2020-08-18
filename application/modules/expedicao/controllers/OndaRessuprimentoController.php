@@ -341,17 +341,20 @@ class Expedicao_OndaRessuprimentoController extends Action
             ini_set('memory_limit', '-1');
         }
 
-        $dataInicial = (isset($values['dataInicial'])) ? $values['dataInicial'] : null;
-        $dataFinal =   (isset($values['dataFinal'])) ? $values['dataFinal'] : null;
-        $status =      (isset($values['status'])) ? $values['status'] : null;
-        $idExpedicao = (isset($values['expedicao'])) ? $values['expedicao'] : null;
-        $operador =    (isset($values['operador'])) ? $values['operador'] : null;
-        $idProduto =   (isset($values['idProduto'])) ? $values['idProduto'] : null;
-        $grade =       (isset($values['grade'])) ? $values['grade'] : null;
+        $status =      (!empty($values['status'])) ? $values['status'] : null;
+        $idExpedicao = (!empty($values['expedicao'])) ? $values['expedicao'] : null;
+        $operador =    (!empty($values['operador'])) ? $values['operador'] : null;
+        $idProduto =   (!empty($values['idProduto'])) ? $values['idProduto'] : null;
+        $grade =       (!empty($values['grade'])) ? $values['grade'] : null;
+        $codOs =       (!empty($values['codOs'])) ? $values['codOs'] : null;
+        $codOnda =     (!empty($values['codOnda'])) ? $values['codOnda'] : null;
+
+        $values['dataInicial'] = $dataInicial = (!empty($values['dataInicial']) && empty($idExpedicao) && empty($codOs) && empty($codOnda)) ? $values['dataInicial'] : null;
+        $values['dataFinal'] = $dataFinal = (!empty($values['dataFinal']) && empty($idExpedicao) && empty($codOs) && empty($codOnda)) ? $values['dataFinal'] : null;
 
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
         $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
-        $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador, true, $grade);
+        $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador, true, $grade, $codOs, $codOnda);
 
         $utilizaGrade = $this->getSystemParameterValue('UTILIZA_GRADE');
         $Grid = new OsGrid();
@@ -362,7 +365,7 @@ class Expedicao_OndaRessuprimentoController extends Action
         $Grid->setPager($pager);
 
         $form->setDefaults($values);
-        $this->view->grid = $Grid->render();
+        $this->view->grid = $Grid;
 
         $this->view->form = $form;
     }

@@ -2,6 +2,7 @@
 
 use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
 use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
+use Wms\Domain\Entity\Usuario;
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Module\Web\Page,
@@ -34,7 +35,7 @@ class Expedicao_EtiquetaController  extends Action
         $em = $this->getEntityManager();
         $arrayRepositorios = array(
             'expedicao'           => $em->getRepository('wms:Expedicao'),
-            'filial'               => $em->getRepository('wms:Filial'),
+            'filial'              => $em->getRepository('wms:Filial'),
             'etiquetaSeparacao'   => $em->getRepository('wms:Expedicao\EtiquetaSeparacao'),
             'depositoEndereco'    => $em->getRepository('wms:Deposito\Endereco'),
             'modeloSeparacao'     => $em->getRepository('wms:Expedicao\ModeloSeparacao'),
@@ -106,6 +107,8 @@ class Expedicao_EtiquetaController  extends Action
             if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
 
+                /** @var Usuario $usuario */
+                $usuario = $this->em->find('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
 
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -121,6 +124,7 @@ class Expedicao_EtiquetaController  extends Action
 
                         if(!is_null($cargas) && is_array($cargas)) {
                             $options[] = implode(',',$cargas);
+                            $options[] = $usuario->getCodErp();
                         } else if (!is_null($cargas)) {
                             $options = $cargas;
                         }
@@ -257,6 +261,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
                 } elseif ($modelo == '14' || $modelo == '16') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 75));
+                } elseif ($modelo == '17') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(110, 55));
                 } elseif ($modelo == '18') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 35));
                 } else {
@@ -422,6 +428,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
                 } elseif ($modelo == '16') {
                     $Etiqueta = new Etiqueta('L', 'mm',array(100,75));
+                } elseif ($modelo == '18') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(100, 35));
                 } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
@@ -433,6 +441,11 @@ class Expedicao_EtiquetaController  extends Action
                         $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $etq));
                         if ($etiquetaEntity == null ) {
                             $this->addFlashMessage('error', "Etiqueta não $codBarra encontrada");
+                            $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
+                        }
+
+                        if ($etiquetaEntity->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
+                            $this->addFlashMessage('info', "Etiqueta $etq ja está cortada e não pode ser reimpressa");
                             $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
                         }
 
@@ -690,7 +703,7 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 7:
                     //LAYOUT MBLED
-                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,175));
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 case 8:
                     //LAYOUT PREMIUM
@@ -704,13 +717,17 @@ class Expedicao_EtiquetaController  extends Action
                     //LAYOUT MOTOARTE
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
+                case 11:
+                    //LAYOUT MACROLUB
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;
 
             }
 
-            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal);
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta,$fechaEmbaladosNoFinal);
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -762,7 +779,7 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 7:
                     //LAYOUT MBLED
-                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(100,75));
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 case 8:
                     //LAYOUT PREMIUM
@@ -774,6 +791,10 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 10:
                     //LAYOUT MOTOARTE
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 11:
+                    //LAYOUT MACROLUB
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 default:

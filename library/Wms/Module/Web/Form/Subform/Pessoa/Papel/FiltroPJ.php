@@ -17,14 +17,19 @@ class FiltroPJ extends Form
         $this->setAttrib('method', 'get');
 
 
-        $this->addElement('text', 'nome', array(
+        $this->addElement('text', 'codigo', array(
                     'class' => 'caixa-alta focus',
-                    'size' => 50,
+                    'size' => 5,
+                    'label' => 'Código',
+                ))
+                ->addElement('text', 'nome', array(
+                    'class' => 'caixa-alta focus',
+                    'size' => 45,
                     'label' => 'Razão Social',
                 ))
                 ->addElement('text', 'nomeFantasia', array(
                     'class' => 'caixa-alta',
-                    'size' => 50,
+                    'size' => 45,
                     'label' => 'Nome Fantasia',
                 ))
                 ->addElement('cnpj', 'cnpj', array(
@@ -35,7 +40,7 @@ class FiltroPJ extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('nome', 'nomeFantasia', 'cnpj', 'submit'), 'identificacao', array('legend' => 'Filtros de Busca'));
+                ->addDisplayGroup(array('codigo', 'nome', 'nomeFantasia', 'cnpj', 'submit'), 'identificacao', array('legend' => 'Filtros de Busca'));
     }
 
 }

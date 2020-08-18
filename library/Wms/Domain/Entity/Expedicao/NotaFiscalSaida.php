@@ -60,6 +60,22 @@ class NotaFiscalSaida
     protected $status;
 
     /**
+     * @var string
+     * @Column(name="COD_CHAVE_ACESSO", type="string", nullable=true)
+     */
+    protected $chaveAcesso;
+
+    /**
+     * @Column(name="DTH_FATURAMENTO_ERP", type="datetime", nullable=false)
+     */
+    protected $dataFaturamento;
+
+    /**
+     * @Column(name="DTH_INTEGRACAO_NF_SAIDA", type="datetime", nullable=false)
+     */
+    protected $dataIntegracao;
+
+    /**
      * @param mixed $id
      */
     public function setId($id)
@@ -169,6 +185,54 @@ class NotaFiscalSaida
     public function getPessoa()
     {
         return $this->pessoa;
+    }
+
+    /**
+     * @return string
+     */
+    public function getChaveAcesso()
+    {
+        return $this->chaveAcesso;
+    }
+
+    /**
+     * @param string $chaveAcesso
+     */
+    public function setChaveAcesso($chaveAcesso)
+    {
+        $this->chaveAcesso = $chaveAcesso;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataFaturamento()
+    {
+        return $this->dataFaturamento;
+    }
+
+    /**
+     * @param mixed $dataFaturamento
+     */
+    public function setDataFaturamento($dataFaturamento)
+    {
+        $this->dataFaturamento = $dataFaturamento;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataIntegracao()
+    {
+        return $this->dataIntegracao;
+    }
+
+    /**
+     * @param mixed $dataIntegracao
+     */
+    public function setDataIntegracao($dataIntegracao)
+    {
+        $this->dataIntegracao = $dataIntegracao;
     }
 
 }

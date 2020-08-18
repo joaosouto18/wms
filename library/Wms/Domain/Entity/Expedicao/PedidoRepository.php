@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Math;
 use Zend\Stdlib\Configurator;
 
@@ -33,6 +34,7 @@ class PedidoRepository extends EntityRepository
             $numSequencial = $this->getMaxCodPedidoByCodExterno($pedido['codPedido'], true);
             $enPedido->setCodExterno($pedido['codPedido']);
             $enPedido->setTipoPedido($tipoPedEn);
+            $enPedido->setCodTipoPedido($tipoPedEn->getId());
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
             $enPedido->setCentralEntrega($pedido['centralEntrega']);
             $enPedido->setCarga($pedido['carga']);
@@ -43,6 +45,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setIndEtiquetaMapaGerado('N');
             $enPedido->setProprietario((isset($pedido['codProprietario'])) ? $pedido['codProprietario'] : null);
             $enPedido->setNumSequencial((isset($numSequencial)) ? $numSequencial : null);
+            $enPedido->setObservacao((isset($pedido['observacao'])) ? $pedido['observacao'] : null);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();
@@ -56,7 +59,10 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getQtdPedidaAtendidaByPedido ($codPedido) {
-            //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
+
+        $ncl = Lote::NCL;
+
+        //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S'){
             $SQL = "SELECT EP.COD_PESSOA, 
@@ -68,7 +74,10 @@ class PedidoRepository extends EntityRepository
                            PP.QTD_EMBALAGEM_VENDA as QTD_PEDIDO_EMBALAGEM_VENDA,
                            NVL((EP.QTD * -1),0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA,
-                           ETQ_C.QTD_CONFERIDA
+                           ETQ_C.QTD_CONFERIDA,
+                           null as EMBALADO,
+                           PP.COD_PEDIDO_PRODUTO,
+                           '$ncl' as DSC_LOTE
                     FROM PEDIDO_PRODUTO PP 
                     LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
@@ -76,16 +85,16 @@ class PedidoRepository extends EntityRepository
                                       ES.DSC_GRADE, 
                                       MIN(NVL(ESC.QTD,0)) as QTD_CONFERIDA
                                  FROM ETIQUETA_SEPARACAO ES
-                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,0) as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,'$ncl') as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
                                               FROM ETIQUETA_SEPARACAO
                                              WHERE COD_PEDIDO = '$codPedido'
                                                AND COD_STATUS IN (526,531,532)
-                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,0) ) ESC
+                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,'$ncl') ) ESC
                                    ON ES.COD_PRODUTO = ESC.COD_PRODUTO
                                   AND ES.DSC_GRADE = ESC.DSC_GRADE
                                   AND NVL(ES.COD_PRODUTO_VOLUME,0) = ESC.VOLUME
                                 WHERE ES.COD_PEDIDO = '$codPedido'
-                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,0)) ETQ_C
+                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,'$ncl')) ETQ_C
                       ON ETQ_C.COD_PRODUTO = PP.COD_PRODUTO
                      AND ETQ_C.DSC_GRADE = PP.DSC_GRADE
                     WHERE PP.COD_PEDIDO = $codPedido";
@@ -97,37 +106,95 @@ class PedidoRepository extends EntityRepository
                            CASE WHEN (PPL.DSC_LOTE IS NOT NULL ) THEN PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)
                                 ELSE PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) END as ATENDIDA, 
                            '' AS CNPJ,
-                           PPL.DSC_LOTE,
+                           NVL(PPL.DSC_LOTE,'$ncl') as DSC_LOTE,
                            NVL(PPL.QUANTIDADE, PP.QUANTIDADE) / NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as QTD_PEDIDO_EMBALAGEM_VENDA,
                            CASE WHEN (PPL.DSC_LOTE IS NOT NULL ) THEN (PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)
                                 ELSE (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) END as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA,
-                           ETQ_C.QTD_CONFERIDA              
+                           ETQ_C.QTD_CONFERIDA,
+                           null as EMBALADO,
+                           PP.COD_PEDIDO_PRODUTO              
                     FROM PEDIDO_PRODUTO PP
                     LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                     LEFT JOIN (SELECT ES.COD_PRODUTO, 
                                       ES.DSC_GRADE, 
-                                      NVL(ES.DSC_LOTE,0) as LOTE,
+                                      NVL(ES.DSC_LOTE,'$ncl') as LOTE,
                                       MIN(NVL(ESC.QTD,0)) as QTD_CONFERIDA
                                  FROM ETIQUETA_SEPARACAO ES
-                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,0) as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,'$ncl') as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
                                               FROM ETIQUETA_SEPARACAO
                                              WHERE COD_PEDIDO = '$codPedido'
                                                AND COD_STATUS IN (526,531,532)
-                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,0) ) ESC
+                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,'$ncl') ) ESC
                                    ON ES.COD_PRODUTO = ESC.COD_PRODUTO
                                   AND ES.DSC_GRADE = ESC.DSC_GRADE
                                   AND NVL(ES.COD_PRODUTO_VOLUME,0) = ESC.VOLUME
-                                  AND NVL(ES.DSC_LOTE,0) = ESC.LOTE
+                                  AND NVL(ES.DSC_LOTE,'$ncl') = ESC.LOTE
                                 WHERE ES.COD_PEDIDO = '$codPedido'
-                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,0)) ETQ_C
+                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,'$ncl')) ETQ_C
                       ON ETQ_C.COD_PRODUTO = PP.COD_PRODUTO
                      AND ETQ_C.DSC_GRADE = PP.DSC_GRADE
-                     AND ETQ_C.LOTE = NVL(PPL.DSC_LOTE,0) 
+                     AND ETQ_C.LOTE = NVL(PPL.DSC_LOTE,'$ncl') 
                    WHERE PP.COD_PEDIDO = '$codPedido'";
         }
-        $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $array;
+        $arrayPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($this->getSystemParameterValue('RETORNO_PRODUTO_EMBALADO') == 'N') {
+            return $arrayPedidos;
+        }
+
+        $SQL = "SELECT PP.COD_PEDIDO_PRODUTO,
+                       PPEC.COD_MAPA_SEPARACAO_EMBALADO as COD_EMBALADO,
+                       PPEC.DSC_LOTE,
+                       PPEC.QTD
+                  FROM PEDIDO_PRODUTO_EMB_CLIENTE PPEC
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = PPEC.COD_PEDIDO_PRODUTO
+                 WHERE PP.COD_PEDIDO = '$codPedido'";
+        $arrayEmbalados = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $result = array();
+        foreach ($arrayPedidos as $keyPP => $pp) {
+            foreach ($arrayEmbalados as $keyEmb => $embalado) {
+                if (($pp['COD_PEDIDO_PRODUTO'] == $embalado['COD_PEDIDO_PRODUTO'])
+                    && ($pp['DSC_LOTE'] == $embalado['DSC_LOTE'])) {
+                    $result[] = array(
+                        'COD_PESSOA' => $pp['COD_PESSOA'],
+                        'COD_PRODUTO' => $pp['COD_PRODUTO'],
+                        'DSC_GRADE' => $pp['DSC_GRADE'],
+                        'QTD_PEDIDO' => $pp['QTD_PEDIDO'],
+                        'ATENDIDA' => $embalado['QTD'],
+                        'CNPJ' => $pp['CNPJ'],
+                        'DSC_LOTE' => $pp['DSC_LOTE'],
+                        'QTD_PEDIDO_EMBALAGEM_VENDA' => $pp['QTD_PEDIDO_EMBALAGEM_VENDA'],
+                        'QTD_ATENDIDA_EMB_VENDA' => $embalado['QTD'] / $pp['FATOR_EMBALAGEM_VENDA'],
+                        'FATOR_EMBALAGEM_VENDA' => $pp['FATOR_EMBALAGEM_VENDA'],
+                        'QTD_CONFERIDA' => $pp['QTD_CONFERIDA'],
+                        'EMBALADO' => $embalado['COD_EMBALADO']
+                    );
+
+                    $arrayPedidos[$keyPP]['ATENDIDA'] = $arrayPedidos[$keyPP]['ATENDIDA'] - $embalado['QTD'];
+                    unset($arrayEmbalados[$keyEmb]);
+                }
+            }
+
+            if ($arrayPedidos[$keyPP]['ATENDIDA'] >0) {
+                $result[] = array(
+                    'COD_PESSOA' => $pp['COD_PESSOA'],
+                    'COD_PRODUTO' => $pp['COD_PRODUTO'],
+                    'DSC_GRADE' => $pp['DSC_GRADE'],
+                    'QTD_PEDIDO' => $pp['QTD_PEDIDO'],
+                    'ATENDIDA' => $arrayPedidos[$keyPP]['ATENDIDA'] / $pp['FATOR_EMBALAGEM_VENDA'],
+                    'CNPJ' => $pp['CNPJ'],
+                    'DSC_LOTE' => $pp['DSC_LOTE'],
+                    'QTD_PEDIDO_EMBALAGEM_VENDA' => $pp['QTD_PEDIDO_EMBALAGEM_VENDA'],
+                    'QTD_ATENDIDA_EMB_VENDA' => $pp['QTD_PEDIDO_EMBALAGEM_VENDA'],
+                    'FATOR_EMBALAGEM_VENDA' => $pp['FATOR_EMBALAGEM_VENDA'],
+                    'QTD_CONFERIDA' => $pp['QTD_CONFERIDA'],
+                    'EMBALADO' => ''
+                );
+            }
+        }
+        return $result;
     }
 
     public function finalizaPedidosByCentral ($PontoTransbordo, $Expedicao, $carga = null, $flush = true)
@@ -763,10 +830,13 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null, $quebraEndereco = false)
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null, $quebraEndereco = false, $controlaLote = false)
     {
 
         try {
+            $sqlQtdProduto = (!$controlaLote) ? "PP.QUANTIDADE" : "NVL(PPL.QUANTIDADE, PP.QUANTIDADE)";
+            $sqlQtdProdutoCortado = (!$controlaLote) ? "NVL(PP.QTD_CORTADA, 0)" : "NVL(NVL(PPL.QTD_CORTE, PP.QTD_CORTADA), 0)";
+
             $sqlCampos = "
                     P.COD_EXTERNO as \"id\",
                     CL.COD_CLIENTE_EXTERNO as \"codcli\",
@@ -786,50 +856,68 @@ class PedidoRepository extends EntityRepository
                     P.NUM_SEQUENCIAL as \"numSequencial\",
                     NVL(MSC.QTD_CONFERIDA,0) as \"qtdConf\",
                     NVL(PP.QTD_CORTADA,0) as \"qtdCorteTotal\",
+                    NVL(PPL.DSC_LOTE, '') as \"lote\",
                     PP.FATOR_EMBALAGEM_VENDA as \"fatorEmbalagemVenda\",
                     C.COD_CARGA_EXTERNO as \"carga\",";
 
-                if ($quebraEndereco) {
+                if ($quebraEndereco || $controlaLote) {
                     $sqlCampos .= "
-                    NVL((MSPROD.QTD_SEPARAR * MSPROD.QTD_EMBALAGEM), PP.QUANTIDADE) as \"quantidade\",
-                    NVL(MSPROD.QTD_CORTADO, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\",
+                    NVL(SUM(MSPROD.QTD_SEPARAR * MSPROD.QTD_EMBALAGEM), $sqlQtdProduto) as \"quantidade\",
+                    NVL(SUM(MSPROD.QTD_CORTADO), $sqlQtdProdutoCortado) as \"qtdCortada\"";
+                    if ($quebraEndereco) {
+                        $sqlCampos .= ",
                     DE.COD_DEPOSITO_ENDERECO as \"idEndereco\",
                     DE.DSC_DEPOSITO_ENDERECO as \"dscEndereco\"";
+                    }
                 } else {
                     $sqlCampos .= "
-                    NVL(MSP.QTD, PP.QUANTIDADE) as \"quantidade\",
-                    NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\"";
+                    NVL(MSP.QTD, $sqlQtdProduto) as \"quantidade\",
+                    NVL(MSP.QTD_CORTADA, $sqlQtdProdutoCortado) as \"qtdCortada\"";
                 }
             }
 
-            $sql = "SELECT DISTINCT $sqlCampos FROM PEDIDO_PRODUTO PP
+            $sql = "SELECT DISTINCT $sqlCampos 
+                    FROM PEDIDO_PRODUTO PP
               INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
               INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
               INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
               INNER JOIN CLIENTE CL ON P.COD_PESSOA = CL.COD_PESSOA
+               LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                LEFT JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO ";
 
             if (!empty($codProduto)) {
                 $sql .= "LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
                LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                LEFT JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MSQ.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = '" . MapaSeparacaoQuebra::QUEBRA_CARRINHO . "'
-               LEFT JOIN (SELECT M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA, NVL(MSC2.COD_PESSOA, 0) COD_CLIENTE
+               LEFT JOIN (SELECT M.COD_MAPA_SEPARACAO, 
+                                 COD_PRODUTO, DSC_GRADE, 
+                                 SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA, 
+                                 NVL(MSC2.COD_PESSOA, 0) COD_CLIENTE,
+                                 NVL(MSC2.DSC_LOTE, '') DSC_LOTE
                             FROM MAPA_SEPARACAO_CONFERENCIA MSC2 INNER JOIN MAPA_SEPARACAO M on MSC2.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
                            WHERE M.COD_EXPEDICAO in ($idExpedicao)
-                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(MSC2.COD_PESSOA, 0)) MSC
+                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(MSC2.COD_PESSOA, 0), NVL(MSC2.DSC_LOTE, '')) MSC
                          ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
+                           AND MSC.DSC_LOTE = NVL(PPL.DSC_LOTE, '')
                          AND CASE WHEN MSC.COD_CLIENTE = 0 THEN 1 ELSE CASE WHEN MSC.COD_CLIENTE = P.COD_PESSOA THEN 1 ELSE 0 END END = 1                          
                    ";
             }
 
-            if ($quebraEndereco) {
+            if ($quebraEndereco || $controlaLote) {
                 $sql .= "
-               LEFT JOIN MAPA_SEPARACAO_PRODUTO MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PRODUTO = '$codProduto' AND MSPROD.DSC_GRADE = '$grade'  AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = MSPROD.COD_DEPOSITO_ENDERECO
-               ";
+               LEFT JOIN MAPA_SEPARACAO_PRODUTO MSPROD 
+                      ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO 
+                     AND MSPROD.COD_PRODUTO = '$codProduto' 
+                     AND MSPROD.DSC_GRADE = '$grade' 
+                     AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                     AND NVL(MSPROD.DSC_LOTE, 0) = NVL(PPL.DSC_LOTE, 0)
+                     ";
+                if ($quebraEndereco)
+                    $sql .= "
+                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = MSPROD.COD_DEPOSITO_ENDERECO";
             }
 
-            $where = " WHERE C.COD_EXPEDICAO in($idExpedicao)";
+            $where = " WHERE C.COD_EXPEDICAO IN ($idExpedicao)";
 
             if ($todosProdutos == false) {
                 $where .= " AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA, 0)";
@@ -839,9 +927,36 @@ class PedidoRepository extends EntityRepository
                 $where .= " AND P.COD_PEDIDO = $idPedido";
             }
 
-            $groupBy = "";
+
             if (isset($codProduto) && !empty($codProduto)) {
                 $where .= " AND PP.COD_PRODUTO = '$codProduto' AND PP.DSC_GRADE = '$grade'";
+                $groupBy = "GROUP BY
+                    P.COD_PEDIDO,
+                    P.COD_EXTERNO,
+                    CL.COD_PESSOA,
+                    CL.COD_CLIENTE_EXTERNO,
+                    MS.COD_MAPA_SEPARACAO,
+                    MSQ.COD_MAPA_SEPARACAO,
+                    PE.NOM_PESSOA,
+                    NVL(I.DSC_ITINERARIO,'PADRAO'),
+                    P.NUM_SEQUENCIAL,
+                    NVL(MSC.QTD_CONFERIDA,0),
+                    NVL(PP.QTD_CORTADA,0),
+                    NVL(PPL.DSC_LOTE, ''),
+                    PP.FATOR_EMBALAGEM_VENDA,
+                    C.COD_CARGA_EXTERNO,
+                    $sqlQtdProduto,
+                    $sqlQtdProdutoCortado";
+                if ($quebraEndereco) {
+                    $groupBy .= ",
+                    DE.COD_DEPOSITO_ENDERECO,
+                    DE.DSC_DEPOSITO_ENDERECO";
+                } else {
+                    $groupBy .= ",
+                    NVL(MSP.QTD, $sqlQtdProduto),
+                    NVL(MSP.QTD_CORTADA, $sqlQtdProdutoCortado)";
+                }
+
             } else {
                 $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_CLIENTE_EXTERNO';
             }
@@ -1134,5 +1249,41 @@ class PedidoRepository extends EntityRepository
                 WHERE MSP.COD_MAPA_SEPARACAO = $idMapa";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getObservacaoPedido($idExpedicao)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codPedido, p.codExterno, cli.id codCliente, cli.codClienteExterno, pes.nome, p.observacao, c.id codCarga, c.codCargaExterno')
+            ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('p.pessoa', 'cli')
+            ->innerJoin('cli.pessoa','pes')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->where('e.id = '.$idExpedicao)
+            ->andWhere('p.observacao is not null')
+            ->orderBy('c.codCargaExterno, cli.codClienteExterno, p.codExterno');
+
+        $resultado = $sql->getQuery()->getResult();
+
+        if (!empty($resultado))
+            return $resultado;
+
+        return null;
+    }
+
+    public function getPedidosFinalizadosNaoFaturados()
+    {
+        $queryBuilder = $this->_em->createQueryBuilder()
+            ->select('p')
+            ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->innerJoin('e.status','s')
+            ->where('s.id = :codStatus')
+            ->andWhere("p.faturado = 'N' ")
+            ->setParameter('codStatus', Expedicao::STATUS_FINALIZADO);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

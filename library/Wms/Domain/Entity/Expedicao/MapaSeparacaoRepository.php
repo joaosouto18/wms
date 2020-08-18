@@ -110,8 +110,8 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function getResumoConferenciaMapaByExpedicao($idExpedicao) {
         $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, NVL(MSC.QTD_CONF,0) as QTD_CONF,
-                     CAST((MSC.QTD_CONF/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL,
-                     CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
+                     CAST(CASE WHEN MSP.QTD_SEPARAR = 0 THEN 0 ELSE (MSC.QTD_CONF/MSP.QTD_SEPARAR) END * 100 as NUMBER(6,2)) || '%' as PERCENTUAL,
+                     CAST(CASE WHEN MSP.QTD_SEPARAR = 0 THEN 0 ELSE (SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) END * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
                      MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
                 LEFT JOIN (SELECT MSP.COD_MAPA_SEPARACAO, SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) as QTD_SEPARAR
@@ -1552,26 +1552,24 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function getCaixasByExpedicao($idExpedicao)
     {
-        $sql = "SELECT NVL(VOL_EMBALADOS.NUMERO_CAIXAS,0) + NVL(VOL_ETIQUETAS.NUMERO_CAIXAS,0) NUMERO_CAIXAS, NVL(VOL_EMBALADOS.COD_PESSOA,VOL_ETIQUETAS.COD_PESSOA) COD_PESSOA, E.COD_EXPEDICAO
-                    FROM EXPEDICAO E 
-                    LEFT JOIN (
-                        SELECT COUNT(NVL(MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE,0)) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
-                        FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
-                        INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO
-                        WHERE MS.COD_EXPEDICAO = $idExpedicao
-                        GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
-                    ) VOL_EMBALADOS ON VOL_EMBALADOS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    LEFT JOIN (
-                        SELECT COUNT(NVL(ES.COD_ETIQUETA_SEPARACAO,0)) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
-                        FROM ETIQUETA_SEPARACAO ES
-                        INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
-                        INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-                        INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                        WHERE E.COD_EXPEDICAO = $idExpedicao
+        $sql = "SELECT SUM(NUMERO_CAIXAS) NUMERO_CAIXAS, COD_EXPEDICAO, COD_PESSOA
+                FROM (
+                    SELECT COUNT(NVL(MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE,0)) NUMERO_CAIXAS, MS.COD_EXPEDICAO, MSC.COD_PESSOA
+                    FROM MAPA_SEPARACAO_EMB_CLIENTE MSC
+                    INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao
+                    GROUP BY MSC.COD_PESSOA, MS.COD_EXPEDICAO
+                UNION ALL
+                    SELECT COUNT(NVL(ES.COD_ETIQUETA_SEPARACAO,0)) NUMERO_CAIXAS, E.COD_EXPEDICAO, P.COD_PESSOA
+                    FROM ETIQUETA_SEPARACAO ES
+                    INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                    INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    WHERE E.COD_EXPEDICAO = $idExpedicao 
                         AND ES.COD_STATUS = ". EtiquetaSeparacao::STATUS_CONFERIDO ."
-                        GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO
-                    ) VOL_ETIQUETAS ON VOL_ETIQUETAS.COD_EXPEDICAO = E.COD_EXPEDICAO AND VOL_ETIQUETAS.COD_PESSOA = VOL_EMBALADOS.COD_PESSOA
-                    WHERE E.COD_EXPEDICAO = $idExpedicao";
+                    GROUP BY P.COD_PESSOA, E.COD_EXPEDICAO)
+                WHERE COD_EXPEDICAO = $idExpedicao
+                GROUP BY COD_EXPEDICAO, COD_PESSOA";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -1582,5 +1580,70 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         return $arrayClientes;
 
+    }
+
+    public function getDetalhamentoSeparacaoByMapa($idMapa) {
+        $sql = "SELECT P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       P.DSC_PRODUTO,
+                       TO_CHAR(SMS.DTH_SEPARACAO,'DD/MM/YYYY HH24:MI:SS') as DTH_SEPARACAO,
+                       PES.NOM_PESSOA,
+                       NVL(SMS.DSC_LOTE,'-') as DSC_LOTE,
+                       SMS.QTD_SEPARADA || ' ' || NVL(PV.DSC_VOLUME, PE.DSC_EMBALAGEM || '(' || SMS.QTD_EMBALAGEM || ')') as EMBALAGEM
+                  FROM SEPARACAO_MAPA_SEPARACAO SMS
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = SMS.COD_PRODUTO AND P.DSC_GRADE = SMS.DSC_GRADE
+                  LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = SMS.COD_OS
+                  LEFT JOIN PESSOA PES ON PES.COD_PESSOA = OS.COD_PESSOA
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = SMS.COD_PRODUTO_EMBALAGEM
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = SMS.COD_PRODUTO_VOLUME
+                 WHERE SMS.COD_MAPA_SEPARACAO = $idMapa
+                 ORDER BY P.COD_PRODUTO, P.DSC_GRADE, SMS.DTH_SEPARACAO";
+
+        $result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $produtos = [];
+
+        foreach ($result as $r) {
+
+            $k = null;
+            if (count($produtos) >0) {
+                foreach ($produtos['produtos'] as $key => $p) {
+                    if (($p['codProduto'] == $r['COD_PRODUTO']) && ($p['grade']== $r['DSC_GRADE'])) {
+                        $k = $key;
+                    }
+                }
+            }
+
+            $separacao = array();
+            if (!($k === null)) {
+                foreach ($produtos['produtos'][$k]['separacao'] as $sep) {
+                    $separacao[] = array(
+                        'dthSeparacao' => $sep['dthSeparacao'],
+                        'separador' => $sep['separador'],
+                        'lote' => $sep['lote'],
+                        'embalagem' => $sep['embalagem']
+                    );
+                }
+            }
+            $separacao[] = array(
+                'dthSeparacao' => $r['DTH_SEPARACAO'],
+                'separador' => $r['NOM_PESSOA'],
+                'lote' => $r['DSC_LOTE'],
+                'embalagem' => $r['EMBALAGEM']
+            );
+
+            $dadosProduto = array (
+                'codProduto' => $r['COD_PRODUTO'],
+                'grade' => $r['DSC_GRADE'],
+                'descricao' => $r['DSC_PRODUTO'],
+                'separacao' => $separacao
+            );
+
+            if ($k === null) {
+                $produtos['produtos'][] = $dadosProduto;
+            } else {
+                $produtos['produtos'][$k] = $dadosProduto;
+            }
+        }
+        return $produtos;
     }
 }

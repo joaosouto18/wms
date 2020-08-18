@@ -37,10 +37,12 @@ class SaidaProduto extends Form
                 $this->addElement('date', 'dataInicial', array(
                     'size' => 20,
                     'label' => 'Data Inicial',
+                    'required'
                 ))
                 ->addElement('date', 'dataFinal', array(
                     'size' => 20,
                     'label' => 'Data Final',
+                    'required'
                 ))
                 ->addElement('select', 'filial', array(
                     'label' => 'Filial',

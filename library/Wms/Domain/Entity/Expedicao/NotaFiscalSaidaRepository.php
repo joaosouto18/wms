@@ -21,46 +21,44 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         }
     }
 
-    public function getNotaFiscalOuCarga($data) {
+    public function getNotaFiscalSaida($data) {
 
         if ($this->getSystemParameterValue('IND_UTILIZA_INTEGRACAO_NF_SAIDA') == 'S') {
-            if ((isset($data['notaFiscal']) && !empty($data['notaFiscal'])) || (!empty($data['carga']) && isset($data['carga']))) {
-                $options = array();
+            $options = array();
 
-                if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
-                    $options[] = $data['notaFiscal'];
-                } else {
-                    $options[] = 0;
-                }
+            if (isset($data['pedido']) && !empty($data['pedido'])) {
+                $options[] = $data['pedido'];
+            } elseif (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
+                $options[] = $data['notaFiscal'];
+            } elseif (isset($data['carga']) && !empty($data['carga'])) {
+                $options[] = $data['carga'];
+            } else
+                $options[] = 0;
 
-                if (isset($data['carga']) && !empty($data['carga'])) {
-                    $options[] = $data['carga'];
-                } else {
-                    $options[] = 0;
-                }
+            $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
 
-                $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
-
-                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-                $acaoEn = $acaoIntRepo->find($idIntegracao);
-                $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
-            }
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
         }
 
         $sql = $this->getEntityManager()->createQueryBuilder()
-                ->select('DISTINCT nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome')
+                ->select('DISTINCT nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id', 'nfs.chaveAcesso', 'pj.cnpj', 'pf.cpf', 'pes.nome')
                 ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
                 ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
                 ->innerJoin('nfsp.pedido', 'p')
                 ->innerJoin('p.carga', 'c')
                 ->innerJoin('nfs.pessoa', 'pes')
-                ->innerJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pes.id');
+                ->leftJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pes.id')
+                ->leftJoin('wms:Pessoa\Fisica', 'pf', 'WITH', 'pf.id = pes.id');
 
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf IN (".$data['notaFiscal'].")");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
             $sql->andWhere("c.codCargaExterno = ('". $data['carga'] ."')");
+        } elseif (isset($data['pedido']) && !empty($data['pedido'])) {
+            $sql->andWhere("p.codExterno = ('". $data['pedido'] ."')");
         }
 
         if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {
@@ -68,7 +66,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
             $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'p.id = etq.pedido');
             $sql->andWhere("etq.id = $codBarras");
         }
-        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome');
+        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'nfs.chaveAcesso', 'pj.cnpj', 'pf.cpf', 'pes.nome');
 
         $result = $sql->getQuery()->getResult();
 

@@ -12,6 +12,7 @@ class ModeloSeparacao
 
     const DEFAULT_EMBALADO_PRODUTO = "P";
     const DEFAULT_EMBALADO_FRACIONADOS = "F";
+    const DEFAULT_EMBALADO_TODAS_EMBALAGENS = "T";
 
     const QUEBRA_VOLUME_CARGA = "A";
     const QUEBRA_VOLUME_CLIENTE = "C";
@@ -31,6 +32,9 @@ class ModeloSeparacao
 
     const TIPO_SEPARACAO_ETIQUETA = "E";
     const TIPO_SEPARACAO_MAPA = "M";
+
+    const TIPO_CONF_CARREG_EXP = 'E';
+    const TIPO_CONF_CARREG_DANFE = 'D';
 
     /**
      * @Id
@@ -177,6 +181,11 @@ class ModeloSeparacao
      * @Column(name="IND_SEQ_ROTA_PRACA", type="string", nullable=true)
      */
     protected $usaSequenciaRotaPraca;
+
+    /**
+     * @Column(name="TIPO_CONF_CARREG", type="string")
+     */
+    protected $tipoConfCarregamento;
 
     /**
      * @return mixed
@@ -624,6 +633,22 @@ class ModeloSeparacao
     public function setUsaSequenciaRotaPraca($usaSequenciaRotaPraca)
     {
         $this->usaSequenciaRotaPraca = $usaSequenciaRotaPraca;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoConfCarregamento()
+    {
+        return $this->tipoConfCarregamento;
+    }
+
+    /**
+     * @param mixed $tipoConfCarregamento
+     */
+    public function setTipoConfCarregamento($tipoConfCarregamento)
+    {
+        $this->tipoConfCarregamento = $tipoConfCarregamento;
     }
 
 }

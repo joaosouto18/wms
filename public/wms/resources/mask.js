@@ -140,7 +140,7 @@
 			masks : {
 				'ddd'                           : { mask : '999' },
 				'ramal'                         : { mask : '9999' },
-				'numero'                        : { mask : '99999999999999999999'},
+				'numero'                        : { mask : '99999999999999999999', type: 'reverse'},
 				'number'                        : { mask : '99999999999999999999'},
 				'depositoEndereco'              : { mask : '999' },
 				'enderecoRua' 					: { mask : ''},

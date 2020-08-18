@@ -336,10 +336,8 @@ class ConferenciaRepository extends EntityRepository
             ->innerJoin('rc.recebimento', 'r')
             ->innerJoin('wms:Produto','p', 'WITH', "p.id = rc.codProduto and p.grade = rc.grade and p.indControlaLote = 'S'")
             ->where("r.id = $idRecebimento AND rc.lote LIKE 'LI%'")
-            ->andWhere('rc.qtdDivergencia = 0')
-            ->andWhere("rc.divergenciaPeso = 'N'")
-            ->andWhere("rc.indDivergVolumes = 'N'")
-            ->andWhere("rc.indDivergLote = 'N'")
+            ->andWhere("(rc.qtdDivergencia = 0 AND rc.divergenciaPeso = 'N' AND rc.indDivergVolumes = 'N' AND rc.indDivergLote = 'N') OR
+                               ((rc.qtdDivergencia != 0 OR rc.divergenciaPeso != 'N' OR rc.indDivergVolumes != 'N' OR rc.indDivergLote != 'N') AND rc.notaFiscal IS NOT NULL) ")
         ;
 
         return $sql->getQuery()->getResult();
@@ -354,10 +352,8 @@ class ConferenciaRepository extends EntityRepository
             ->innerJoin('wms:Produto','p', 'WITH', "p.id = rc.codProduto and p.grade = rc.grade and p.indControlaLote = 'S'")
             ->where("r.id = $idRecebimento")
             ->andWhere("NOT EXISTS (SELECT 'x' FROM wms:Produto\Lote l WHERE l.descricao = rc.lote AND l.codProduto = rc.codProduto and l.grade = rc.grade)")
-            ->andWhere('rc.qtdDivergencia = 0')
-            ->andWhere("rc.divergenciaPeso = 'N'")
-            ->andWhere("rc.indDivergVolumes = 'N'")
-            ->andWhere("rc.indDivergLote = 'N'")
+            ->andWhere("(rc.qtdDivergencia = 0 AND rc.divergenciaPeso = 'N' AND rc.indDivergVolumes = 'N' AND rc.indDivergLote = 'N') OR
+                               ((rc.qtdDivergencia != 0 OR rc.divergenciaPeso != 'N' OR rc.indDivergVolumes != 'N' OR rc.indDivergLote != 'N') AND rc.notaFiscal IS NOT NULL) ")
         ;
 
         return $sql->getQuery()->getResult();

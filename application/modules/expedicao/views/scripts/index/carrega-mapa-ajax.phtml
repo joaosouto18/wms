@@ -76,6 +76,20 @@ if ($this->erro) {
 
         </fieldset>
     </form>
+    <div id="bloqued-os" style="display: none">
+        <form id="bloqued-os-form" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post">
+            <div>
+                <fieldset>
+                    <legend>Liberar Ordem de Serviço</legend>
+                    <div class="field">
+                        <label for="senha" class="field required">*Senha</label>
+                        <input type="password" name="senha" id="senha" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                    </div>
+                    <input type="submit" name="submit" id="submit" value="Liberar Ordem de Serviço" class="btn">
+                </fieldset>
+            </div>
+        </form>
+    </div>
     <div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error"></div>
     <div style="text-align: center;font-size: 12px; color: #19bd06; font-weight: bold;" id="success"></div>
     <div style="margin: 25px 17px 100px 17px;">
@@ -105,14 +119,14 @@ if ($this->erro) {
             $conferidos = array();
             if (is_array($this->produtos)) {
                 foreach ($this->produtosConferidos as $key => $value) {
+                    $codGradeLote = "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]";
                     $background = $span = $quantidade = '';
                     if($value['QTD_SEPARAR'] != $value['QTD_CONFERIDA']){
                         $background = 'background: rgb(250, 208, 208);';
-                        $span = '<span id="qtd">'.$value['QTD_CONFERIDA_EMB'].'</span>';
+                        $span = '<span>'.$value['QTD_CONFERIDA_EMB'].'</span>';
                     }else{
                         $quantidade = $value['QUANTIDADE'];
                     }
-                    $codGradeLote = "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]";
                     $conferidos[$codGradeLote] = 1;
                     $strLote = (!empty($value['DSC_LOTE']) && $value['DSC_LOTE'] != \Wms\Domain\Entity\Produto\Lote::NCL) ?" Lote: '$value[DSC_LOTE]'" : "";
                     ?>
@@ -126,7 +140,7 @@ if ($this->erro) {
                         ?>
                         <p produto="<?php echo $codGradeLote ?>"
                            style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['COD_PRODUTO'] . ' - ' . $value['DSC_PRODUTO'] . $strLote . ' - ' ?>
-                            <span id="qtd"></span></span> </p>
+                            <span></span> </p>
                         <?php
                     }
                 }
@@ -243,7 +257,7 @@ if ($this->erro) {
                 requestAjax(event, qtd, codBarras);
             } else {
                 if (verificacao(codBarras, lote)) {
-                    qtd.select().focus();
+                    qtd.select();
                 }
             }
         }
@@ -269,12 +283,7 @@ if ($this->erro) {
     }
 
     <?php  } else { ?>
-    $("#qtd").keydown(function (e) {
-        if (e.which == 13) {
-            $('#codigoBarras').focus();
-            return false;
-        }
-    });
+
     $("#codigoBarras").keydown(function (e) {
         if (e.which == 13) {
             $('#buscar-submit').click();
@@ -282,14 +291,23 @@ if ($this->erro) {
     });
     <?php  } ?>
 
+    $("#qtd").keydown(function (e) {
+        if (e.which == 13) {
+            $('#codigoBarras').focus();
+            return false;
+        }
+    });
+
     function requestAjax(e, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?>
         var lote = $("#lote");
         <?php } ?>
         if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
+            var params = $('form').serialize();
+            console.log(params);
             $.ajax({
                 url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
-                data: $('form').serialize(),
+                data: params,
                 async: false,
                 type: 'post',
                 success: function (data) {
@@ -301,7 +319,7 @@ if ($this->erro) {
                         <?php } ?>
                         var error = "";
                         var success = "Quantidade conferida com sucesso";
-                        if (data.retorno.resposta == 'error') {
+                        if (data.retorno.resposta === 'error') {
                             error = data.retorno.message;
                             try {
                                 playSound("/alarme.mp3");
@@ -309,6 +327,12 @@ if ($this->erro) {
                                 alert(e);
                             }
                             success = "";
+                        }  else if (data.retorno.resposta === 'bloqued_os') {
+                            error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
+                            success = "";
+                            playSound("/alarme.mp3");
+                            $("#formulario").hide();
+                            $("#bloqued-os").show();
                         } else {
                             playSound("/confirm2.mp3");
                             var produto = data.retorno.produto[0];
@@ -319,17 +343,17 @@ if ($this->erro) {
                             if (conferido.is(":hidden")) {
                                 conferido.show();
                             }
-                            conferido.find("#qtd").text(produto['qtdConferidaTotalEmb']);
-
-                            $('#conferidos p[produto="' + codGradeLote +'"]').remove();
-                            conferidos.prepend(conferido);
+                            conferido.find('span').text(produto['qtdConferidaTotalEmb']);
+                            console.log(produto);
 
                             if (data.retorno.message == 'checkout') {
                                 $('#conferir').find('p[produto="' + codGradeLote +'"]').hide();
-                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#f3f3f3');
+                                conferido.css('background','#f3f3f3');
                             }else{
-                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
+                                conferido.css('background','#fad0d0');
                             }
+
+                            conferidos.prepend(conferido);
                             error = "";
 
                             <?php if ($this->criarVolsFinalCheckout == 'S') : ?>
@@ -340,7 +364,6 @@ if ($this->erro) {
                         $("#error").html(error);
                         $("#success").html(success);
                     }
-                    $(".item-lista").remove();
                 }
             });
         }
@@ -353,6 +376,36 @@ if ($this->erro) {
         });
         <?php endif; ?>
     }
+    $("#bloqued-os-form").submit(function (e) {
+        e.preventDefault();
+        var inputPass = $("#senha");
+
+        if (isEmpty(inputPass.val())){
+            $.wmsDialogAlert({title: "Atenção", msg: "Senha de desbloqueio não informada!"})
+            return false;
+        }
+        var params = {
+            idExpedicao: $("#idExpedicao").val(),
+            senha: inputPass.val(),
+            checkout: true
+        }
+        $.ajax({
+            url: '/mobile/expedicao/liberar-os',
+            type: 'POST',
+            data: params,
+            success: function (data){
+                if (data.retorno.status === 'ok') {
+                    $("#success").html("OS Liberada!");
+                    $("#error").html('');
+                    $("#bloqued-os").hide();
+                    $("#formulario").show();
+                } else if(data.retorno.status === 'error') {
+                    $.wmsDialogAlert({title:"Atenção", msg: data.retorno.msg})
+                }
+            }
+        })
+        inputPass.val("");
+    })
 
     $('#buscar-submit').on('click', function (e) {
         var qtd = $("#qtd");

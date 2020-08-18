@@ -78,6 +78,7 @@ exp wms_adm/wms_adm@localhost/xe file=dmp.dmp owner=wms_adm compress=Y grants=Y 
 imp system/qwer0987@localhost/xe file=D:/dmp.dmp fromuser=wms_adm touser=wms_cdc ignore=y
 
 --imp motoarte
+expdp wms_motoarte/wms_adm schemas=wms_motoarte dumpfile=wms_2104.dmp logfile=wms_2104.log directory=/var/www version=11.02
 impdp userid=wms_motoarte/wms_adm@192.168.0.10/orcl dumpfile=wms12c.dmp
 
 Documentação

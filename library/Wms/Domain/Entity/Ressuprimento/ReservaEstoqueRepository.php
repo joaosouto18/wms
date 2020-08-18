@@ -104,6 +104,11 @@ class ReservaEstoqueRepository extends EntityRepository
             if ($reservaEstoqueEn->getAtendida() == 'C' || empty($reservaProdutos)) {
                 continue;
             }
+
+            if (($idEndereco != null) && ($reservaEstoqueEn->getEndereco()->getId() != $idEndereco)) {
+                continue;
+            }
+
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
             foreach ($reservaProdutos as $reservaProduto) {
                 foreach ($produtos as $produto) {
@@ -219,13 +224,12 @@ class ReservaEstoqueRepository extends EntityRepository
             }
         }
 
-        $usuarioEn = null;
-        if ($idUsuario != null){
+        if (empty($idUsuario)){
             $auth = \Zend_Auth::getInstance();
-            $usuarioSessao = $auth->getIdentity();
-            $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-            $usuarioEn = $usuarioRepo->find($usuarioSessao->getId());
+            $idUsuario = $auth->getIdentity()->getId();
         }
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        $usuarioEn = $usuarioRepo->find($idUsuario);
 
         if ($idOs != NULL) {
             $osEn = $this->getEntityManager()->getRepository("wms:OrdemServico")->find($idOs);
@@ -695,6 +699,7 @@ class ReservaEstoqueRepository extends EntityRepository
 
                     if ($lote == $primeiroLote) {
                         $repEn->setQtd($val['qtdLote'] * -1);
+                        $repEn->setQtdOriginal($val['qtdLote'] * -1);
                         $repEn->setLote($primeiroLote);
                         $this->_em->persist($repEn);
                         $pedProdLoteRepo->update($pedProdLoteData);

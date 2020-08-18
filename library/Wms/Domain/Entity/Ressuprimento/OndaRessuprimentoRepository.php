@@ -76,7 +76,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         return $dql->getQuery()->getArrayResult();
     }
 
-    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false, $grade = null) {
+    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false, $grade = null, $codOs = null, $codOnda = null) {
         $SqlWhere = "  WHERE RES.TIPO_RESERVA = 'E'";
         $osId = "";
         $siglaId = "";
@@ -109,6 +109,14 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         if (!empty($operador)) {
             $SqlWhere .= " AND OS.COD_PESSOA = $operador";
+        }
+
+        if (!empty($codOs)) {
+            $SqlWhere .= " AND O.COD_ONDA_RESSUPRIMENTO_OS = $codOs";
+        }
+
+        if (!empty($codOnda)) {
+            $SqlWhere .= " AND OND.COD_ONDA_RESSUPRIMENTO = $codOnda";
         }
 
         $SqlOrderBy = " ORDER BY OND.COD_ONDA_RESSUPRIMENTO, DE1.DSC_DEPOSITO_ENDERECO,  DE2.DSC_DEPOSITO_ENDERECO";
@@ -159,10 +167,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
                        GROUP BY O.COD_ONDA_RESSUPRIMENTO_OS) CB_PROD ON CB_PROD.COD_ONDA_RESSUPRIMENTO_OS = O.COD_ONDA_RESSUPRIMENTO_OS
                       ";
 
-        if (isset($dataInicial) && (!empty($dataInicial))) {
+        if (!empty($dataInicial)) {
             $SqlWhere .= " AND OND.DTH_CRIACAO >= TO_DATE('$dataInicial 00:00','DD-MM-YYYY HH24:MI')";
         }
-        if (isset($dataFinal) && (!empty($dataFinal))) {
+        if (!empty($dataFinal)) {
             $SqlWhere .= " AND OND.DTH_CRIACAO <= TO_DATE('$dataFinal 23:59','DD-MM-YYYY HH24:MI')";
         }
 
@@ -489,6 +497,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                 $estoquePulmao = $arrTemp;
             }
+            $lotes = [];
 
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
@@ -523,10 +532,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     break;
                 }
             }
-        }
 
-        if ($controlaLote) {
-            $reservaEstoqueRepo->updateReservaExpedicao($strExp, $codProduto, $grade, $idPicking, $lotes);
+            if ($controlaLote && !empty($lotes)) {
+                $reservaEstoqueRepo->updateReservaExpedicao($strExp, $codProduto, $grade, $idPicking, $lotes);
+            }
         }
 
         return $qtdOsGerada;

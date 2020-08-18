@@ -38,6 +38,10 @@ class FiltroRelatorio extends Form
             'alt' => 'enderecoRua',
             'label' => 'Rua'
         ))
+            ->addElement('select', 'tipoEndereco', array(
+                'label' => 'Tipo de Endereço',
+                'multiOptions' => \Wms\Domain\Entity\Deposito\Endereco::$tiposEndereco
+            ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
                 'alt' => 'enderecoPredio',
@@ -63,7 +67,7 @@ class FiltroRelatorio extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'rua', 'predio', 'nivel', 'apto', 'imprimir'), 'identificacao', array('legend' => 'Filtro')
+            ->addDisplayGroup(array('idProduto', 'grade', 'tipoEndereco', 'rua', 'predio', 'nivel', 'apto', 'imprimir'), 'identificacao', array('legend' => 'Filtro')
             );
 
     }
