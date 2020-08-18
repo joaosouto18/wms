@@ -16,7 +16,7 @@ class Web_DevtoolsController extends \Wms\Controller\Action
         $output->output();
     }
 
-    public function indexAction() {
+    public function queryAction() {
 
     }
 
