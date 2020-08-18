@@ -914,7 +914,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        P.COD_PESSOA,
                        MIN(MSP.NUM_CAIXA_PC_INI) NUM_CAIXA_PC_INI,
                        MAX(MSP.NUM_CAIXA_PC_FIM) NUM_CAIXA_PC_FIM
-                 FROM (SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
+                 FROM (SELECT SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
                               MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
                               MSP.COD_MAPA_SEPARACAO,
                               MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE
