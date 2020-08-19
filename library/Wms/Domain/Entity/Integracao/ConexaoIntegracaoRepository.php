@@ -347,4 +347,12 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         }
 
     }
+
+    public function getConexoesDisponiveis() {
+        $arr = array();
+        foreach ($this->findby(array(), array('descricao' => 'ASC')) as $c)
+            $arr[$c->getId()] = $c->getDescricao();
+        return $arr;
+    }
+
 }
