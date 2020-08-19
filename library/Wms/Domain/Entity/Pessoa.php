@@ -26,13 +26,13 @@ class Pessoa implements Ator
     protected $id;
 
     /**
-     * @var datetime $dataInclusao
+     * @var \DateTime $dataInclusao
      * @Column(name="DTH_INCLUSAO", type="datetime", nullable=false)
      */
     protected $dataInclusao;
 
     /**
-     * @var datetime $dataUltimaAlteracao
+     * @var \DateTime $dataUltimaAlteracao
      *
      * @Column(name="DTH_ULTIMA_ALTERACAO", type="datetime", nullable=false)
      */

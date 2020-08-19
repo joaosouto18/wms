@@ -240,7 +240,7 @@ class EstoqueProprietarioRepository extends EntityRepository
         $nfVetEntity = $nfRepository->findBy(array('recebimento' => $idRecebimento));
         if(!empty($nfVetEntity)){
             foreach ($nfVetEntity as $key => $nf){
-                $itemsNF = $nfRepository->getConferencia($nf->getFornecedor()->getId(), $nf->getNumero(), $nf->getSerie(), '', 16);
+                $itemsNF = $nfRepository->getConferencia($nf->getEmissor()->getId(), $nf->getNumero(), $nf->getSerie(), '', 16);
                 if(!empty($itemsNF)){
                     foreach ($itemsNF as $itens){
                         $saldo = 0;

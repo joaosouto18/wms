@@ -2773,7 +2773,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setDepositoEndereco($depositoEndereco);
             if ($consolidado == 'S') {
-                $mapaProduto->setCubagem(number_format(floatval(str_replace(',','',$dadosConsolidado['cubagem'])),6,".",''));
+                $mapaProduto->setCubagem(number_format(floatval(str_replace(',','',$dadosConsolidado['cubagem'])),4,".",''));
                 $mapaProduto->setNumCarrinho($dadosConsolidado['carrinho']);
                 $mapaProduto->setNumCaixaInicio($dadosConsolidado['caixaInicio']);
                 $mapaProduto->setNumCaixaFim($dadosConsolidado['caixaFim']);

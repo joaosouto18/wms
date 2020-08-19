@@ -112,7 +112,7 @@ class Mobile_RecebimentoController extends Action
 
             if ($notaFiscalEntity) {
                 $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
-                $this->view->fornecedor     = $notaFiscalEntity->getFornecedor()->getPessoa()->getNome();
+                $this->view->fornecedor     = $notaFiscalEntity->getEmissor()->getPessoa()->getNome();
             }
 
             // verifica se tem ordem de servico aberto

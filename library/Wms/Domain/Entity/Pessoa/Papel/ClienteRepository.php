@@ -14,7 +14,7 @@ class ClienteRepository extends AtorRepository
         $em->beginTransaction();
         try {
             $clienteRepo = $em->getRepository('wms:Pessoa\Papel\Cliente');
-            $clienteEn = $clienteRepo->findOneBy(array('codClienteExterno' => $idCliente));
+            $clienteEn = $clienteRepo->findOneBy(array('codExterno' => $idCliente));
             if (!$clienteEn)
                 $clienteEn = new Cliente();
 

@@ -749,7 +749,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $cliente = new cliente();
-            $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
+            $cliente->codCliente = $pedidoEn->getPessoa()->getCodExterno();
             $cliente->nome = $pedidoEn->getPessoa()->getPessoa()->getNome();
             if (get_class($pedidoEn->getPessoa()->getPessoa()) == "Wms\Domain\Entity\Pessoa\Fisica"){
                 $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCpf();
@@ -847,7 +847,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         $cliente = new cliente();
-        $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
+        $cliente->codCliente = $pedidoEn->getPessoa()->getCodExterno();
         $cliente->nome = $pedidoEn->getPessoa()->getPessoa()->getNome();
         if (get_class($pedidoEn->getPessoa()->getPessoa()) == "Wms\Domain\Entity\Pessoa\Fisica"){
             $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCpf();
@@ -1274,7 +1274,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
         $ClienteRepo    = $repositorios['clienteRepo'];
-        $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
+        $entityCliente  = $ClienteRepo->findOneBy(array('codExterno' => $cliente['codCliente']));
 
         $cadastroNovo = false;
 
@@ -1359,7 +1359,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 if (!empty($pessoaCliente)){
                     $nome = $entityPessoa->getNome();
                     $cpfCnpj = (is_a($entityPessoa, "\Wms\Domain\Entity\Pessoa\Juridica")) ? $entityPessoa->getCnpj() : $entityPessoa->getCpf();
-                    $codAtual = $pessoaCliente->getCodClienteExterno();
+                    $codAtual = $pessoaCliente->getCodExterno();
                     throw new Exception("O CPF/CNPJ: '$cpfCnpj' já está cadastrado no código '$codAtual' para o cliente '$nome'");
                 }
 
@@ -1367,7 +1367,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $entityCliente->setId($entityPessoa->getId());
-            $entityCliente->setCodClienteExterno($cliente['codCliente']);
+            $entityCliente->setCodExterno($cliente['codCliente']);
         }
 
         $entityCliente->setPraca($cliente['rotaPraca']['pracaEntity']);

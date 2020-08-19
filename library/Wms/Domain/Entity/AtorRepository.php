@@ -41,9 +41,10 @@ class AtorRepository extends EntityRepository {
     /**
      * Persiste os dados pessoais e retorna a pessoa
      * 
-     * @param PessoaInterface $pessoa
-     * @param array $dados
+     * @param AtorInterface $ator
+     * @param array $values
      * @return Pessoa
+     * @throws \Exception
      */
     public function persistirPessoa(AtorInterface $ator, array $values) {
         $em = $this->getEntityManager();
@@ -262,13 +263,13 @@ class AtorRepository extends EntityRepository {
      * @param $arrData
      * @return Pessoa
      */
-    public function tryUpdate( $pessoaEn, $arrData)
+    public function tryUpdate($pessoaEn, $arrData)
     {
-        if (isset($arrData['nome']) && !empty($arrData['nome']) && $pessoaEn->getNome() != $arrData['nome']) {
+        if (!empty($arrData['nome']) && strtolower($pessoaEn->getNome()) != strtolower($arrData['nome'])) {
 
             $pessoaEn->setNome($arrData['nome']);
 
-            if (is_a($pessoaEn, "\Wms\Domain\Entity\Pessoa\Juridica")) {
+            if (is_a($pessoaEn, Juridica::class)) {
                 $pessoaEn->setNomeFantasia($arrData['nome']);
             }
         }

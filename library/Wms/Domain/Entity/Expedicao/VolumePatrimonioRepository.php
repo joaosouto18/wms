@@ -142,7 +142,7 @@ class VolumePatrimonioRepository extends EntityRepository
             ->select('vp.id volume, vp.descricao, e.id as expedicao, p.nome as quebra, pp.id pedido, e.dataInicio, s.referencia estado, endereco.localidade')
             ->from('wms:Expedicao\VolumePatrimonio', 'vp')
             ->innerJoin('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp', 'WITH', 'evp.volumePatrimonio = vp.id')
-            ->innerJoin('wms:Pessoa\Papel\Cliente', 'c', 'WITH', 'evp.tipoVolume = c.codClienteExterno')
+            ->innerJoin('wms:Pessoa\Papel\Cliente', 'c', 'WITH', 'evp.tipoVolume = c.codExterno')
             ->innerJoin('c.pessoa', 'p')
             ->leftJoin('wms:Pessoa\Endereco', 'endereco', 'WITH', 'endereco.pessoa = p.id')
             ->leftJoin('wms:Util\Sigla', 's', 'WITH', 's.id = endereco.idUf')

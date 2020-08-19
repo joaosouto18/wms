@@ -674,7 +674,7 @@ class PedidoRepository extends EntityRepository
             ->innerJoin('ped.pessoa', 'p')
             ->innerJoin('wms:Pessoa\Papel\Cliente', 'cli', 'WITH', 'cli.id = p.id')
             ->where("e.id = $codExpedicao")
-            ->andWhere("cli.codClienteExterno IN ($codClientes)");
+            ->andWhere("cli.codExterno IN ($codClientes)");
         
         return $sql->getQuery()->getResult();
     }
@@ -727,7 +727,7 @@ class PedidoRepository extends EntityRepository
     public function getDadosPedidoByCodPedido ($codPedido){
         $SQL = "
                 SELECT P.COD_PEDIDO,
-                       CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       CLI.COD_EXTERNO as COD_CLIENTE,
                        PES.NOM_PESSOA as CLIENTE,
                        E.COD_EXPEDICAO,
                        C.COD_CARGA_EXTERNO,
@@ -841,7 +841,7 @@ class PedidoRepository extends EntityRepository
 
             $sqlCampos = "
                     P.COD_EXTERNO as \"id\",
-                    CL.COD_CLIENTE_EXTERNO as \"codcli\",
+                    CL.COD_EXTERNO as \"codcli\",
                     PE.NOM_PESSOA as \"cliente\",
                     NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
                     P.NUM_SEQUENCIAL as \"numSequencial\"";
@@ -850,7 +850,7 @@ class PedidoRepository extends EntityRepository
                     P.COD_PEDIDO as \"ID\",
                     P.COD_EXTERNO as \"id\",
                     CL.COD_PESSOA as \"idCliente\",
-                    CL.COD_CLIENTE_EXTERNO as \"codcli\",
+                    CL.COD_EXTERNO as \"codcli\",
                     MS.COD_MAPA_SEPARACAO as \"mapa\",
                     MSQ.COD_MAPA_SEPARACAO as \"consolidado\",
                     PE.NOM_PESSOA as \"cliente\",
@@ -917,7 +917,7 @@ class PedidoRepository extends EntityRepository
                     P.COD_PEDIDO,
                     P.COD_EXTERNO,
                     CL.COD_PESSOA,
-                    CL.COD_CLIENTE_EXTERNO,
+                    CL.COD_EXTERNO,
                     MS.COD_MAPA_SEPARACAO,
                     MSQ.COD_MAPA_SEPARACAO,
                     PE.NOM_PESSOA,
@@ -934,10 +934,10 @@ class PedidoRepository extends EntityRepository
                     DE.DSC_DEPOSITO_ENDERECO";
 
             } else {
-                $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_CLIENTE_EXTERNO';
+                $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_EXTERNO';
             }
 
-            $orderBy = "ORDER BY CL.COD_CLIENTE_EXTERNO, P.COD_EXTERNO";
+            $orderBy = "ORDER BY CL.COD_EXTERNO, P.COD_EXTERNO";
 
             if (!empty($codProduto)) {
                 $orderBy .= ", MS.COD_MAPA_SEPARACAO, DE.DSC_DEPOSITO_ENDERECO";
@@ -1229,7 +1229,7 @@ class PedidoRepository extends EntityRepository
     public function getObservacaoPedido($idExpedicao)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id codPedido, p.codExterno, cli.id codCliente, cli.codClienteExterno, pes.nome, p.observacao, c.id codCarga, c.codCargaExterno')
+            ->select('p.id codPedido, p.codExterno, cli.id codCliente, cli.codExterno codClienteExterno, pes.nome, p.observacao, c.id codCarga, c.codCargaExterno')
             ->from('wms:Expedicao\Pedido', 'p')
             ->innerJoin('p.pessoa', 'cli')
             ->innerJoin('cli.pessoa','pes')
@@ -1237,7 +1237,7 @@ class PedidoRepository extends EntityRepository
             ->innerJoin('c.expedicao', 'e')
             ->where('e.id = '.$idExpedicao)
             ->andWhere('p.observacao is not null')
-            ->orderBy('c.codCargaExterno, cli.codClienteExterno, p.codExterno');
+            ->orderBy('c.codCargaExterno, cli.codExterno, p.codExterno');
 
         $resultado = $sql->getQuery()->getResult();
 

@@ -206,7 +206,7 @@ class Importacao_IndexController extends Action
                     }
 
                     /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedor */
-                    $fornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $arrRegistro['idExterno']));
+                    $fornecedor = $fornecedorRepo->findOneBy(array('codExterno' => $arrRegistro['idExterno']));
                     if (!empty($fornecedor)){
                         $nome = $fornecedor->getPessoa()->getNome();
                         $nomFantasia = $fornecedor->getPessoa()->getNomeFantasia();
