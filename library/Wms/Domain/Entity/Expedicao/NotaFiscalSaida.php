@@ -16,6 +16,7 @@ class NotaFiscalSaida
     const EXPEDIDO_REENTREGA = 555;
     const REENTREGA_DEFINIDA = 562;
     const REENTREGA_EM_SEPARACAO = 563;
+    const NOTA_FISCAL_CANCELADA = 564;
 
     /**
      * @Id
@@ -74,6 +75,12 @@ class NotaFiscalSaida
      * @Column(name="DTH_INTEGRACAO_NF_SAIDA", type="datetime", nullable=false)
      */
     protected $dataIntegracao;
+
+    /**
+     * @var \DateTime
+     * @Column(name="DTH_CANCELAMENTO", type="datetime")
+     */
+    protected $dataCancelamento;
 
     /**
      * @param mixed $id
@@ -233,6 +240,22 @@ class NotaFiscalSaida
     public function setDataIntegracao($dataIntegracao)
     {
         $this->dataIntegracao = $dataIntegracao;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDataCancelamento()
+    {
+        return $this->dataCancelamento;
+    }
+
+    /**
+     * @param \DateTime $dataCancelamento
+     */
+    public function setDataCancelamento($dataCancelamento)
+    {
+        $this->dataCancelamento = $dataCancelamento;
     }
 
 }

@@ -7,8 +7,52 @@ use Doctrine\ORM\EntityRepository,
 
 class NotaFiscalSaidaRepository extends EntityRepository {
 
-    public function save() {
-        
+    /**
+     * @param $cnpjEmitente
+     * @param $numeroNf
+     * @param $serieNF
+     * @throws \Exception
+     */
+    public function cancelarNota($cnpjEmitente, $numeroNf, $serieNF)
+    {
+        try {
+            $this->_em->beginTransaction();
+            $pessoaJuridicaRepository = $this->_em->getRepository('wms:Pessoa\Juridica');
+
+            $pessoaEn = $pessoaJuridicaRepository->findOneBy(['cnpj' => $cnpjEmitente]);
+
+            if (empty($pessoaEn)) {
+                throw new \Exception("Emitente não encontrado para o cnpj " . $cnpjEmitente);
+            }
+
+            /** @var NotaFiscalSaida $notaFiscalEn */
+            $notaFiscalEn = $this->findOneBy(['numeroNf' => $numeroNf, 'pessoa' => $pessoaEn, 'serieNf' => $serieNF]);
+
+            if (empty($notaFiscalEn)) {
+                throw new \Exception('Nota Fiscal ' . $numeroNf . " / " . $serieNF . " não encontrada para o CNPJ $cnpjEmitente");
+            }
+
+            $statusEn = $this->_em->getReference('wms:Util\Sigla', NotaFiscalSaida::NOTA_FISCAL_CANCELADA);
+            $notaFiscalEn->setStatus($statusEn);
+            $notaFiscalEn->setDataCancelamento(new \DateTime());
+
+            /** @var NotaFiscalSaidaPedido[] $pedidosNF */
+            $pedidosNF = $this->_em->getRepository(NotaFiscalSaidaPedido::class)->findBy(['notaFiscalSaida' => $notaFiscalEn]);
+
+            foreach ($pedidosNF as $pedidoNF) {
+                $pedido = $pedidoNF->getPedido();
+                $pedido->setFaturado('N');
+                $this->_em->persist($pedido);
+            }
+
+            $this->_em->persist($notaFiscalEn);
+            $this->_em->flush();
+            $this->_em->commit();
+
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw $e;
+        }
     }
 
     public function atualizaStatusNota($codNota) {
@@ -68,9 +112,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         }
         $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'nfs.chaveAcesso', 'pj.cnpj', 'pf.cpf', 'pes.nome');
 
-        $result = $sql->getQuery()->getResult();
-
-        return $result;
+        return $sql->getQuery()->getResult();
     }
 
     function nvl(&$var, $default = "")

@@ -764,6 +764,60 @@ class RecebimentoRepository extends EntityRepository
         $em->flush();
     }
 
+    public function getRecebimentosToMobile()
+    {
+        $statusIniciado = RecebimentoEntity::STATUS_INICIADO;
+        $statusConfColetor = RecebimentoEntity::STATUS_CONFERENCIA_COLETOR;
+        $statusConfCega = RecebimentoEntity::STATUS_CONFERENCIA_CEGA;
+        $idAtividade = AtividadeEntity::CONFERIR_PRODUTO;
+        $userConf = \Zend_Auth::getInstance()->getIdentity()->getId();
+
+        $sql = "SELECT R.COD_RECEBIMENTO, B.COD_BOX, P.NOM_PESSOA FORNECEDOR, 0 INICIADO,
+                       REPLACE(REPLACE(NVL(RA.DSC_OBSERVACAO,''),'Recebimento iniciado pelo Usuário. ',''),'<br />','') as DSC_OBSERVACAO
+                FROM RECEBIMENTO R
+                INNER JOIN BOX B on R.COD_DEPOSITO = B.COD_DEPOSITO and R.COD_BOX = B.COD_BOX
+                LEFT JOIN RECEBIMENTO_ANDAMENTO RA ON RA.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 456
+                LEFT JOIN NOTA_FISCAL NF on R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                LEFT JOIN PESSOA P ON P.COD_PESSOA = NF.COD_FORNECEDOR
+                WHERE R.COD_STATUS = $statusIniciado AND NOT EXISTS(
+                    SELECT 'X' FROM ORDEM_SERVICO OS1
+                    WHERE R.COD_RECEBIMENTO = OS1.COD_RECEBIMENTO
+                      AND OS1.COD_ATIVIDADE = $idAtividade)
+                UNION
+                SELECT R.COD_RECEBIMENTO, B.COD_BOX, P.NOM_PESSOA FORNECEDOR, 1 INICIADO,
+                       REPLACE(REPLACE(NVL(RA.DSC_OBSERVACAO,''),'Recebimento iniciado pelo Usuário. ',''),'<br />','') as DSC_OBSERVACAO
+                FROM RECEBIMENTO R
+                INNER JOIN BOX B on R.COD_DEPOSITO = B.COD_DEPOSITO and R.COD_BOX = B.COD_BOX
+                LEFT JOIN RECEBIMENTO_ANDAMENTO RA ON RA.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 456
+                INNER JOIN ORDEM_SERVICO OS ON OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                LEFT JOIN NOTA_FISCAL NF on R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                LEFT JOIN PESSOA P ON P.COD_PESSOA = NF.COD_FORNECEDOR
+                WHERE R.COD_STATUS IN ($statusConfColetor, $statusConfCega) 
+                  AND OS.COD_PESSOA = $userConf 
+                  AND OS.COD_ATIVIDADE = $idAtividade
+                        ";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+        $arr = ['nao_iniciados' => [], 'iniciados' => []];
+        foreach ($result as $item) {
+            $direct = (empty($item['INICIADO'])) ? 'nao_iniciados': 'iniciados';
+            if (!isset($arr[$direct][$item['COD_RECEBIMENTO']])) {
+                $arr[$direct][$item['COD_RECEBIMENTO']] = $item;
+            } else {
+                if (empty($arr[$direct][$item['COD_RECEBIMENTO']]['FORNECEDOR']) || empty($item['FORNECEDOR'])) {
+                    continue;
+                }
+
+                $arr[$direct][$item['COD_RECEBIMENTO']]['FORNECEDOR'] .= " - $item[FORNECEDOR]";
+                if (!empty($item['DSC_OBSERVACAO']))
+                    $arr[$direct][$item['COD_RECEBIMENTO']]['DSC_OBSERVACAO'] .= " - $item[DSC_OBSERVACAO]";
+
+            }
+        }
+
+        return $arr;
+    }
+
     /**
      * Busca todos os Recebimentos iniciados e sem ordem de servico vinculada
      *
@@ -806,7 +860,7 @@ class RecebimentoRepository extends EntityRepository
      * @param array $criteria
      * @return array
      */
-    public function buscarStatusEmConferenciaColetor(array $criteria = array())
+    public function buscarStatusEmConferenciaColetor()
     {
         $usuarioSession = \Zend_Auth::getInstance()->getIdentity();
 

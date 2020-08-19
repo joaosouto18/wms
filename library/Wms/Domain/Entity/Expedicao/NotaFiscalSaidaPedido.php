@@ -57,7 +57,7 @@ class NotaFiscalSaidaPedido
     }
 
     /**
-     * @return mixed
+     * @return Pedido
      */
     public function getPedido()
     {
@@ -65,7 +65,7 @@ class NotaFiscalSaidaPedido
     }
 
     /**
-     * @param mixed $pedido
+     * @param Pedido $pedido
      */
     public function setPedido($pedido)
     {
