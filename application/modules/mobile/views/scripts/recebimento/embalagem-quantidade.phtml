@@ -33,7 +33,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             </div>
             <div class="col-md-8 col-xs-5 text-center">
                 <div class="row"><b>Código de Barras</b></div>
-                <div class="row"><?php echo $this->itemNF['codigoBarras'] ?></div>
+                <div class="row" id="codBarras"><?php echo $this->itemNF['codigoBarras'] ?></div>
             </div>
         </div>
         <div class="row margin-row">
@@ -163,12 +163,12 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 } else if ($(this).hasClass("qtd-input")) {
                     if (controlaLote) {
                         $("#lote-" + $(this).parent().parent().data("id")).focus().select();
-                    } else if (checkInputs(false) ) {
+                    } else if (checkInputs(false)) {
                         $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                     }
                 } else if ($(this).hasClass("validade-input")) {
                     $("#qtdConferida-0").focus().select();
-                } else if (checkInputs(true) ) {
+                } else if (checkInputs(true)) {
                     $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                 }
             }
@@ -222,7 +222,6 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
         });
 
         var checkInputs = function (toNext) {
-
             var inputVal = $("#dataValidade");
 
             if ( controlaValidade && isEmpty(inputVal.val())) {
@@ -271,6 +270,8 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     msg = "A quantidade não pode ser 0 ou nula";
                     inputQtd.focus().select();
                     result = false;
+                } else {
+                    result = checkQtd();
                 }
             }
 
@@ -319,6 +320,44 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             if (!checkInputs() || !checkValidade()) return false;
             $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
         });
+
+        function checkQtd() {
+            if (controlaLote) {
+                var rows = $(".input-row");
+                for(var k = 0; k < rows.length; k++){
+                    var qtdDigitada = $("#qtdConferida-" + k).val();
+                    if (validaQuantidade(qtdDigitada) == false) {
+                        $("#qtdConferida-" + k).focus().select();
+                        return false;
+                    }
+                }
+            } else {
+                var qtdDigitada = $("#qtdConferida-0").val();
+                if (validaQuantidade(qtdDigitada) == false) {
+                    $("#qtdConferida-0").focus().select();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validaQuantidade(qtd) {
+            var codBarras = $("#codBarras").text();
+
+            if (qtd == codBarras) {
+                var alert = "Quantidade informada é igual ao código de barras bipado. Confirma conferencia de " + qtd;
+                if (confirm(alert) == false) {
+                    playSound("/alarme.mp3");
+                    return false;
+                }
+            } else if (qtd > 9999999) {
+                var alert = "Quantidade conferida elevada. Confirma a quantidade conferida de " + qtd;
+                if (confirm(alert) == false) {
+                    playSound("/alarme.mp3");
+                    return false;
+                }
+            }
+        }
 
         function checkValidade() {
             var obj = $("#dataValidade");

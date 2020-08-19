@@ -12,6 +12,22 @@ class ApontamentoMapaRepository extends EntityRepository {
 
     public function save($mapaSeparacao, $codUsuario) {
 
+        $apontamentos = $this->findBy(array('codMapaSeparacao'=> $mapaSeparacao->getId()));
+        if (count($apontamentos) >0) {
+            $find = false;
+            foreach ($apontamentos as $apontamento) {
+                if ($apontamento->getDataFimConferencia() == null) {
+                    $find = true;
+                    break;
+                }
+            }
+
+            if ($find == false) {
+                throw new \Exception("Mapa de separação " . $mapaSeparacao->getId() . " ja se encontra com o apontamento de separação finalizado");
+            }
+
+        }
+
         $apontar = false;
         $em = $this->getEntityManager();
         $usuarioEn = $em->getReference('wms:Usuario',$codUsuario);
@@ -70,9 +86,11 @@ class ApontamentoMapaRepository extends EntityRepository {
 
     public function update($apontamentoMapaEn) {
         $em = $this->getEntityManager();
-        $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
-        $em->persist($apontamentoMapaEn);
-        $em->flush();
+        if ($apontamentoMapaEn->getDataFimConferencia() == null) {
+            $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
+            $em->persist($apontamentoMapaEn);
+            $em->flush();
+        }
 
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
@@ -494,21 +512,39 @@ class ApontamentoMapaRepository extends EntityRepository {
 
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
+                if ($ordemServicoEntity->getDataFinal() == null) {
+                    $ordemServicoEntity->setDataFinal(new \DateTime());
+                    $this->getEntityManager()->persist($ordemServicoEntity);
 
-                $ordemServicoEntity->setDataFinal(new \DateTime());
-                $this->getEntityManager()->persist($ordemServicoEntity);
+                    foreach ($mapaSeparacaoProdutoEntities as $msp) {
+                        $produtoEn = $msp->getProduto();
+                        $codMapaSeparacao = $mapaSeparacaoEn->getId();
+                        $codOs = $ordemServicoEntity->getId();
+                        $qtdSeparar = (($msp->getQtdSeparar() * $msp->getQtdEmbalagem()) - $msp->getQtdCortado()) / $msp->getQtdEmbalagem();
+                        $qtdSeparar = Math::dividir($qtdSeparar, count($ordemServicoEntities));
+                        $idEmbalagem = $msp->getProdutoEmbalagem()->getId();
+                        $qtdEmb = $msp->getQtdEmbalagem();
+                        $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
+                    }
 
-                $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
-                while ($contador < $qtdPorPessoa) {
-                    $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
-                    $codMapaSeparacao = $mapaSeparacaoEn->getId();
-                    $codOs = $ordemServicoEntity->getId();
-                    $qtdSeparar = (($mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar() * $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem()) - $mapaSeparacaoProdutoEntities[$contador]->getQtdCortado()) / $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
-                    $idEmbalagem = $mapaSeparacaoProdutoEntities[$contador]->getProdutoEmbalagem()->getId();
-                    $qtdEmb = $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
-                    $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
+                    /*
+                     * Calculo antigo de produtividade, tinha falha quando o mapa tinha 2 produtos e apontava 3 separadores
+                     *
 
-                    $contador = $contador + 1;
+                    $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
+                    while ($contador < $qtdPorPessoa) {
+                        $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
+                        $codMapaSeparacao = $mapaSeparacaoEn->getId();
+                        $codOs = $ordemServicoEntity->getId();
+                        $qtdSeparar = (($mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar() * $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem()) - $mapaSeparacaoProdutoEntities[$contador]->getQtdCortado()) / $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
+                        $idEmbalagem = $mapaSeparacaoProdutoEntities[$contador]->getProdutoEmbalagem()->getId();
+                        $qtdEmb = $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
+                        $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
+
+                        $contador = $contador + 1;
+                    }
+
+                     */
                 }
             }
 

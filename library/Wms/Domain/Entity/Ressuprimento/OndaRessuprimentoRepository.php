@@ -231,10 +231,12 @@ class OndaRessuprimentoRepository extends EntityRepository {
         try {
             $this->getEntityManager()->beginTransaction();
 
-            $this->validaFechamentoOS($ondaOs);
+            //$this->validaFechamentoOS($ondaOs);
 
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
             $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+            $reservaEstoqueRepo->validaOperacaoExpedicaoEmFinalizacao($ondaOs->getId(),"O");
             $pessoaRepo = $this->getEntityManager()->getRepository("wms:Pessoa");
 
             /** @var \Wms\Domain\Entity\OrdemServico $osEn */

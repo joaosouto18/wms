@@ -296,6 +296,8 @@ class Enderecamento_MovimentacaoController extends Action
                     $this->_redirect('/enderecamento/movimentacao');
                 }
 
+                $enderecoRepo->verificaAlocacaoPickingDinamico($enderecoEn, $enderecoDestinoEn, $estoqueEn->getProdutoEmbalagem());
+
                 $data['dthEntrada'] = $estoqueEn->getDtPrimeiraEntrada();
 
                 //SAIDA DO ENDEREÇO DE ORIGEM
@@ -340,6 +342,9 @@ class Enderecamento_MovimentacaoController extends Action
                     $this->_redirect('/enderecamento/movimentacao');
                 }
                 foreach ($volumes as $volume) {
+
+                    $enderecoRepo->verificaAlocacaoPickingDinamico($enderecoEn, $enderecoDestinoEn, $volume);
+
                     $data['endereco'] = $enderecoEn;
                     $data['qtd'] = $data['quantidade'] * -1;
                     $data['volume'] = $volume;

@@ -63,7 +63,7 @@ class SeparacaoMapaSeparacao
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="QTD_SEPARADA", type="integer", nullable=true)
+     * @Column(name="QTD_SEPARADA", type="decimal", nullable=true)
      */
     protected $qtdSeparada;
 

@@ -2119,6 +2119,8 @@ class ExpedicaoRepository extends EntityRepository {
         $MapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
         $transacao = false;
         $statusAntigo = null;
@@ -2188,7 +2190,8 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-            $this->validaExpedicaoEmFinalizacao($idExpedicao);
+            //$this->validaExpedicaoEmFinalizacao($idExpedicao);
+            $reservaEstoqueRepo->validaOperacaoExpedicaoEmFinalizacao($idExpedicao, "E");
 
             $transacao = true;
             $this->getEntityManager()->beginTransaction();
@@ -5828,8 +5831,6 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         return true;
-
-
     }
 
     public function getPedidosByProdutoAndExpedicao ($idExpedicao, $idProduto, $grade) {
