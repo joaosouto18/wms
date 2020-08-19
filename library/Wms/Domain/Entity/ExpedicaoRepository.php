@@ -4959,6 +4959,10 @@ class ExpedicaoRepository extends EntityRepository {
 
         $pedidoEn = $pedidoProdutoEn->getPedido();
 
+        if ($pedidoEn->getFaturado() === 'S') {
+            throw new \Exception("O pedido $codPedido já foi faturado e não pode sofrer cortes, cancele este e gere um novo pedido se necessita alterar");
+        }
+
         $qtdCortada = $pedidoProdutoEn->getQtdCortada();
         $qtdPedido = $pedidoProdutoEn->getQuantidade();
 

@@ -17,7 +17,9 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco,
     Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Enderecamento\Estoque;
 use Wms\Domain\Entity\Enderecamento\Modelo;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
 
 /**
@@ -176,8 +178,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
             $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
-            $produtoEntity->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote))? $indControlaLote : 'N');
             $produtoEntity->setForcarEmbVenda((isset($forcarEmbVenda))? $forcarEmbVenda : null);
+            if (isset($indControlaLote) && !empty($indControlaLote)
+                && $indControlaLote != $produtoEntity->getIndControlaLote()
+                && self::permiteAlterarLote($produtoEntity->getId(), $produtoEntity->getGrade(), ($indControlaLote == 'S'))) {
+                $produtoEntity->setIndControlaLote($indControlaLote);
+            }
 
             if ($produtoEntity->getId() == null) {
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
@@ -268,6 +274,34 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $em->rollback();
             throw new \Exception($e->getMessage());
         }
+        return true;
+    }
+
+    private function permiteAlterarLote($codProduto, $grade, $toInclude)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select('rep')
+            ->from(ReservaEstoqueProduto::class, 'rep')
+            ->innerJoin('rep.reservaEstoque', 're')
+            ->where("rep.codProduto = '$codProduto' AND rep.grade = '$grade'")
+            ->andWhere("re.atendida = 'N'")
+        ;
+
+        $ncl = Produto\Lote::NCL;
+        if ($toInclude) {
+            $dql->andWhere("rep.lote IS NULL OR rep.lote = '$ncl'");
+        } else {
+            $dql->andWhere("rep.lote IS NOT NULL OR rep.lote != '$ncl'");
+        }
+
+        if (!empty($dql->getQuery()->getResult())) {
+            $action = ($toInclude) ? "ativar" : "desativar";
+            $ico1 = "<img style='vertical-align: middle' src='/img/icons/arrow_right.png' />";
+            $ico2 = "<img style='vertical-align: middle' src='/img/icons/arrow_left.png' />";
+            $link = "<a href='/enderecamento/movimentacao' target='blank'><span>$ico1</span>Movimentações<span>$ico2</span></a>";
+            throw new \Exception("Este produto não pode $action o controle de lote, pois tem reservas pendentes! Veja na tela de $link");
+        }
+
         return true;
     }
 

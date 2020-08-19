@@ -25,11 +25,6 @@ class Mobile_CarregamentoController extends \Wms\Controller\Action
             foreach ($pedidoEntities as $pedidoEntity) {
                 $params['pedido'] = $pedidoEntity->getCodExterno();
                 $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
-                if ($result) {
-                    $pedidoEntity->setFaturado('S');
-                    $em->merge($pedidoEntity);
-                    $em->flush();
-                }
             }
             $em->commit();
         } catch (\Exception $e) {

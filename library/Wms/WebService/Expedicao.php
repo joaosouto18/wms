@@ -1542,6 +1542,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                             throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
                         }
 
+                        $pedidoEn->setFaturado('S');
+                        $this->_em->persist($pedidoEn);
+
                         $nfPedidoEntity->setCodPedido($pedidoEn->getId());
                         $nfPedidoEntity->setPedido($pedidoEn);
                         $this->_em->persist($nfPedidoEntity);
@@ -1585,6 +1588,34 @@ class Wms_WebService_Expedicao extends Wms_WebService
             throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
         return true;
+    }
+
+    /**
+     *  Cancela a nota fiscal
+     *
+     * @param string $cnpjEmitente
+     * @param integer $numeroNf
+     * @param string $serieNF
+     * @return boolean Se as nota fiscal foi cancelada com sucesso
+     */
+    public function cancelarNotaFiscal($cnpjEmitente, $numeroNf, $serieNF)
+    {
+        try {
+
+            $numeroNf = (int)trim($numeroNf);
+            $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $cnpjEmitente));
+            $serieNF = trim($serieNF);
+
+            if (empty($numeroNf)) throw new Exception("O número da nota fiscal é obrigatório");
+            if (empty($cnpjEmitente)) throw new Exception("O CNPJ do emissor da nota fiscal é obrigatório");
+            if (empty($serieNF)) throw new Exception("A série da nota fiscal é obrigatória");
+
+            $this->_em->getRepository('wms:Expedicao\NotaFiscalSaida')->cancelarNota($cnpjEmitente, $numeroNf, $serieNF);
+
+            return true;
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
     }
 
     /**
