@@ -41,7 +41,7 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 6:
                 //LAYOUT PLANETA
-                self::bodyExpedicaoModelo6($volumePatrimonio);
+                self::bodyExpedicaoModelo6($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             case 7:
                 //LAYOUT MBLED
@@ -354,9 +354,16 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo6($volumes)
+    private function bodyExpedicaoModelo6($volumes, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
+        $totalEtiquetas = count($volumes);
         foreach ($volumes as $volume) {
+
+            $existeItensPendentes = true;
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S'));
+            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+                $existeItensPendentes = false;
+            }
 
             $imgW = 45;
             $imgH = 17;
@@ -384,7 +391,14 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
             $this->SetxY(80,6);
             $this->SetFont('Arial', 'B', 17);
-            $impressao = ($volume['IND_ULTIMO_VOLUME'] === 'S') ? "$volume[NUM_SEQUENCIA] de $volume[NUM_SEQUENCIA]" : $volume['NUM_SEQUENCIA'];
+
+            if ($fechaEmbaladosNoFinal)
+                $impressao = $volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
+            else if ($existeItensPendentes == false)
+                $impressao = $volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = $volume['NUM_SEQUENCIA'];
+
             $this->MultiCell(30, 10, $impressao, 0, 'L');
 
             $this->SetXY(88,14);

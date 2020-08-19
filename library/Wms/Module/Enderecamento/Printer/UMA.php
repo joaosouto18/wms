@@ -164,7 +164,7 @@ class UMA extends Pdf {
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL) {
                 if ($modelo == 3) {
-                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160, 170, 40);
+                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 140, 170, 35);
                 } elseif ($modelo != 5) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null, 170, 40);
                 }
@@ -283,17 +283,17 @@ class UMA extends Pdf {
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(25, 95, "Qtd", 0, 0);
+        $this->Cell(25, 55, "Qtd", 0, 0);
 
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
         $qtd = (is_array($vetQtd)) ? implode(' - ', $vetQtd) : $palete['qtd'];
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(75, 95, $qtd, 0, 1);
+        $this->Cell(75, 55, $qtd, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(55, -35, utf8_decode("Endereço "), 0, 0);
+        $this->Cell(55, 15, utf8_decode("Endereço "), 0, 0);
 
         if (isset($palete['endereco']) && !is_null($palete['endereco']) && !empty($palete['endereco'])) {
             $endereco = $palete['endereco'];
@@ -301,7 +301,7 @@ class UMA extends Pdf {
             $endereco = $picking;
         }
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(105, -35, $endereco, 0, 1);
+        $this->Cell(105, 15, $endereco, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55, 90, utf8_decode("Prod/Ref.:"), 0, 0);
