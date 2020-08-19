@@ -7,6 +7,10 @@ use Core\Linfo\Common;
 class Web_DevtoolsController extends \Wms\Controller\Action
 {
 
+    public function phpinfoAction(){
+
+    }
+
     public function gerenciarServidorAction()
     {
         $settings = Common::getVarFromFile(APPLICATION_PATH . '/configs/linfo.php', 'settings');
