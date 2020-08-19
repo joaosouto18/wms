@@ -538,17 +538,20 @@ class RecebimentoRepository extends EntityRepository
 
         //DISPARA ALERTA AO ERP LIBERANDO FATURAMENTO DE NF VIA INTEGRAÇÃO VIA WS
         if ($result['exception'] == null && $this->getSystemParameterValue('IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP') == 'S') {
+            try {
+                $checkRecebimento = true;
+                if ($this->getSystemParameterValue('STATUS_RECEBIMENTO_ENDERECADO') == 'S') {
+                    $enderecado = $this->checkRecebimentoEnderecado($idRecebimento);
+                    $checkRecebimento = (empty($enderecado));
+                }
 
-            $checkRecebimento = true;
-            if ($this->getSystemParameterValue('STATUS_RECEBIMENTO_ENDERECADO') == 'S') {
-                $enderecado = $this->checkRecebimentoEnderecado($idRecebimento);
-                $checkRecebimento = (empty($enderecado));
-            }
-
-            if ($checkRecebimento) {
-                /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
-                $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
-                $this->liberaFaturamentoNotaErp($arrNotasEn);
+                if ($checkRecebimento) {
+                    /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
+                    $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
+                    $this->liberaFaturamentoNotaErp($arrNotasEn);
+                }
+            } catch (\Exception $e) {
+                $result['exception'] = $e;
             }
         }
 
@@ -1708,10 +1711,7 @@ class RecebimentoRepository extends EntityRepository
                     6 => $notaFiscalEntity->getRecebimento()->getId(),
                     7 => $usuario->getCodErp()
                 );
-                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                if (!$resultAcao === true) {
-                    throw new \Exception($resultAcao);
-                }
+                $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                 unset($options);
             }
         }
@@ -2521,7 +2521,6 @@ class RecebimentoRepository extends EntityRepository
 
         foreach ($ids as $idIntegracao) {
             $acaoEn = $acaoIntRepo->find($idIntegracao);
-            $options = array();
 
             $idTipoAcao = $acaoEn->getTipoAcao()->getId();
             if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_RECEBIMENTO_ERP) {
@@ -2536,11 +2535,7 @@ class RecebimentoRepository extends EntityRepository
                 $options = array(
                     0 => $notaFiscalEntity->getCodRecebimentoErp()
                 );
-                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                if (!$resultAcao === true) {
-                    throw new \Exception($resultAcao);
-                }
-
+                $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
             }
             else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_NOTA_FISCAL) {
 
@@ -2567,10 +2562,7 @@ class RecebimentoRepository extends EntityRepository
                         6 => $notaFiscalEntity->getDivergencia(),
                         7 => $notaFiscalEntity->getRecebimento()->getId()
                     );
-                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                    if (!$resultAcao === true) {
-                        throw new \Exception($resultAcao);
-                    }
+                    $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     unset($options);
                 }
             }
@@ -2608,10 +2600,7 @@ class RecebimentoRepository extends EntityRepository
                         5 => $dataConferencia,
                         6 => $produtoConferido['codigoBarras']
                     );
-                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                    if (!$resultAcao === true) {
-                        throw new \Exception($resultAcao);
-                    }
+                    $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     unset($options);
                 }
             }
@@ -2642,17 +2631,11 @@ class RecebimentoRepository extends EntityRepository
                             10 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
                             11 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj()
                         );
-                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                        if (!$resultAcao === true) {
-                            throw new \Exception($resultAcao);
-                        }
+                        $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                         unset($options);
                     }
                 }
             }
         }
-
-        return $resultAcao;
-
     }
 }

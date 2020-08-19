@@ -8,7 +8,10 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Expedicao\AndamentoRepository;
+use Wms\Domain\Entity\Expedicao\CargaRepository;
 use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
+use Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository;
 use Wms\Domain\Entity\Pessoa\Fisica;
 use Wms\Domain\Entity\Pessoa\Juridica;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
@@ -23,6 +26,7 @@ use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
 use Wms\Module\Expedicao\Form\ModeloSeparacao;
 use Wms\Service\OndaRessuprimentoService;
+use Wms\Util\DetalhaResumoConferenciaException;
 
 class ExpedicaoRepository extends EntityRepository {
 
@@ -232,7 +236,7 @@ class ExpedicaoRepository extends EntityRepository {
     public function executaIntegracaoBDCancelamentoCarga($expedicaoEn) {
         $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_CANCELA_CARGA_ERP');
 
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
         $ids = explode(',', $idIntegracao);
@@ -255,10 +259,7 @@ class ExpedicaoRepository extends EntityRepository {
             $acaoEn = $acaoIntRepo->find($idIntegracao);
 
             if ($this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoEn)) {
-                $result = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
-                if (!$result === true) {
-                    throw new \Wms\Util\WMS_Exception($result);
-                }
+                $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
             }
         }
     }
@@ -272,7 +273,7 @@ class ExpedicaoRepository extends EntityRepository {
     public function executaIntegracaoBDFinalizacaoConferencia($expedicaoEn)
     {
         $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
@@ -338,10 +339,7 @@ class ExpedicaoRepository extends EntityRepository {
                             }
                             $options[$index][] = 2;
                         }
-                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, false);
-                        if (!$resultAcao === true) {
-                            throw new \Exception($resultAcao);
-                        }
+                        $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, false);
                         unset($options);
                     }
                 }
@@ -368,10 +366,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $options[] = $usuario->getCodErp();
                     }
 
-                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                    if (!$resultAcao === true) {
-                        throw new \Exception($resultAcao);
-                    }
+                    $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                 }
 
                 /*
@@ -390,11 +385,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $options[] = $expedicaoEn->getStatus()->getId();
                         $options[] = $usuario->getCodErp();
 
-                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                        if (!$resultAcao === true) {
-                            throw new \Exception($resultAcao);
-                        }
-
+                        $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     }
                 }
 
@@ -430,16 +421,12 @@ class ExpedicaoRepository extends EntityRepository {
                             $options[] = $expedicaoEn->getStatus()->getId();
                             $options[] = $usuario->getCodErp();
 
-                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                            if (!$resultAcao === true) {
-                                throw new \Exception($resultAcao);
-                            }
+                            $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                         }
                     }
                 }
             }
         }
-        return $resultAcao;
     }
 
     /**
@@ -451,7 +438,7 @@ class ExpedicaoRepository extends EntityRepository {
     public function executaIntegracaoBDInicioConferencia($expedicaoEn)
     {
         $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_INICIO_CONFERENCIA');
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
         /** @var Usuario $usuario */
@@ -489,10 +476,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $options[] = $usuario->getCodErp();
                     }
 
-                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                    if (!$resultAcao === true) {
-                        throw new \Exception($resultAcao);
-                    }
+                    $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                 }
 
                 /*
@@ -511,11 +495,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $options[] = $expedicaoEn->getStatus()->getId();
                         $options[] = $usuario->getCodErp();
 
-                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                        if (!$resultAcao === true) {
-                            throw new \Exception($resultAcao);
-                        }
-
+                        $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     }
                 }
 
@@ -543,16 +523,12 @@ class ExpedicaoRepository extends EntityRepository {
                             $options[] = $expedicaoEn->getStatus()->getId();
                             $options[] = $usuario->getCodErp();
 
-                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                            if (!$resultAcao === true) {
-                                throw new \Exception($resultAcao);
-                            }
+                            $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                         }
                     }
                 }
             }
         }
-        return $resultAcao;
     }
 
     private function validaPickingProdutosByExpedicao($produtosRessuprir) {
@@ -1676,7 +1652,7 @@ class ExpedicaoRepository extends EntityRepository {
         if ($qtdErp == $qtdWms) {
             return true;
         } else {
-            return false;
+            throw new DetalhaResumoConferenciaException();
         }
     }
 
@@ -2023,11 +1999,11 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function importaCortesERP($idExpedicao) {
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        /** @var AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var CargaRepository $cargaRepository */
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        /** @var AndamentoRepository $andamentoRepo */
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
@@ -2047,8 +2023,6 @@ class ExpedicaoRepository extends EntityRepository {
             $result = $acaoIntRepo->processaAcao($acaoVerificaCargaFinalizadaEn, array(0 => $cargaEntity->getCodCargaExterno()), 'E', "P", null, 611);
             if ($result === false) {
                 $cargas[] = $cargaEntity->getCodCargaExterno();
-            } else if (is_string($result)) {
-                return $result;
             } else {
                 $andamentoRepo->save("Carga " . $cargaEntity->getCodCargaExterno() . " se encontra faturada no ERP, não é possível consultar seus cortes", $idExpedicao);
             }
@@ -2056,10 +2030,7 @@ class ExpedicaoRepository extends EntityRepository {
         $idCargas[] = implode(',', $cargas);
 
         if ((count($idCargas) > 0) && ($idCargas[0] != '')) {
-            $result = $acaoIntRepo->processaAcao($acaoCorteEn, $idCargas, 'E', "P", null, 611);
-            if (!($result === true)) {
-                return $result;
-            }
+            $acaoIntRepo->processaAcao($acaoCorteEn, $idCargas, 'E', "P", null, 611);
         }
 
         return true;
@@ -2067,9 +2038,9 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function integraCortesERP($pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo)
     {
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        /** @var AndamentoRepository $andamentoRepo */
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $quantidade = $pedidoProdutoEn->getQuantidade();
@@ -2149,10 +2120,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') == 'S') {
-                $result = $this->importaCortesERP($idExpedicao);
-                if (!($result === true)) {
-                    throw new \Exception($result);
-                }
+                $this->importaCortesERP($idExpedicao);
             }
 
             // Valida se existe separação ao término da conferência
@@ -2222,10 +2190,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                $result  = $this->validaConferenciaERP($expedicaoEn->getId());
-                if (is_string($result)) {
-                    throw new \Exception($result);
-                }
+                $this->validaConferenciaERP($expedicaoEn->getId());
             }
 
             if (isset($idMapa) && !empty($idMapa)) {
@@ -2276,10 +2241,7 @@ class ExpedicaoRepository extends EntityRepository {
             //Executa Corte ERP
             if ($this->getSystemParameterValue('TIPO_INTEGRACAO_CORTE') == 'F') {
                 if (!is_null($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'))) {
-                    $resultAcao = $this->integraCortesERPFinalizacao($idExpedicao);
-                    if (!$resultAcao === true) {
-                        throw new \Exception($resultAcao);
-                    }
+                    $this->integraCortesERPFinalizacao($idExpedicao);
                 }
             }
 
@@ -2324,7 +2286,7 @@ class ExpedicaoRepository extends EntityRepository {
             $idAcaoResumo = $this->getSystemParameterValue("COD_ACAO_INTEGRACAO_RESUMO_CONFERENCIA_EXPEDICAO");
             $idAcaoConferencia = $this->getSystemParameterValue("COD_ACAO_INTEGRACAO_CONFERENCIA_EXPEDICAO");
 
-            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            /** @var AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
             $cargas = $this->getEntityManager()->getRepository("wms:Expedicao\Carga")->findBy(array('codExpedicao' => $idExpedicao));
@@ -2346,29 +2308,27 @@ class ExpedicaoRepository extends EntityRepository {
              * Trecho de código para executar a integração apenas se estiver configurado para o tipo de pedido correto
              */
             if (!$this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoResumoEn)) {
-                return true;
+                return;
             }
 
             if (!$this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoConferenciaEn)) {
-                return true;
+                return;
             }
 
             foreach ($cargas as $cargaEn) {
                 $options = array();
                 $options[] = $cargaEn->getCodCargaExterno();
-                $result = $acaoIntRepo->processaAcao($acaoResumoEn, $options, "E", "P", null, 611);
-                if (!($result === true)) {
-                    $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options, "E", "P", null, 611);
-                    if (!($result === true)) {
-                        throw new \Exception($result);
-                    }
+                try {
+                    $acaoIntRepo->processaAcao($acaoResumoEn, $options, "E", "P", null, 611);
+                } catch (DetalhaResumoConferenciaException $eDetalha) {
+                    $acaoIntRepo->processaAcao($acaoConferenciaEn, $options, "E", "P", null, 611);
+                } catch (\Exception $e) {
+                    throw $e;
                 }
             }
         } catch (\Exception $e) {
-            return $e->getMessage();
+            throw $e;
         }
-
-        return true;
     }
 
     public function validaVolumesPatrimonio($idExpedicao) {
@@ -2415,7 +2375,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        /** @var AndamentoRepository $andamentoRepo */
         $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
@@ -4943,7 +4903,7 @@ class ExpedicaoRepository extends EntityRepository {
      */
     public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null, $mapa = null, $idEmbalagem = null, $forcarEmbVendaDefault = null, $idEndereco = null, $lote = null) {
 
-        /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
+        /** @var AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
         $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
@@ -6076,9 +6036,9 @@ class ExpedicaoRepository extends EntityRepository {
 
     private function integraCortesERPFinalizacao($idExpedicao)
     {
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        /** @var AndamentoRepository $andamentoRepo */
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
@@ -6096,7 +6056,7 @@ class ExpedicaoRepository extends EntityRepository {
         $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (count($qtdPedidos) <= 0) {
-            return true;
+            return;
         }
         /*
          * Fim remover
@@ -6106,19 +6066,14 @@ class ExpedicaoRepository extends EntityRepository {
         $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
 
         foreach ($cargaEntities as $cargaEntity) {
-            $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
+            $acaoIntRepo->processaAcao($acaoCorteEn, array(
                 0 => $cargaEntity['COD_CARGA_EXTERNO'],
                 1 => $cargaEntity['COD_PRODUTO'],
                 2 => $cargaEntity['DSC_GRADE'],
                 3 => $cargaEntity['QTD_CORTADA']), 'E', 'P');
-            if (is_string($result)) {
-                return $result;
-            } else {
-                $andamentoRepo->save('Corte de ' .$cargaEntity['QTD_CORTADA'] . ' unidades do produto ' . $cargaEntity['COD_PRODUTO'] . ' na carga ' . $cargaEntity['COD_CARGA_EXTERNO'] . ' enviado para o ERP', $idExpedicao);
-            }
-        }
 
-        return true;
+            $andamentoRepo->save('Corte de ' .$cargaEntity['QTD_CORTADA'] . ' unidades do produto ' . $cargaEntity['COD_PRODUTO'] . ' na carga ' . $cargaEntity['COD_CARGA_EXTERNO'] . ' enviado para o ERP', $idExpedicao);
+        }
     }
 
     public function getProdutosAtivosPedido($idExpedicao)
@@ -6140,11 +6095,11 @@ class ExpedicaoRepository extends EntityRepository {
     public function cancelarExpedicao ($idExpedicao)
     {
         try {
-            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+            /** @var AndamentoRepository $expedicaoAndamentoRepository */
             $expedicaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
             $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-            /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+            /** @var CargaRepository $cargaRepository */
             $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
             $NotaFiscalSaidaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
             $ReentregaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Reentrega');

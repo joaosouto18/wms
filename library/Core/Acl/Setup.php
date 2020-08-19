@@ -113,9 +113,14 @@ class Setup
         $this->acl->addRole(new \Zend_Acl_Role('CONVIDADO'));
         $this->acl->addRole(new \Zend_Acl_Role('LOGADO'), 'CONVIDADO');
 
+        $rolesArr = [];
         foreach ($this->getRoles() as $role) {
-            $this->acl->addRole(new \Zend_Acl_Role($role['PERFIL']), 'LOGADO');
+            $aclRole = new \Zend_Acl_Role($role['PERFIL']);
+            $rolesArr[] = $aclRole;
+            $this->acl->addRole($aclRole, 'LOGADO');
         }
+
+        $this->acl->addRole(new \Zend_Acl_Role('ROOT'), $rolesArr);
     }
 
     /**
@@ -175,7 +180,7 @@ class Setup
                 INNER JOIN RECURSO_ACAO RA ON (PURA.COD_RECURSO_ACAO = RA.COD_RECURSO_ACAO)
                 INNER JOIN RECURSO R ON (RA.COD_RECURSO = R.COD_RECURSO)
                 INNER JOIN ACAO A ON (RA.COD_ACAO = A.COD_ACAO)
-                WHERE PURA.COD_PERFIL_USUARIO IN (" . $codPerfil . ")
+                WHERE PURA.COD_PERFIL_USUARIO IN (" . $codPerfil . ") AND RA.ONLY_ROOT = 0
                 ORDER BY R.NOM_RECURSO ASC, A.NOM_ACAO";
 
             //role permissions
@@ -190,6 +195,24 @@ class Setup
                 $this->acl->allow($role, $resource, $action);
             }
         }
+
+        //busca todas as ações existentes
+        $sqlRootPrivileges = "
+                SELECT DISTINCT R.NOM_RECURSO, A.NOM_ACAO
+                FROM RECURSO_ACAO RA
+                INNER JOIN RECURSO R ON (RA.COD_RECURSO = R.COD_RECURSO)
+                INNER JOIN ACAO A ON (RA.COD_ACAO = A.COD_ACAO)
+                ORDER BY R.NOM_RECURSO ASC, A.NOM_ACAO";
+
+        $rootPrivileges = $this->conn->query($sqlRootPrivileges)->fetchAll();
+
+        //atribuo permissoes para o perfil de ROOT
+        foreach( $rootPrivileges as $permissao) {
+            $resource = $permissao['NOM_RECURSO'];
+            $action = $permissao['NOM_ACAO'];
+
+            $this->acl->allow('ROOT', $resource, $action);
+        }
     }
 
     /**
@@ -202,7 +225,7 @@ class Setup
         $menu = array();
 
         $sql = "
-            SELECT MI.COD_PAI, MI.DSC_TARGET, MI.COD_MENU_ITEM AS ID, MI.DSC_MENU_ITEM AS LABEL, MI.COD_RECURSO_ACAO,
+            SELECT MI.ONLY_ROOT, MI.COD_PAI, MI.DSC_TARGET, MI.COD_MENU_ITEM AS ID, MI.DSC_MENU_ITEM AS LABEL, MI.COD_RECURSO_ACAO,
                 MI.DSC_URL, MI.NUM_PESO, R.NOM_RECURSO AS CONTROLLER, RA.COD_RECURSO, RA.COD_ACAO, 
                 A.NOM_ACAO AS ACTION, '' AS PRIVIGELE, 'web' AS MODULE,
 		(
@@ -225,6 +248,7 @@ class Setup
         foreach ($items as $key => $item) {
 
             if ($Acl->checkModuleExists($item['CONTROLLER'])) {
+                $item['RESOURCE'] = $item['CONTROLLER'];
                 $item['MODULE']     = $Acl->getModule();
                 $item['CONTROLLER'] = $Acl->getController();
             }
@@ -237,8 +261,14 @@ class Setup
                     'label' => $item['LABEL'],
                     'uri' => $item['DSC_URL'],
                     'target' => $item['DSC_TARGET'],
-                    'order' => $item['NUM_PESO'],
+                    'order' => $item['NUM_PESO']
                 );
+
+                if ($item['ONLY_ROOT']) {
+                    $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
+                    $menu[$key]['privilege'] = $item['ACTION'];
+                    $menu[$key]['resource'] = $item['RESOURCE'];
+                }
                 // only links
             } elseif ($item['COD_RECURSO_ACAO'] == 0) {
                 // add item - permission
@@ -246,8 +276,14 @@ class Setup
                     'label' => $item['LABEL'],
                     'uri' => $item['DSC_URL'],
                     'target' => $item['DSC_TARGET'],
-                    'order' => $item['NUM_PESO'],
+                    'order' => $item['NUM_PESO']
                 );
+
+                if ($item['ONLY_ROOT']) {
+                    $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
+                    $menu[$key]['privilege'] = $item['ACTION'];
+                    $menu[$key]['resource'] = $item['RESOURCE'];
+                }
                 // links with controllers/actions
             } else {
                 // add item - permission
@@ -262,13 +298,19 @@ class Setup
                         #'privilege' => $item['privilege'],
                 );
 
+                if ($item['ONLY_ROOT']) {
+                    $menu[$key]['label'] = "[ROOT] ".$item['LABEL'];
+                    $menu[$key]['privilege'] = $item['ACTION'];
+                    $menu[$key]['resource'] = $item['RESOURCE'];
+                }
+
                 // search extra actions
                 $sql = "
-		    SELECT RA.DSC_RECURSO_ACAO AS LABEL, A.NOM_ACAO AS ACTION
-		    FROM RECURSO_ACAO RA
-                    INNER JOIN ACAO A ON (A.COD_ACAO = RA.COD_ACAO)
-		    WHERE RA.COD_RECURSO = " . (int) $item['COD_RECURSO'] . "
-			AND RA.COD_ACAO != " . (int) $item['COD_ACAO'];
+                SELECT RA.DSC_RECURSO_ACAO AS LABEL, A.NOM_ACAO AS ACTION, RA.ONLY_ROOT
+                FROM RECURSO_ACAO RA
+                        INNER JOIN ACAO A ON (A.COD_ACAO = RA.COD_ACAO)
+                WHERE RA.COD_RECURSO = " . (int) $item['COD_RECURSO'] . "
+                AND RA.COD_ACAO != " . (int) $item['COD_ACAO'];
 
                 $actions = $this->conn->fetchAll($sql);
 
@@ -279,8 +321,13 @@ class Setup
                             'controller' => $item['CONTROLLER'],
                             'label' => $action['LABEL'],
                             'action' => $action['ACTION'],
-                            'visible' => 0,
+                            'visible' => 0
                         );
+                        if ($action['ONLY_ROOT']) {
+                            $menu[$key]['pages'][$key2]['label'] = "[ROOT] ".$action['LABEL'];
+                            $menu[$key]['pages'][$key2]['privilege'] = $action['ACTION'];
+                            $menu[$key]['pages'][$key2]['resource'] = $item['RESOURCE'];
+                        }
                     }
                 }
             }

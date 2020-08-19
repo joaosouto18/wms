@@ -113,7 +113,7 @@ class Deposito extends PluginAbstract
     /**
      *
      * @param \Zend_Controller_Request_Abstract $request
-     * @return type 
+     * @throws \Exception
      */
     public function preDispatch(\Zend_Controller_Request_Abstract $request)
     {
@@ -137,9 +137,13 @@ class Deposito extends PluginAbstract
             return;
         }
 
-        $usuarioSessao = $auth->getIdentity();
-        $usuario = $em->find('wms:Usuario', $usuarioSessao->getId());
-        $depositosPermitidos = $usuario->getDepositos()->toArray();
+        $usuario = $auth->getIdentity();
+        if (!$usuario->isRoot()) {
+            $depositosPermitidos = $em->find('wms:Usuario', $usuario->getId())->getDepositos()->toArray();
+        }
+        else {
+            $depositosPermitidos = $em->getRepository(\Wms\Domain\Entity\Deposito::class)->findAll();
+        }
 
         foreach ($depositosPermitidos as $key => $deposito) {
             if ((!$deposito->getFilial()->getIsAtivo()) || (!$deposito->getIsAtivo()))
@@ -147,18 +151,15 @@ class Deposito extends PluginAbstract
 
             $arrayDepositos[$deposito->getId()] = $deposito->getDescricao();
             $centrais[] = $deposito->getFilial()->getCodExterno();
-        };
-
-        switch (count($arrayDepositos)) {
-            case 0:
-                $request->setControllerName('error');
-                $request->setActionName('sem-permissao-depositos');
-                return;
-            break;
-            default:
-                $sessao->idDepositoLogado = key($arrayDepositos);
-            break;
         }
+
+        if (!count($arrayDepositos)) {
+            $request->setControllerName('error');
+            $request->setActionName('sem-permissao-depositos');
+            return;
+        }
+
+        $sessao->idDepositoLogado = key($arrayDepositos);
 
         $view->idDepositoLogado = $sessao->idDepositoLogado;
         $view->depositosPermitidos = $arrayDepositos;

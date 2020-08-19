@@ -78,7 +78,13 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      * @Column(name="COD_ERP_USUARIO", type="integer")
      */
     protected $codErp;
-    
+
+
+    /**
+     * @var integer
+     * @Column(name="ROOT_USER", type="integer", length=1, nullable=false)
+     */
+    protected $root;
 
     public function __construct()
     {
@@ -317,5 +323,21 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
     public function setCodErp($codErp)
     {
         $this->codErp = $codErp;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRoot()
+    {
+        return boolval($this->root);
+    }
+
+    /**
+     * @param bool $root
+     */
+    public function setRoot($root)
+    {
+        $this->root = (int)($root);
     }
 }

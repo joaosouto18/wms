@@ -9,6 +9,8 @@
 namespace Wms\Domain\Entity\Integracao;
 
 
+use Wms\Domain\Entity\Util\Sigla;
+
 /**
  * @Table(name="ACAO_INTEGRACAO_FILTRO")
  * @Entity(repositoryClass="Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository")
@@ -80,7 +82,7 @@ class AcaoIntegracaoFiltro
     }
 
     /**
-     * @return mixed
+     * @return Sigla
      */
     public function getTipoRegistro()
     {
@@ -88,7 +90,7 @@ class AcaoIntegracaoFiltro
     }
 
     /**
-     * @param mixed $tipoRegistro
+     * @param Sigla $tipoRegistro
      */
     public function setTipoRegistro($tipoRegistro)
     {

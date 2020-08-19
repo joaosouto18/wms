@@ -395,7 +395,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$cnpjDestinatario,$tipoNota, $cnpjProprietario);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$cnpjDestinatario,$tipoNota, $cnpjProprietario, false);
             }
 
             $em->flush();
@@ -437,7 +437,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $arrayItens = $array['produtos'];
             return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa, $arrayItens,$bonificacao, $observacao, "",$cnpjDestinatario);
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 

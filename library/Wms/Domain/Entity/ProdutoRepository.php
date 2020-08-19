@@ -611,7 +611,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         } catch (\Exception $e) {
                             $previus = $e->getPrevious();
                             if ($previus->getCode() == 2292) {
-                                $return = "A embalagem com código de barras " . $embalagemEntity->getCodigoBarras() . ' não pode ser excluida por estar ligada à um fornecedor.';
+                                $return = "A embalagem com código de barras " . $embalagemEntity->getCodigoBarras() . ' não pode ser excluida por risco de comprometer a integridade do sistema.';
                                 return $return;
                             }
                         }
@@ -703,7 +703,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             // gravo dados logisticos
             $this->persistirDadosLogisticos($values, $produtoEntity);
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
 
         return true;

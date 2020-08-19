@@ -22,6 +22,9 @@ class Web_UsuarioController extends Crud
         if ($values = $form->getParams()) {
             extract($values);
 
+            $auth = \Zend_Auth::getInstance();
+            $usuarioSessao = $auth->getStorage()->read();
+
             $source = $this->em->createQueryBuilder()
                     ->select('distinct pf.id, u.login, u.isAtivo, pf.nome, u.isSenhaProvisoria')
                     ->from('wms:Usuario', 'u')
@@ -33,14 +36,16 @@ class Web_UsuarioController extends Crud
                         ->setParameter('isAtivo', $isAtivo);
             }
             if (!empty($idPerfil))
-                $source->innerJoin('u.perfis', 'p')
+                $source->leftJoin('u.perfis', 'p')
                     ->andWhere("p.id = " . $idPerfil);
             if (!empty($idDeposito))
-                $source->innerJoin('u.depositos', 'd')
+                $source->leftJoin('u.depositos', 'd')
                     ->andWhere("d.id = " . $idDeposito);
             if (!empty($nome)) {
-                $nomeUpp = strtoupper($nome);
-                $source->andWhere("UPPER(pf.nome) LIKE UPPER('%$nomeUpp%')");
+                $source->andWhere("UPPER(pf.nome) LIKE UPPER('%$nome%')");
+            }
+            if (!$usuarioSessao->isRoot()) {
+                $source->andWhere("u.root = 0");
             }
 
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));

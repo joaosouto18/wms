@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Integracao;
 
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Util\Sigla;
 
 /**
  *
@@ -50,6 +51,7 @@ class AcaoIntegracao
     protected $id;
     
     /**
+     * @var ConexaoIntegracao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Integracao\ConexaoIntegracao")
      * @JoinColumn(name="COD_CONEXAO_INTEGRACAO", referencedColumnName="COD_CONEXAO_INTEGRACAO")
      */
@@ -103,6 +105,12 @@ class AcaoIntegracao
     protected $parametros;
 
     /**
+     * @var string
+     * @Column(name="DSC_ACAO_INTEGRACAO", type="string")
+     */
+    protected $dscAcaoIntegracao;
+
+    /**
      * @return mixed
      */
     public function getIdAcaoRelacionada()
@@ -143,7 +151,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @param mixed $conexao
+     * @param ConexaoIntegracao $conexao
      */
     public function setConexao($conexao)
     {
@@ -167,7 +175,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @return mixed
+     * @return Sigla
      */
     public function getTipoAcao()
     {
@@ -175,7 +183,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @param mixed $tipoAcao
+     * @param Sigla $tipoAcao
      */
     public function setTipoAcao($tipoAcao)
     {
@@ -279,4 +287,24 @@ class AcaoIntegracao
         $this->tabelaReferencia = $tabelaReferencia;
     }
 
+    /**
+     * @return string
+     */
+    public function getDscAcaoIntegracao()
+    {
+        return $this->dscAcaoIntegracao;
+    }
+
+    /**
+     * @param string $dscAcaoIntegracao
+     */
+    public function setDscAcaoIntegracao($dscAcaoIntegracao)
+    {
+        $this->dscAcaoIntegracao = $dscAcaoIntegracao;
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

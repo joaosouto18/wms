@@ -940,36 +940,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         }
 
-        /** @var $pedidoProdutoRepo $pedidoProdutoRepo */
-        if (isset($arrayRepositorios['pedidoProdutoRepo'])) {
-            $pedidoProdutoRepo = $arrayRepositorios['pedidoProdutoRepo'];
-        } else {
-            $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
-        }
         /** @var ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoque");
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
-
 
         $arrMapaPedProd = [];
         try {
 
             if ($this->getSystemParameterValue("COMPARA_PRODUTOS_EXPEDICAO_ERP") == "S") {
-                $idPP = array();
-                foreach ($pedidosProdutos as $pedidoProduto) {
-                    $idPP[] = $pedidoProduto->getId();
-                }
-
-                $result  = $expedicaoRepo->validaConferenciaERP($idExpedicao);
-                if (is_string($result)) {
-                    throw new \Exception($result);
-                }
-                $enPP = array();
-                foreach( $idPP as $id) {
-                    $ppEn = $pedidoProdutoRepo->find($id);
-                    $enPP[] = $ppEn;
-                    $pedidosProdutos = $enPP;
-                }
+                $expedicaoRepo->validaConferenciaERP($idExpedicao);
             }
 
             $this->iniciaMapaSeparacao($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
@@ -2945,7 +2924,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     /**
-     * @param $etiquetaEntity
+     * @param $etiquetaEntity EtiquetaSeparacao
      */
     public function cortar($etiquetaEntity, $motivoEn = null)
     {

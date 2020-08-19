@@ -49,25 +49,27 @@ class Auth {
         $identity = $auth->getIdentity();
 
         // get user's infos
-        $usuarioDb = $em->createQueryBuilder()
+        $usuario = $em->createQueryBuilder()
                         ->select('u, p')
                         ->from('wms:Usuario', 'u')
                         ->innerJoin('u.pessoa', 'p')
                         ->where("u.login = '{$identity}'")
                         ->getQuery()->getOneOrNullResult();
 
-        $usuario = $em->find('wms:Usuario', $usuarioDb->getPessoa()->getId());
-
-        // relacao de perfis
-        $perfis = array();
-        foreach ($usuario->getPerfis() as $perfil) {
-            $perfis[$perfil->getId()] = $perfil->getNome();
+        if ($usuario->isRoot()) {
+            $perfil = 'ROOT';
+        } else {
+            // relacao de perfis
+            $perfis = array();
+            foreach ($usuario->getPerfis() as $perfil) {
+                $perfis[$perfil->getId()] = $perfil->getNome();
+            }
+            //ordeno crescentemente pelos codigos do perfil
+            ksort($perfis);
+            //gero o perfil
+            $perfil = implode('-', $perfis);
+            //seto o RoleId para o zf
         }
-        //ordeno crescentemente pelos codigos do perfil 
-        ksort($perfis);
-        //gero o perfil
-        $perfil = implode('-', $perfis);
-        //seto o RoleId para o zf
         $usuario->setRoleId($perfil);
 
         /** @var \Zend_Auth_Storage_Session $storage */

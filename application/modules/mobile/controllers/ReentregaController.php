@@ -22,27 +22,28 @@ class Mobile_ReentregaController extends Action {
         unset($params['controller']);
         unset($params['action']);
 
-        if ((!empty($params['carga']) && isset($params['carga'])) || (!empty($params['notaFiscal']) && isset($params['notaFiscal']))) {
-            /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
-            $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
-            $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
+        try {
+            if ((!empty($params['carga']) && isset($params['carga'])) || (!empty($params['notaFiscal']) && isset($params['notaFiscal']))) {
+                /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+                $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
+                $result = $notaFiscalSaidaRepo->getNotaFiscalSaida($params);
 
-            if (count($result) > 0) {
-                $selecionado = "N";
-                if (!empty($params['codEtiqueta']) && isset($params['codEtiqueta'])) {
-                    $selecionado = "S";
+                if (count($result) > 0) {
+                    $selecionado = "N";
+                    if (!empty($params['codEtiqueta']) && isset($params['codEtiqueta'])) {
+                        $selecionado = "S";
+                    }
+                    if (count($result) == 1) {
+                        $selecionado = "S";
+                    }
+                    $this->view->selecionado = $selecionado;
+                    $this->view->notasFiscaisByCarga = $result;
+                    return;
                 }
-                if (count($result) == 1) {
-                    $selecionado = "S";
-                }
-                $this->view->selecionado = $selecionado;
-                $this->view->notasFiscaisByCarga = $result;
-            } else {
-                $this->addFlashMessage('error', 'Nenhuma nota fiscal encontrada!');
-                $this->_redirect('/mobile/reentrega/recebimento');
             }
-        } else {
-            $this->addFlashMessage('error', 'Nenhuma nota fiscal encontrada!');
+            throw new Exception('Nenhuma nota fiscal encontrada!');
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/mobile/reentrega/recebimento');
         }
     }

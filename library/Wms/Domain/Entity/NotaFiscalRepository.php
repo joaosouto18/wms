@@ -156,7 +156,7 @@ class NotaFiscalRepository extends EntityRepository {
             $this->_em->flush();
             return true;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -216,7 +216,7 @@ class NotaFiscalRepository extends EntityRepository {
             }
             return true;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -1030,10 +1030,10 @@ class NotaFiscalRepository extends EntityRepository {
         return $entity;
     }
 
-    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $tipoNota = null, $cnpjProprietario = null) {
+    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $tipoNota = null, $cnpjProprietario = null, $integracaoSQL = false) {
 
         $em = $this->getEntityManager();
-        $em->beginTransaction();
+        if (!$integracaoSQL) $em->beginTransaction();
 
         try {
 
@@ -1174,10 +1174,10 @@ class NotaFiscalRepository extends EntityRepository {
             $em->persist($notaFiscalEntity);
 
             $em->flush();
-            $em->commit();
+            if (!$integracaoSQL) $em->commit();
         } catch (\Exception $e) {
-            $em->rollback();
-            throw new \Exception($e->getMessage());
+            if (!$integracaoSQL) $em->rollback();
+            throw $e;
         }
     }
 
