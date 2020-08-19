@@ -253,6 +253,10 @@ class Setup
                 $item['CONTROLLER'] = $Acl->getController();
             }
 
+            if (is_null($item['RESOURCE'])) {
+                var_dump($item);exit;
+            }
+
             // case first level on the menu
             if ($item['COD_PAI'] == 0) {
                 // add item - permission
