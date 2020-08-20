@@ -385,7 +385,7 @@ class Importacao
                 return $e->getMessage();
             }
         }
-        return "Já existe fornecedor com este código ". $fornecedor['codExterno'];
+        return "Já existe emissor com este código ". $fornecedor['codExterno'];
 
     }
 
@@ -403,7 +403,7 @@ class Importacao
         }
 
         /** @var $tipoNotaEn TipoNotaFiscal */
-        if ($tipoNotaEn->getEmissor() === Papel\Emissor::EMISSOR_FORNECEDOR) {
+        if ($tipoNotaEn->getEmissor() === Papel\EmissorInterface::EMISSOR_FORNECEDOR) {
             $emissorEntity = $em->getRepository(Papel\Fornecedor::class)->findOneBy(array('codExterno' => $idEmissor));
         } else {
             $emissorEntity = $em->getRepository(Papel\Cliente::class)->findOneBy(array('codExterno' => $idEmissor));

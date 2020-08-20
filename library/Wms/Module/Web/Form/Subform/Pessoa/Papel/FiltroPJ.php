@@ -25,22 +25,17 @@ class FiltroPJ extends Form
                 ->addElement('text', 'nome', array(
                     'class' => 'caixa-alta focus',
                     'size' => 45,
-                    'label' => 'Razão Social',
+                    'label' => 'Nome',
                 ))
-                ->addElement('text', 'nomeFantasia', array(
-                    'class' => 'caixa-alta',
-                    'size' => 45,
-                    'label' => 'Nome Fantasia',
-                ))
-                ->addElement('cnpj', 'cnpj', array(
-                    'label' => 'CNPJ',
+                ->addElement('document', 'cpfCnpj', array(
+                    'label' => 'CPF/CNPJ',
                 ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('codigo', 'nome', 'nomeFantasia', 'cnpj', 'submit'), 'identificacao', array('legend' => 'Filtros de Busca'));
+                ->addDisplayGroup(array('codigo', 'nome', 'cpfCnpj', 'submit'), 'identificacao', array('legend' => 'Filtros de Busca'));
     }
 
 }

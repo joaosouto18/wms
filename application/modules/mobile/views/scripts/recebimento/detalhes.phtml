@@ -4,15 +4,15 @@ $placaVeiculo = '';
 if ($this->placaVeiculo)
     $placaVeiculo = $this->placaVeiculo;
 
-if ($this->fornecedor) {
-    $fornecedor = $this->fornecedor;
+if ($this->emissor) {
+    $emissor = $this->emissor;
 }
 ?>
 <div class="row" >
     <table class="info table">
         <caption>Recebimento:  <?php echo $this->recebimento->getId() ?> - <?php echo $this->recebimento->getBox()->getDescricao() ?> - <?php echo $this->recebimento->getDataInicial() ?></caption>
         <caption>Veículo: <?php echo $placaVeiculo ?></caption>
-        <caption>Fornecedor: <?php echo $this->fornecedor ?></caption>
+        <caption>Emissor: <?php echo $this->emissor ?></caption>
         <?php
         if (isset($this->listaProdutos)):
             ?>

@@ -91,7 +91,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * Retorna uma Nota Fiscal específico no WMS pelo seu ID.
      *
      * @param string $idFornecedor Codigo do fornecedor
-     * @param string $tipo Codigo do fornecedor
+     * @param string $tipoNota Tipo da Nota Fiscal
      * @param string $numero Numero da nota fiscal
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
@@ -99,34 +99,27 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return array
      * @throws Exception
      */
-    public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus, $tipo)
+    public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus, $tipoNota)
     {
 
-        $idFornecedor = trim($idFornecedor);
+        $idEmissor = trim($idFornecedor);
         $numero = trim($numero);
         $serieTrim = trim($serie);
         $serie = (!empty($serieTrim))? $serieTrim : "0";
         $dataEmissao  = trim($dataEmissao);
         $idStatus = trim($idStatus);
+        $tipoNota = trim($tipoNota);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('codExterno' => $idFornecedor));
-        if ($fornecedorEntity == null) {
-            $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
-            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('codExterno' => $novoIdFornecedor));
-            if ($fornecedorEntity == null) {
-                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
-            }
-            $idFornecedor = $novoIdFornecedor;
-        }
+        list($emissorEn, $tipoNotaEn) = self::getEmissorAndTipo($em, $idEmissor, $tipoNota);
 
+        /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
-            'fornecedor' => $fornecedorEntity->getId(),
+            'emissor' => $emissorEn,
             'numero' => $numero,
             'serie' => $serie,
-            //'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao),
-            'status' => $idStatus,
+            'tipo' => $tipoNotaEn
         ));
 
         if ($notaFiscalEntity == null)
@@ -154,7 +147,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         return $result =  array(
             'idRecebimento' => $idRecebimento,
-            'idFornecedor' => $notaFiscalEntity->getFornecedor()->getId(),
+            'idFornecedor' => $notaFiscalEntity->getEmissor()->getId(),
             'numero' => $notaFiscalEntity->getNumero(),
             'serie' => $notaFiscalEntity->getSerie(),
             'dataEmissao' => $notaFiscalEntity->getDataEmissao()->format('d/m/Y'),
@@ -227,7 +220,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->idFornecedor = $notaFiscalEntity->getEmissor()->getCodExterno();
         $clsNf->numero = $notaFiscalEntity->getNumero();
         $clsNf->serie = $notaFiscalEntity->getSerie();
-        $clsNf->tipo = $notaFiscalEntity->getTipo()->getCodExterno();
+        $clsNf->tipoNota = $notaFiscalEntity->getTipo()->getCodExterno();
         $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
         $clsNf->dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
         $clsNf->placa = $notaFiscalEntity->getPlaca();
@@ -260,16 +253,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
+     * @param TypeOfParam::getType(NOTA_FISCAL_SALVAR_ITENS) $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
      * @param string $cnpjDestinatario CNPJ da filial que irá receber a nota
      * @param string $cnpjProprietario CNPJ da filial dona da nota
-     * @param TypeOfParam::getType(NOTA_FISCAL_SALVAR_ITENS) $itens
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario, $cnpjProprietario, $itens)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario, $cnpjProprietario)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -690,15 +683,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         }
 
         /** @var $tipoNotaEn NotaFiscalEntity\Tipo */
-        if ($tipoNotaEn->getEmissor() === Papel\Emissor::EMISSOR_FORNECEDOR) {
-            $emissorEntity = $em->getRepository(Papel\Fornecedor::class)->findOneBy(array('codExterno' => $idEmissor));
+        if ($tipoNotaEn->getEmissor() === Papel\EmissorInterface::EMISSOR_FORNECEDOR) {
+            /** @var Papel\Fornecedor $emissorEntity */
+            $emissorEntity = $em->getRepository(Papel\Fornecedor::class)->findOneBy(['codExterno' => $idEmissor]);
         } else {
-            $emissorEntity = $em->getRepository(Papel\Cliente::class)->findOneBy(array('codExterno' => $idEmissor));
+            /** @var Papel\Cliente $emissorEntity */
+            $emissorEntity = $em->getRepository(Papel\Cliente::class)->findOneBy(['codExterno' => $idEmissor]);
         }
 
-        /** @var $emissorEntity Papel\Emissor */
         if (empty($emissorEntity))
-            throw new Exception("Nenhum emissor foi encontrado com o código $idEmissor do tipo " . Papel\Emissor::$arrResponsaveis[$tipoNotaEn->getEmissor()]);
+            throw new Exception("Nenhum emissor foi encontrado com o código $idEmissor do tipo " . NotaFiscalEntity\Tipo::$arrResponsaveis[$tipoNotaEn->getEmissor()]);
 
         return [$emissorEntity, $tipoNotaEn];
     }

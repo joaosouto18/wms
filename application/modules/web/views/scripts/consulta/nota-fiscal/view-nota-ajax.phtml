@@ -15,14 +15,14 @@
         <td>Número da NF</td>
         <td>Série</td>
         <td>Data Emissão</td>
-        <td>Fornecedor</td>
+        <td>Emissor</td>
         <td></td>
     </tr>
     <tr style="text-align: center;">
         <td><?php echo $notaFiscal['numero'] ?></td>
         <td><?php echo $notaFiscal['serie'] ?></td>
         <td><?php echo $notaFiscal['dataEmissao']->format('d/m/Y') ?></td>
-        <td><?php echo $notaFiscal['nomeFantasia'] ?></td>
+        <td><?php echo $notaFiscal['nome'] ?></td>
         <td><?php if ($notaFiscal['idStatus'] == $this->idStatusCancelado) echo '<strong style="color: #f00;">Nota Cancelada</strong>'; ?></td>
     </tr>
 </table>

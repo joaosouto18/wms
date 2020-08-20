@@ -31,8 +31,8 @@ class Listagem extends Grid
                     'index' => 'COD_RECEBIMENTO',
                 ))
             ->addColumn(array(
-                'label' => 'Fornecedor',
-                'index' => 'FORNECEDORES',
+                'label' => 'Emissores',
+                'index' => 'EMISSORES',
             ))
                 ->addColumn(array(
                     'label' => 'Data Inicial',

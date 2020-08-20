@@ -148,8 +148,11 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         if (is_a($pessoa, \Wms\Domain\Entity\Pessoa\Juridica::class)) {
             $for->insc = $pessoa->getInscricaoEstadual();
             $for->cnpj =  $fornecedorEntity->getCpfCnpj();
+            $for->cpf = null;
         } else {
             $for->cpf = $fornecedorEntity->getCpfCnpj();
+            $for->cnpj = null;
+            $for->insc = null;
         }
 
         return $for;

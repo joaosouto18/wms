@@ -1,5 +1,6 @@
 <?php
 
+use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Domain\Entity\Recebimento\Andamento,
     Wms\Domain\Entity\OrdemServico,
@@ -31,10 +32,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     protected $repository = 'Recebimento';
 
-    /**
-     *
-     * @return type 
-     */
     public function indexAction() {
         $form = new FiltroRecebimentoMercadoria;
 
@@ -929,16 +926,21 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
         $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
 
+        $emisCLI = Pessoa\Papel\EmissorInterface::EMISSOR_CLIENTE;
+        $emisFOR = Pessoa\Papel\EmissorInterface::EMISSOR_FORNECEDOR;
+
         // busco notas fiscais
         $dql = $this->em->createQueryBuilder()
-                ->select('nf.id, nf.numero, nf.serie, nf.dataEmissao, pj.nomeFantasia, s.id idStatus, s.sigla status')
+                ->select('nf.id, nf.numero, nf.serie, nf.dataEmissao, p.nome, s.id idStatus, s.sigla status')
                 ->from('wms:NotaFiscal', 'nf')
-                ->innerJoin('nf.fornecedor', 'f')
-                ->innerJoin('f.pessoa', 'pj')
+                ->innerJoin("nf.tipo", 't')
+                ->leftJoin('nf.cliente', 'c', 'WITH', "t.emissor = '$emisCLI'" )
+                ->leftJoin('nf.fornecedor', 'f', 'WITH', "t.emissor = '$emisFOR'" )
+                ->innerJoin(Pessoa::class, 'p', 'WITH', 'c.id = p OR f.id = p')
                 ->innerJoin('nf.status', 's')
                 ->where('nf.recebimento = :idRecebimento')
                 ->setParameter('idRecebimento', $id)
-                ->groupBy('nf.id, nf.numero, nf.serie, nf.dataEmissao, pj.nomeFantasia, s.id, s.sigla')
+                ->groupBy('nf.id, nf.numero, nf.serie, nf.dataEmissao, p.nome, s.id, s.sigla')
                 ->orderBy('nf.id');
 
         $notasFiscais = $dql->getQuery()->execute();
@@ -1284,7 +1286,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $params = array(
                 'dataEntradaInicial' => $dataI1->format('d/m/Y'),
                 'dataEntradaFinal' => $dataI2->format('d/m/Y'),
-                'idFornecedor' => '',
+                'idEmissor' => '',
                 'numero' => '',
                 'serie' => ''
             );
@@ -1307,7 +1309,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $data[$key]['serie'] = $row[0]->getSerie();
                 $data[$key]['placa'] = $row[0]->getPlaca();
                 $data[$key]['dataEntrada'] = $dataEntrada;
-                $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 45);
+                $data[$key]['emissor'] = substr($row['emissor'], 0, 45);
                 $data[$key]['status'] = $row[0]->getStatus()->getSigla();
                 $vetEmbalagens = $notaFiscalRepo->getTotalPorEmbalagemNota($row[0]->getId());
                 $data[$key]['qtdProdutoMaior'] = (int) $vetEmbalagens[0]['QTDMAIOR'];
