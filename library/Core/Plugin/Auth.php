@@ -97,6 +97,8 @@ class Auth extends \Zend_Controller_Plugin_Abstract {
     {
         $role = $this->usuario->getRoleId();
 
+        if ($role == 'ROOT') return true;
+
         $Acl = new \Wms\Configuration\Acl();
         if ($Acl->isDefaultModule($request->getModuleName())) {
             $resource = $controller;

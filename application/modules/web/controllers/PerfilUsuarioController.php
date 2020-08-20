@@ -193,7 +193,7 @@ class Web_PerfilUsuarioController extends Crud
                 ON (R.COD_RECURSO = RA.COD_RECURSO)
             LEFT JOIN ACAO A
                 ON (A.COD_ACAO = RA.COD_ACAO)
-            WHERE NVL(RA.ONLY_ROOT,0) = 0
+            WHERE NVL(RA.ONLY_ROOT,0) = 0 AND NVL(MI.ONLY_ROOT,0) = 0 
 
             UNION ALL 
 
@@ -219,7 +219,7 @@ class Web_PerfilUsuarioController extends Crud
                 ON (R.COD_RECURSO = RA2.COD_RECURSO)
             LEFT JOIN ACAO A
                 ON (A.COD_ACAO = RA2.COD_ACAO)
-            WHERE MI.COD_RECURSO_ACAO > 0 AND NVL(RA.ONLY_ROOT,0) = 0 AND NVL(RA2.ONLY_ROOT,0) = 0
+            WHERE MI.COD_RECURSO_ACAO > 0 AND NVL(RA.ONLY_ROOT,0) = 0 AND NVL(RA2.ONLY_ROOT,0) = 0 AND NVL(MI.ONLY_ROOT,0) = 0 
             ORDER BY COD_PAI ASC, DESCRICAO";
 
         $stmt = $this->em->getConnection()->query($sql);

@@ -16,7 +16,7 @@ INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, 
                 FROM RECURSO_ACAO
                WHERE COD_RECURSO = (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:comparativo-inventario')
                  AND COD_ACAO = (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index')),
-            (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Novo Inventário'), 'Exportar inventário ERP', 12, '#','_selft', 'S');
+            (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Novo Inventário'), 'Exportar inventário ERP', 12, '#','_self', 'S');
 
 UPDATE MENU_ITEM
   SET DSC_MENU_ITEM = 'Comparativo Estoque WMS x ERP',
