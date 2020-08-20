@@ -23,25 +23,43 @@ class Wms_WebService_Fornecedor extends Wms_WebService
 {
 
     /**
-     * Retorna um fornecedor específico no WMS pelo seu ID
+     * Método para consultar no WMS o Fornecedor específico pelo ID informado
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO
+     * </p>
      *
      * @param string $idFornecedor ID do fornecedor
      * @return fornecedor
+     * @throws Exception
      */
     public function buscar($idFornecedor)
     {
         $idFornecedor = trim($idFornecedor);
+        if (empty($idFornecedor))
+            throw new Exception("O ID do fornecedor é obrigatório");
 
         $fornecedorEntity = $this->__getServiceLocator()->getService('Fornecedor')->findOneBy(array('codExterno' => $idFornecedor));
 
         if ($fornecedorEntity == null)
-            throw new \Exception('Fornecedor não encontrado');
+            throw new Exception('Fornecedor não encontrado');
 
         return $this->parseObjWS($fornecedorEntity);
     }
 
     /**
-     * Salva um fornecedor no WMS. Se o fornecedor não existe, insere, senão, altera
+     * Método para salvar um Fornecedor no WMS. Se o Fornecedor já existe atualiza, se não, registra
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO<br>
+     * <b>cnpj</b> - CONDICIONAL Caso seja pessoa Jurídica
+     * <b>insc</b> - OPCIONAL Inscrição Estadual
+     * <b>nome</b> - OBRIGATÓRIO
+     * <b>cpf</b> - CONDICIONAL Caso seja pessoa Física
+     * </p>
      *
      * @param string $idFornecedor ID
      * @param string $cnpj CNPJ

@@ -95,11 +95,19 @@ class Wms_WebService_Produto extends Wms_WebService {
     }
 
     /**
-     * Retorna um Produto específico no WMS pelo seu ID
+     * Retorna um Produto específico no WMS pelo seu código e grade
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idProduto</b> - OBRIGATÓRIO<br>
+     * <b>grade</b> - OPCIONAL (Caso não especificado é atribuido o valor default "UNICA")<br>
+     * </p>
      *
      * @param string $idProduto ID do Produto
      * @param string $grade Grade do Produto
-     * @return produto|Exception
+     * @return produto
+     * @throws Exception
      */
     public function buscar($idProduto, $grade) {
         try {
@@ -158,7 +166,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             return $prod;
 
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -191,7 +199,23 @@ class Wms_WebService_Produto extends Wms_WebService {
     }
 
     /**
-     * Salva um Produto no WMS. Se o Produto não existe, insere, senão, altera
+     * Método para salvar um Produto no WMS. Se o Produto já existe atualiza, se não, registra
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idProduto</b> - OBRIGATÓRIO<br>
+     * <b>descricao</b> - OBRIGATÓRIO<br>
+     * <b>grade</b> - OPCIONAL (Caso não especificado é atribuido o valor default "UNICA")<br>
+     * <b>idFabricante</b> - OBRIGATÓRIO e previamentente cadastrado<br>
+     * <b>tipo</b> - OBRIGATÓRIO Valores esperados (1 ou 2) [1 => Unitário, 2 => Composto]<br>
+     * <b>idClasse</b> - OBRIGATÓRIO e previamentente cadastrado<br>
+     * <b>embalagens</b> - OPCIONAL e CONDICIONADO AO <b>tipo => 1</b><br>
+     * <b>referencia</b> - OPCIONAL<br>
+     * <b>possuiPesoVariavel</b> - OPCIONAL Valores esperados ('N' ou 'S') (Caso não especificado é atribuido o valor default 'N')<br>
+     * <b>volumes</b> - OPCIONAL e CONDICIONADO AO <b>tipo => 2</b><br>
+     * <b>codBarrasBase</b> - OPCIONAL e CONDICIONADO AO <b>tipo => 2</b><br>
+     * </p>
      *
      * @param string $idProduto ID do produto
      * @param string $descricao Descrição
@@ -585,9 +609,17 @@ class Wms_WebService_Produto extends Wms_WebService {
     /**
      * Exclui um Produto do WMS
      *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idProduto</b> - OBRIGATÓRIO<br>
+     * <b>grade</b> - OPCIONAL (Caso não especificado é atribuido o valor default "UNICA")<br>
+     * </p>
+     *
      * @param string $idProduto ID do produto
      * @param string $grade Grade
-     * @return boolean|Exception
+     * @return boolean
+     * @throws Exception
      */
     public function excluir($idProduto, $grade) {
 
@@ -602,7 +634,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             $produto = $service->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
             if (!$produto)
-                throw new \Exception('Não existe produto com esse codigo no sistema');
+                throw new \Exception("Não existe produto com esse codigo $idProduto grade $grade no sistema");
 
             $em->remove($produto);
             $em->flush();
@@ -619,7 +651,10 @@ class Wms_WebService_Produto extends Wms_WebService {
     /**
      * Lista todos os Produtos cadastrados no sistema
      *
-     * @return produtos|Exception
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * @return produtos
+     * @throws Exception
      */
     public function listar() {
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -688,6 +723,27 @@ class Wms_WebService_Produto extends Wms_WebService {
     }
 
     /**
+     *
+     * <h3>=================================== ATENÇÃO ===================================</h3>
+     * <h3>Este método não é indicado por questões performáticas
+     * em gerar updates nos atributos <b>Classe</b> e <b>Fabricante</b></h3>
+     * <h3>==============================================================================</h3>
+     *
+     * Método para salvar um Produto no WMS. Se o Produto já existe atualiza, se não, registra
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idProduto</b> - OBRIGATÓRIO<br>
+     * <b>descricao</b> - OBRIGATÓRIO<br>
+     * <b>idFabricante</b> - OBRIGATÓRIO<br>
+     * <b>tipo</b> - OBRIGATÓRIO Valores esperados (1 ou 2) [1 => Unitário, 2 => Composto]<br>
+     * <b>idClasse</b> - OBRIGATÓRIO<br>
+     * <b>grades</b> - OBRIGATÓRIO<br>
+     * <b>classes</b> - OBRIGATÓRIO<br>
+     * <b>fabricante</b> - OBRIGATÓRIO<br>
+     * </p>
+     *
      * @param string $idProduto
      * @param string $descricao
      * @param int $idFabricante
@@ -696,7 +752,8 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param array $grades
      * @param array $classes
      * @param array $fabricante
-     * @return boolean|Exception
+     * @return boolean
+     * @throws Exception
      */
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
@@ -704,7 +761,6 @@ class Wms_WebService_Produto extends Wms_WebService {
             $idProduto = trim ($idProduto);
             $idProduto = ProdutoUtil::formatar($idProduto);
             $descricao = trim ($descricao);
-            $idFabricante = trim($idFabricante);
             $tipo = trim($tipo);
 
             $wsClasse = new Wms_WebService_ProdutoClasse();

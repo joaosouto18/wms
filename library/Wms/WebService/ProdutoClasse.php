@@ -20,10 +20,16 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
 {
 
     /**
-     * Retorna um Classe específico no WMS pelo seu ID
+     * Método para consultar no WMS a Classe específica pelo ID informado
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idClasse</b> - OBRIGATÓRIO
+     * </p>
      *
      * @param string $idClasse ID do Classe
-     * @return classe|Exception
+     * @return classe
+     * @throws Exception
      */
     public function buscar($idClasse)
     {
@@ -42,102 +48,29 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
     }
 
     /**
-     * Adiciona um Classe no WMS
-     * 
-     * @param string $idClasse ID 
-     * @param string $nome Nome ou Nome Fantasia
-     * @param string $idClassePai ID pai
-     * @return boolean|Exception se o Classe foi inserida com sucesso ou não
-     */
-    private function inserir($idClasse, $nome, $idClassePai = null)
-    {
-        $em = $this->__getDoctrineContainer()->getEntityManager();
-        $service = $this->__getServiceLocator()->getService('Produto\Classe');
-        $em->beginTransaction();
-
-        try {
-            $produtoClasse = $service->find($idClasse);
-
-            if (!$produtoClasse)
-                $produtoClasse = new \Wms\Domain\Entity\Produto\Classe;
-
-            $produtoClasse->setId($idClasse)
-                    ->setNome($nome);
-
-            if ($idClassePai != null) {
-                $classePai = $service->find($idClassePai);
-
-                if ($classePai == null)
-                    throw new \Exception('Classe pai não existe');
-
-                $produtoClasse->setPai($classePai);
-            }
-
-            $em->persist($produtoClasse);
-            $em->flush();
-            
-            $em->commit();    
-        } catch (\Exception $e) {
-            $em->rollback();
-            throw $e;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Altera um Classe no WMS
-     * 
-     * @param string $idClasse ID 
-     * @param string $nome Nome ou Nome Fantasia
-     * @param string $idClassePai ID pai
-     * @return boolean|Exception se o Classe foi inserida com sucesso ou não
-     */
-    private function alterar($idClasse, $nome, $idClassePai = null)
-    {
-        $em = $this->__getDoctrineContainer()->getEntityManager();
-        $em->beginTransaction();
-        
-        try {
-            $service = $this->__getServiceLocator()->getService('Produto\Classe');
-            $produtoClasse = $service->find($idClasse);
-            
-            $produtoClasse->setId($idClasse)
-                    ->setNome($nome);
-
-            if ($idClassePai != null) {
-                $classePai = $service->find($idClassePai);
-
-                if ($classePai == null)
-                    throw new \Exception('Classe pai não existe');
-
-                $produtoClasse->setPai($classePai);
-            }
-
-            $em->persist($produtoClasse);
-            $em->flush();
-            
-            $em->commit();
-        } catch (\Exception $e) {
-            $em->rollback();
-            throw $e;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Salva um Classe no WMS. Se o Classe não existe, insere, senão, altera 
-     * 
+     * Método para salvar uma Classe no WMS. Se a Classe já existe atualiza, se não, registra
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idClasse</b> - OBRIGATÓRIO<br>
+     * <b>nome</b> - OBRIGATÓRIO<br>
+     * <b>idClassePai</b> - OPCIONAL (Caso tenha)<br>
+     * </p>
+     *
      * @param string $idClasse ID 
      * @param string $nome Nome ou Nome Fantasia
      * @param string $idClassePai ID pai
      * @return boolean Classe foi salvo com sucesso
+     * @throws Exception
      */
     public function salvar($idClasse, $nome, $idClassePai = null)
     {
         $idClasse = trim($idClasse);
         $nome = trim ($nome);
+
+        if (empty($idClasse)) throw new Exception("O ID da classe é obrigatório");
+        if (empty($nome)) throw new Exception("O nome da classe é obrigatório");
 
         $service = $this->__getServiceLocator()->getService('Produto\Classe');
         $entity = $service->find($idClasse);
@@ -153,15 +86,23 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
     }
 
     /**
-     * Exclui um Classe do WMS
+     * Método para excluir uma Classe do WMS
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idClasse</b> - OBRIGATÓRIO
+     * </p>
      * 
-     * @param string $id
-     * @return boolean|Exception
+     * @param string $idClasse
+     * @return boolean
+     * @throws Exception
      */
     public function excluir($idClasse)
     {
 
         $idClasse = trim ($idClasse);
+        if (empty($idClasse)) throw new Exception("O ID da classe é obrigatório");
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $em->beginTransaction();
@@ -171,24 +112,27 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
             $produtoClasse = $service->find($idClasse);
 
             if (!$produtoClasse)
-                throw new \Exception('Não existe classe de Produto com esse codigo no sistema');
+                throw new Exception("Não existe classe de Produto com esse codigo '$idClasse' no sistema");
 
             $em->remove($produtoClasse);
             $em->flush();
             
             $em->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $em->rollback();
-            throw new $e->getMessage();
+            throw $e;
         }
         
         return true;
     }
     
     /**
-     * Lista todos os Classees cadastrados no sistema
+     * Método para listar todas as Classes cadastradas no WMS Imperium
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
      * 
-     * @return classes|Exception
+     * @return classes
+     * @throws Exception
      */
     public function listar()
     {
@@ -212,6 +156,93 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
         }
         $classes->classes = $arrayClasses;
         return $classes;
+    }
+
+    /**
+     * Adiciona um Classe no WMS
+     *
+     * @param string $idClasse ID
+     * @param string $nome Nome ou Nome Fantasia
+     * @param string $idClassePai ID pai
+     * @return boolean se o Classe foi inserida com sucesso ou não
+     * @throws Exception
+     */
+    private function inserir($idClasse, $nome, $idClassePai = null)
+    {
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+        $service = $this->__getServiceLocator()->getService('Produto\Classe');
+        $em->beginTransaction();
+
+        try {
+            $produtoClasse = $service->find($idClasse);
+
+            if (!$produtoClasse)
+                $produtoClasse = new \Wms\Domain\Entity\Produto\Classe;
+
+            $produtoClasse->setId($idClasse)
+                ->setNome($nome);
+
+            if ($idClassePai != null) {
+                $classePai = $service->find($idClassePai);
+
+                if ($classePai == null)
+                    throw new \Exception('Classe pai não existe');
+
+                $produtoClasse->setPai($classePai);
+            }
+
+            $em->persist($produtoClasse);
+            $em->flush();
+
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw $e;
+        }
+
+        return true;
+    }
+
+    /**
+     * Altera um Classe no WMS
+     *
+     * @param string $idClasse ID
+     * @param string $nome Nome ou Nome Fantasia
+     * @param string $idClassePai ID pai
+     * @return boolean se o Classe foi inserida com sucesso ou não
+     * @throws Exception
+     */
+    private function alterar($idClasse, $nome, $idClassePai = null)
+    {
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            $service = $this->__getServiceLocator()->getService('Produto\Classe');
+            $produtoClasse = $service->find($idClasse);
+
+            $produtoClasse->setId($idClasse)
+                ->setNome($nome);
+
+            if ($idClassePai != null) {
+                $classePai = $service->find($idClassePai);
+
+                if ($classePai == null)
+                    throw new \Exception('Classe pai não existe');
+
+                $produtoClasse->setPai($classePai);
+            }
+
+            $em->persist($produtoClasse);
+            $em->flush();
+
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw $e;
+        }
+
+        return true;
     }
 
 }
