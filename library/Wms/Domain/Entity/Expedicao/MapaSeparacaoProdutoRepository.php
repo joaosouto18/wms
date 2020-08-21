@@ -533,7 +533,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             $sqlAppend = "INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
                           INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO";
 
-            $andWhere = "AND P.COD_CLIENTE = $codCliente";
+            $andWhere = "AND P.COD_PESSOA = $codCliente";
         }
 
         if ($quebraColetor)

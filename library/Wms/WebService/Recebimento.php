@@ -122,7 +122,7 @@ class Wms_WebService_Recebimento extends Wms_WebService
         /** @var \Wms\Domain\Entity\NotaFiscal $notaEn */
         foreach ($recebimento->getNotasFiscais() as $notaEn) {
             $nota = new Nota();
-            $nota->idFornecedor = $notaEn->getEmissor()->getId();
+            $nota->idFornecedor = $notaEn->getEmissor()->getCodExterno();
             $nota->dataEmissao = $notaEn->getDataEmissao()->format("d/m/Y");
             $nota->numero = $notaEn->getNumero();
             $nota->serie = $notaEn->getSerie();

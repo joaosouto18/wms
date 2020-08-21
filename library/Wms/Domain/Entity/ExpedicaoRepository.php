@@ -139,7 +139,7 @@ class ExpedicaoRepository extends EntityRepository {
                 LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                 INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                 INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                INNER JOIN CLIENTE CL ON CL.COD_EMISSOR = P.COD_PESSOA
+                INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
                 INNER JOIN PESSOA PESS ON PESS.COD_PESSOA = P.COD_PESSOA
                 WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                     AND (CASE WHEN (PPL.DSC_LOTE IS NOT NULL) THEN
@@ -3925,7 +3925,7 @@ class ExpedicaoRepository extends EntityRepository {
                 LEFT JOIN PRODUTO_EMBALAGEM EMB ON MSC.COD_PRODUTO_EMBALAGEM = EMB.COD_PRODUTO_EMBALAGEM
                 INNER JOIN EXPEDICAO_VOLUME_PATRIMONIO EVP ON EVP.COD_EXPEDICAO = MS.COD_EXPEDICAO AND EVP.COD_VOLUME_PATRIMONIO = MSC.COD_VOLUME_PATRIMONIO
                 LEFT JOIN CLIENTE CL ON CL.COD_EXTERNO = EVP.COD_TIPO_VOLUME
-                INNER JOIN PESSOA CL2 ON CL.COD_EMISSOR = CL2.COD_PESSOA
+                INNER JOIN PESSOA CL2 ON CL.COD_PESSOA = CL2.COD_PESSOA
                 LEFT JOIN ESTOQUE ES1 ON ES1.COD_PRODUTO = MSC.COD_PRODUTO AND ES1.COD_PRODUTO_EMBALAGEM = EMB.COD_PRODUTO_EMBALAGEM
                 LEFT JOIN ESTOQUE ES2 ON ES2.COD_PRODUTO = MSC.COD_PRODUTO AND ES2.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
                 INNER JOIN PESSOA CONF ON EVP.COD_USUARIO = CONF.COD_PESSOA
@@ -4047,12 +4047,12 @@ class ExpedicaoRepository extends EntityRepository {
                          LEFT JOIN PESSOA CONFERENTE_TRANSBORDO ON CONFERENTE_TRANSBORDO.COD_PESSOA = OS.COD_PESSOA
                         LEFT JOIN PEDIDO_ENDERECO ENDERECO ON ENDERECO.COD_PEDIDO = P.COD_PEDIDO
                         LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
-                        LEFT JOIN (SELECT CL.COD_EMISSOR,
+                        LEFT JOIN (SELECT CL.COD_PESSOA,
                                           CL.COD_EXTERNO,
                                           PE.NOM_PESSOA
                                      FROM CLIENTE CL
-                                    INNER JOIN PESSOA PE ON CL.COD_EMISSOR = PE.COD_PESSOA) CLIENTE
-                          ON P.COD_PESSOA = CLIENTE.COD_EMISSOR
+                                    INNER JOIN PESSOA PE ON CL.COD_PESSOA = PE.COD_PESSOA) CLIENTE
+                          ON P.COD_PESSOA = CLIENTE.COD_PESSOA
                WHERE (E.COD_STATUS <> $statusCancelado)
                  AND ((E.DTH_INICIO >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
                  AND (E.DTH_INICIO <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
@@ -5424,8 +5424,7 @@ class ExpedicaoRepository extends EntityRepository {
                         AND P.CENTRAL_ENTREGA = $central
                         $whereFinal
                   ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_EXTERNO, COD_PEDIDO, COD_PRODUTO";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getCortePedido($expedicao) {

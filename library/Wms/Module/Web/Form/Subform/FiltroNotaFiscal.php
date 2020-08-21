@@ -19,9 +19,9 @@ class FiltroNotaFiscal extends Form
         //form's attr
         $this->setAttribs(array('id' => 'filtro-nota-fiscal', 'class' => 'filtro'));
 
-        $this->addElement('hidden', 'idFornecedor')
-                ->addElement('text', 'fornecedor', array(
-                    'label' => 'Fornecedor',
+        $this->addElement('hidden', 'idEmissor')
+                ->addElement('text', 'emissor', array(
+                    'label' => 'Emissor',
                     'class' => 'focus',
                     'size' => 40,
                 ))
@@ -49,7 +49,7 @@ class FiltroNotaFiscal extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('fornecedor', 'dataEntradaInicial', 'dataEntradaFinal', 'placa', 'numero', 'serie', 'submit'), 'identificacao', array('legend' => 'Filtros de Busca'));
+                ->addDisplayGroup(array('emissor', 'dataEntradaInicial', 'dataEntradaFinal', 'placa', 'numero', 'serie', 'submit'), 'identificacao', array('legend' => 'Filtros de Busca'));
     }
 
     /**

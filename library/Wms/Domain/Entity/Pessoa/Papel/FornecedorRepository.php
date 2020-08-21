@@ -44,7 +44,7 @@ class FornecedorRepository extends AtorRepository
         $em->beginTransaction();
         try {
 
-            $fornecedorEn = $this->findOneBy(array('codClienteExterno' => $idFornecedor));
+            $fornecedorEn = $this->findOneBy(array('codExterno' => $idFornecedor));
             if (!$fornecedorEn)
                 $fornecedorEn = new Fornecedor();
 
@@ -61,9 +61,9 @@ class FornecedorRepository extends AtorRepository
     {
         try {
             $sql = $this->getEntityManager()->createQueryBuilder()
-                ->select(" p.id, f.idExterno")
+                ->select(" p.id, f.codExterno")
                 ->from("wms:Pessoa\Papel\Fornecedor", "f")
-                ->innerJoin("wms:Pessoa", 'p' , 'WITH', 'f.pessoa = p.id')
+                ->innerJoin("wms:Pessoa", 'p' , 'WITH', 'f.id = p.id')
                 ->innerJoin("wms:Pessoa\Juridica", 'pj', 'WITH', 'pj.id = p.id')
                 ->where('pj.cnpj = :cnpj')
                 ->setParameter('cnpj', $cnpj);

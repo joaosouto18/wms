@@ -327,7 +327,6 @@ class PedidoProdutoRepository extends EntityRepository
                     LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO 
                     LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO 
                     INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO 
-                    INNER JOIN CLIENTE C ON P.COD_PESSOA = C.COD_PESSOA 
                 WHERE P.COD_PEDIDO IN (
                                           SELECT COD_PEDIDO 
                                             FROM PEDIDO 

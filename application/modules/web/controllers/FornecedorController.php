@@ -1,7 +1,6 @@
 <?php
 
-use Wms\Domain\Entity\Pessoa\Papel\Fornecedor,
-    Wms\Module\Web\Page,
+use Wms\Module\Web\Page,
     Wms\Module\Web\Form\Subform\Pessoa\Papel\FiltroPJ;
 
 /**
@@ -24,25 +23,24 @@ class Web_FornecedorController extends \Wms\Controller\Action
             extract($values);
 
             $source = $this->em->createQueryBuilder()
-                    ->select('f, p.nome, p.nomeFantasia, p.cnpj')
+                    ->select('f, p.nome, NVL(pf.cpf, pj.cnpj) cpfCnpj')
                     ->from('wms:Pessoa\Papel\Fornecedor', 'f')
                     ->innerJoin('f.pessoa', 'p')
+                    ->leftJoin(\Wms\Domain\Entity\Pessoa\Juridica::class, 'pj', 'WITH', 'p = pj')
+                    ->leftJoin(\Wms\Domain\Entity\Pessoa\Fisica::class, 'pf', 'WITH', 'p = pf')
                     ->orderBy('p.nome');
 
             if (!empty($codigo)) {
                 $source->andWhere("f.codExterno = $codigo");
             }
+
             if (!empty($nome)) {
-                $nomeFornecedor = mb_strtoupper($nome, 'UTF-8');
-                $source->andWhere("p.nome LIKE '{$nomeFornecedor}%'");
+                $source->andWhere("p.nome LIKE UPPER('%$nome%')");
             }
-            if (!empty($nomeFantasia)) {
-                $nomeFantasiaFornecedor = mb_strtoupper($nomeFantasia, 'UTF-8');
-                $source->andWhere("p.nomeFantasia LIKE '{$nomeFantasiaFornecedor}%'");
-            }
-            if (!empty($cnpj)) {
-                $cnpjNum = str_replace(array(".", "-", "/"), "", $cnpj);
-                $source->andWhere("p.cnpj = '{$cnpjNum}'");
+
+            if (!empty($cpfCnpj)) {
+                $cpfCnpj = str_replace(array(".", "-", "/"), "", $cpfCnpj);
+                $source->andWhere("(pj.cnpj = '$cpfCnpj' OR pf.cpf = '$cpfCnpj')");
             }
 
 
@@ -56,12 +54,8 @@ class Web_FornecedorController extends \Wms\Controller\Action
                         'index' => 'nome'
                     ))
                     ->addColumn(array(
-                        'label' => 'Nome',
-                        'index' => 'nomeFantasia'
-                    ))
-                    ->addColumn(array(
-                        'label' => 'CNPJ',
-                        'index' => 'cnpj',
+                        'label' => 'CPF/CNPJ',
+                        'index' => 'cpfCnpj',
                         'render' => 'documento',
                     ))
                     ->addAction(array(
@@ -114,7 +108,6 @@ class Web_FornecedorController extends \Wms\Controller\Action
     public function getFornecedorJsonAction()
     {
         $term = $this->getRequest()->getParam('term');
-        $term = mb_strtoupper($term, 'UTF-8');
 
         $em = $this->getEntityManager();
 

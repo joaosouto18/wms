@@ -47,7 +47,7 @@ class Recebimento extends Grid
                 ))
                 ->addColumn(array(
                     'label' => 'Tipo Nota Fiscal',
-                    'index' => 'SIGLATIPONOTA',
+                    'index' => 'DSCTIPONOTA',
                 ))
                 ->addColumn(array(
                     'label' => 'Status',
@@ -58,8 +58,8 @@ class Recebimento extends Grid
                     'index' => 'DSCBOX'
                 ))
                 ->addColumn(array(
-                    'label' => 'Fornecedor',
-                    'index' => 'FORNECEDOR',
+                    'label' => 'Emissor',
+                    'index' => 'EMISSOR',
                 ))
                 ->addColumn(array(
                     'label' => 'Qtd. Nota Fiscal',

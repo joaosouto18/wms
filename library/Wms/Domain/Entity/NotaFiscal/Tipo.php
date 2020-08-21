@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\NotaFiscal;
 
 
 use Wms\Domain\Entity\Pessoa\Papel\Emissor;
+use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
 
 /**
  * Class Tipo
@@ -14,6 +15,10 @@ use Wms\Domain\Entity\Pessoa\Papel\Emissor;
  */
 class Tipo
 {
+    public static $arrResponsaveis = [
+        EmissorInterface::EMISSOR_CLIENTE => "Cliente",
+        EmissorInterface::EMISSOR_FORNECEDOR => "Fornecedor",
+    ];
 
     /**
      * @Id
@@ -54,10 +59,18 @@ class Tipo
      */
     protected $recebimentoDefault;
 
+    /**
+     * @var bool
+     * @Column(name="IND_DEVOL_DEFAULT", type="integer", nullable=false)
+     */
+    protected $devolucaoDefault;
+
     public function __construct()
     {
-        self::setEmissor(Emissor::EMISSOR_FORNECEDOR);
+        self::setEmissor(EmissorInterface::EMISSOR_FORNECEDOR);
         self::setSystemDefault(false);
+        self::setRecebimentoDefault(false);
+        self::setDevolucaoDefault(false);
     }
 
     /**
@@ -154,5 +167,21 @@ class Tipo
     public function setRecebimentoDefault($recebimentoDefault)
     {
         $this->recebimentoDefault = intval($recebimentoDefault);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDevolucaoDefault()
+    {
+        return $this->devolucaoDefault;
+    }
+
+    /**
+     * @param bool $devolucaoDefault
+     */
+    public function setDevolucaoDefault($devolucaoDefault)
+    {
+        $this->devolucaoDefault = intval($devolucaoDefault);
     }
 }

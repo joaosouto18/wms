@@ -118,7 +118,7 @@ class PaleteRepository extends EntityRepository {
         SELECT R.COD_RECEBIMENTO,
                R.DTH_INICIO_RECEB,
                R.DTH_FINAL_RECEB,
-               '' as FORNECEDORES,
+               '' as EMISSORES,
                CASE WHEN R.COD_STATUS = $recebimentoFinalizado AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
                S.DSC_SIGLA END as STATUS,
                QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
@@ -156,9 +156,9 @@ class PaleteRepository extends EntityRepository {
 
         $queryFornecedores = "
                       SELECT R.COD_RECEBIMENTO,
-                            LISTAGG(P.NOM_PESSOA, ', ')  WITHIN GROUP (ORDER BY P.NOM_PESSOA) FORNECEDORES
-                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_FORNECEDOR FROM NOTA_FISCAL) R
-                       LEFT JOIN PESSOA P ON R.COD_FORNECEDOR = P.COD_PESSOA
+                            LISTAGG(P.NOM_PESSOA, ', ')  WITHIN GROUP (ORDER BY P.NOM_PESSOA) EMISSORES
+                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_EMISSOR FROM NOTA_FISCAL) R
+                       LEFT JOIN PESSOA P ON R.COD_EMISSOR = P.COD_PESSOA
                        $whereCodRecebimento
                       GROUP BY R.COD_RECEBIMENTO
         ";
@@ -169,7 +169,7 @@ class PaleteRepository extends EntityRepository {
         foreach ($result as $key => $recebimento) {
             foreach ($resultFornecedores as $fornecedor) {
                 if ($recebimento['COD_RECEBIMENTO'] == $fornecedor['COD_RECEBIMENTO']) {
-                    $result[$key]['FORNECEDORES'] = $fornecedor['FORNECEDORES'];
+                    $result[$key]['EMISSORES'] = $fornecedor['EMISSORES'];
                     break;
                 }
             }
