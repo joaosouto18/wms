@@ -182,13 +182,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     *  Recebe Carga com Placa da Expedição
-     *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
-     *  Se existir retorna código da expedição senão Insere na tabela expedição
-     *  Insere na tabela de carga com o numero da expedição
+     * <h3>=========================== ATENÇÃO ===========================</h3>
+     * <h3>Este método é uma extenção do metodo <b>enviar</b>, porém, a estrutura esperada no atributo <b>cargas</b> é no formato JSON</h3>
+     * <h3>==============================================================</h3>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>cargas</b> - OBRIGATÓRIO<br>
+     * </p>
      *
      * @param string cargas informacoes das cargas com os pedidos
      * @return boolean Se as cargas foram salvas com sucesso
+     * @throws Exception
      */
     public function enviarJson ($cargas){
 
@@ -210,33 +216,36 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             ini_set('max_execution_time', 30);
 
-            if ($result == true) {
-                return true;
-            } else {
-                return false;
-            }
+            return $result;
 
         } catch (\Exception $e) {
             $logger->warn($e->getMessage());
             throw new \Exception($e->getMessage() . ' - Trace: ' .$e->getTraceAsString());
-            return false;
         }
     }
 
     /**
-     *  Recebe Carga com Placa da Expedição
-     *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
-     *  Se existir retorna código da expedição senão Insere na tabela expedição
-     *  Insere na tabela de carga com o numero da expedição
+     * Método para registrar uma Carga com <b>"um"</b> Pedido ou <b>"vários"</b>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>codCarga</b> - OBRIGATÓRIO Código da Carga<br>
+     * <b>placa</b> - OBRIGATÓRIO Placa do veículo à entregar a Carga<br>
+     * <b>placaExpedicao</b> - OPCIONAL Placa do veículo à entregar a Expedição (Em caso de operação com Transbordo) se não especificado será atribuido a mesma da carga<br>
+     * <b>pedidos</b> - OBRIGATÓRIO<br>
+     * </p>
      *
      * @param string codCarga informacoes das cargas com os pedidos
      * @param string placa informacoes das cargas com os pedidos
      * @param string placaExpedicao informacoes das cargas com os pedidos
      * @param pedidos pedidos informacoes das cargas com os pedidos
      * @return boolean Se as cargas foram salvas com sucesso
+     * @throws Exception
      */
     public function enviarPedidos ($codCarga, $placa, $placaExpedicao, $pedidos) {
         $pedidosArray = array();
+        $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         foreach ($pedidos->pedidos as $pedidoWs) {
             $cliente = array();
             $cliente['codCliente'] = $pedidoWs->cliente->codCliente;
@@ -251,7 +260,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente['tipoPessoa'] = $pedidoWs->cliente->tipoPessoa;
             $cliente['uf'] = $pedidoWs->cliente->uf;
 
-            $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
             $codProprietario = null;
             if($controleProprietario == 'S'){
                 $cnpjProprietario = trim($pedidoWs->cliente->cpf_cnpj);
@@ -344,13 +352,42 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     *  Recebe Carga com Placa da Expedição
-     *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
-     *  Se existir retorna código da expedição senão Insere na tabela expedição
-     *  Insere na tabela de carga com o numero da expedição
+     * <h3>=========================== ATENÇÃO ===========================</h3>
+     * <h3>Este método é exclusivo para comunicação PHP <=> PHP </h3>
+     * <h3>==============================================================</h3>
+     *
+     * Método para registrar <b>"uma"</b> Carga ou <b>"várias"</b>, que por sua vez pode ter <b>"um"</b> Pedido ou <b>"vários"</b>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>A estrutura do parâmetro</p>
+     * <p>
+     * <ul>
+     * <li>Cargas</li>
+     *  <li>
+     *      <ul>
+     *          <li>Carga</li>
+     *          <li>
+     *              <ul>
+     *                  <li>codCarga (string)</li>
+     *                  <li>placaExpedicao (string)</li>
+     *                  <li>placa (string)</li>
+     *                  <li>pedidos (Array de Pedido)</li>
+     *              </ul>
+     *          </li>
+     *      </ul>
+     *  </li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * <b>cargas</b> - OBRIGATÓRIO<br>
+     * <b>isIntegracaoSQL</b> - DESCONSIDERAR Este é um parâmetro de controle interno<br>
+     * </p>
      *
      * @param array cargas informacoes das cargas com os pedidos
      * @return boolean Se as cargas foram salvas com sucesso
+     * @throws Exception
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
@@ -430,9 +467,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * <h3>=========================== ATENÇÃO ===========================</h3>
+     * <h3>Este método está DEPRECIADO e será descontinuado em versões futuras</h3>
+     * <h3>==============================================================</h3>
+     *
+     * <p>Método para fechar a carga e liberar a mesma para ser processada no WMS Imperium</p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idCargaExterno</b> - OBRIGATÓRIO<br>
+     * <b>tipoCarga</b> - OPCIONAL (Caso não especificado é atribuido o valor default "C")<br>
+     * </p>
+     *
      * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for fechada com sucesso
+     * @throws Exception
      */
     public function fechar($idCargaExterno,$tipoCarga)
     {
@@ -455,9 +506,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * Método para cancelar a Carga no WMS
+     * <p>Caso algum Pedido da Carga esteja sendo processado no WMS Imperium, a ação poderá ser negada
+     * até que o processo seja devidamente interrompido no mesmo</p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idCargaExterno</b> - OBRIGATÓRIO<br>
+     * <b>tipoCarga</b> - OPCIONAL (Caso não especificado é atribuido o valor default "C")<br>
+     * </p>
+     *
      * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for cancelada com sucesso
+     * @throws Exception
      */
     public function cancelarCarga($idCargaExterno, $tipoCarga)
     {
@@ -483,14 +546,27 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * Método para cancelar um pedido no WMS
+     * <p>Caso o pedido esteja sendo processado no WMS Imperium, a ação poderá ser negada
+     * até que o processo seja devidamente interrompido no mesmo</p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idCargaExterno</b> - DEPRECIADO Desconsiderar este parâmetro, será removido em futuras versões<br>
+     * <b>tipoCarga</b> - DEPRECIADO Desconsiderar este parâmetro, será removido em futuras versões<br>
+     * <b>tipoPedido</b> - DEPRECIADO Desconsiderar este parâmetro, será removido em futuras versões<br>
+     * <b>idPedido</b> - OBRIGATÓRIO Código do Pedido à ser cancelado<br>
+     * </p>
+     *
      * @param string $idCargaExterno
      * @param string $tipoCarga
      * @param string $tipoPedido
      * @param string $idPedido
-     * @return bool|Exception
+     * @return bool
      * @throws Exception
      */
-    public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
+    public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido, $idPedido)
     {
         try {
             $this->_em->beginTransaction();
@@ -541,19 +617,22 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return true;
     }
 
-
-    /** @var produto[] */
-
     /**
-     * Realiza o corte de um ou n itens
-     * Deve ser enviado um array de produtos contendo a quantidade original do item e a quantidade restante a atender no pedido
-     * Os itens que não sofreram cortes não precisam ser informados neste método.
-     * Nos itens aonde a quantidade do pedido for igual a quantidade a atender, não serão feitos cortes
-     * Para o corte total do item, basta informar que a quantidade a atender será 0
+     * Realiza o corte de um ou vários itens de um pedido
+     * <p>Caso o pedido esteja sendo processado no WMS Imperium, a ação poderá ser negada
+     * até que o processo seja devidamente interrompido no mesmo</p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idPedido</b> - OBRIGATÓRIO Código do Pedido à ser cortado<br>
+     * <b>produtoCortados</b> - OBRIGATÓRIO Array de itens com um item á ser cortado ou vários<br>
+     * </p>
      *
      * @param string $idPedido Código do Pedido que vai ser cortado
      * @param produtoCortado[] $produtosCortados Array contendo apenas os produtos cortados
      * @return boolean Flag indicando se foi realizado o corte ou não
+     * @throws Exception
      */
 
     public function cortarPedido($idPedido, $produtosCortados) {
@@ -631,11 +710,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return true;
     }
 
-
     /**
+     * Método que retorna o status da carga em um array chave=>valor com a chave "liberado" e seu resultado boleano
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idCargaExterno</b> - OBRIGATÓRIO<br>
+     * <b>tipoCarga</b> - OPCIONAL (Caso não especificado é atribuido o valor default "C")<br>
+     * </p>
      * @param integer $idCargaExterno
      * @param string $tipoCarga
      * @return array Se a carga está finalizada ou nâo
+     * @throws Exception
      */
     public function checarStatus($idCargaExterno,$tipoCarga) {
         $idCargaExterno = trim ($idCargaExterno);
@@ -682,9 +769,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCarga
+     * Método que retorna um array chave=>valor das etiquetas da Carga
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idCargaExterno</b> - OBRIGATÓRIO<br>
+     * <b>tipoCarga</b> - OPCIONAL (Caso não especificado é atribuido o valor default "C")<br>
+     * </p>
+     *
+     * @param string idCargaExterno
      * @param string $tipoCarga
      * @return array Com informações das etiquetas
+     * @throws Exception
      */
     public function consultarEtiquetas($idCargaExterno, $tipoCarga)
     {
@@ -704,9 +801,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * Método que retorna a condição atual da carga consultada
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idCargaExterno</b> - OBRIGATÓRIO<br>
+     * <b>tipoCarga</b> - OPCIONAL (Caso não especificado é atribuido o valor default "C")<br>
+     * </p>
+     *
      * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return carga Com informações das etiquetas
+     * @throws Exception
      */
     public function consultarCarga($idCargaExterno,$tipoCarga){
 
@@ -819,8 +926,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * Método que retorna a condição atual do pedido consultado
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idPedido</b> - OBRIGATÓRIO<br>
+     * </p>
      * @param string $idPedido
      * @return pedido Informações sobre o pedido
+     * @throws Exception
      */
     public function consultarPedido($idPedido)
     {
@@ -1270,7 +1385,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
     }
 
-    public function findClienteByCodigoExterno ($repositorios, $cliente) {
+    private function findClienteByCodigoExterno ($repositorios, $cliente) {
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
         $ClienteRepo    = $repositorios['clienteRepo'];
@@ -1477,10 +1592,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     *  Recebe as notas fiscais emitidas da empresa
+     * Método para registrar uma ou mais Notas Fiscais emitidas pelo ERP sobre pedido expedido pelo WMS Imperium
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>nf</b> - OBRIGATÓRIO Array de Nota Fiscal<br>
+     * <b>isIntegracaoSQL</b> - DESCONSIDERAR Este é um parâmetro de controle interno<br>
+     * </p>
      *
      * @param notaFiscal[] nf Array de objetos nota fiscal
      * @return boolean Se as notas fiscais foram salvas com sucesso
+     * @throws Exception
      */
     public function informarNotaFiscal ($nf, $integracaoSQL = false)
     {
@@ -1591,7 +1714,15 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     *  Cancela a nota fiscal
+     * Método para cancelar uma Nota Fiscal emitida pelo ERP sobre pedido expedido pelo WMS Imperium
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>cnpjEmitente</b> - OBRIGATÓRIO CNPJ da filial que emitiu a Nota Fiscal <br>
+     * <b>numeroNf</b> - OBRIGATÓRIO Número da Nota Fiscal<br>
+     * <b>serieNF</b> - OBRIGATÓRIO Série da Nota Fiscal<br>
+     * </p>
      *
      * @param string $cnpjEmitente
      * @param integer $numeroNf
@@ -1619,7 +1750,17 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     *  Recebe as notas fiscais emitidas da empresa
+     * Método para registrar uma Reentrega de uma Nota Fiscal emitida pelo ERP sobre pedido expedido pelo WMS Imperium
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>cnpjEmitente</b> - OBRIGATÓRIO CNPJ da filial que emitiu a Nota Fiscal <br>
+     * <b>numeroNf</b> - OBRIGATÓRIO Número da Nota Fiscal<br>
+     * <b>serieNF</b> - OBRIGATÓRIO Série da Nota Fiscal<br>
+     * <b>numeroCarga</b> - OBRIGATÓRIO Número da Carga que será Reentregue<br>
+     * <b>tipoCarga</b> - OPCIONAL (Caso não especificado é atribuido o valor default "C")<br>
+     * </p>
      *
      * @param string $cnpjEmitente
      * @param integer $numeroNf
@@ -1627,6 +1768,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param string $numeroCarga
      * @param string $tipoCarga
      * @return boolean Se as notas fiscais foram salvas com sucesso
+     * @throws
      */
     public function definirReentrega ($cnpjEmitente, $numeroNf, $serieNF, $numeroCarga, $tipoCarga)
     {
@@ -1705,11 +1847,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
 
     /**
-     * Informa a listagem de cargas por data
+     * Método para listar todas as cargas existentes no WMS Imperium dentro do intervalo de datas especificado
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>dataInicial</b> - OBRIGATÓRIO Data inicial do intervalo. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>dataFinal</b> - OBRIGATÓRIO Data final do intervalo. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * </p>
      *
      * @param string $dataInicial
      * @param string $dataFinal
      * @return carga[]
+     * @throws Exception
      */
     public function listCargas($dataInicial, $dataFinal) {
         try{
@@ -1741,7 +1891,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
     }
 
-    public function findRotaPracaByIdExterno($repositorios, $itinerario)
+    private function findRotaPracaByIdExterno($repositorios, $itinerario)
     {
         if(empty($itinerario['idPraca'])){
             $rotaEntity = $pracaEntity = $rotaPracaEntity = null;

@@ -724,10 +724,10 @@ class Wms_WebService_Produto extends Wms_WebService {
 
     /**
      *
-     * <h3>=================================== ATENÇÃO ===================================</h3>
+     * <h3>=========================== ATENÇÃO ===========================</h3>
      * <h3>Este método não é indicado por questões performáticas
-     * em gerar updates nos atributos <b>Classe</b> e <b>Fabricante</b></h3>
-     * <h3>==============================================================================</h3>
+     * em gerar updates nos atributos <b>"Classe"</b> e <b>"Fabricante"</b></h3>
+     * <h3>==============================================================</h3>
      *
      * Método para salvar um Produto no WMS. Se o Produto já existe atualiza, se não, registra
      *

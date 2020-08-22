@@ -88,7 +88,22 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 {
 
     /**
-     * Retorna uma Nota Fiscal específico no WMS pelo seu ID.
+     * <h3>=========================== ATENÇÃO ===========================</h3>
+     * <h3>Este método é depreciado e será removido em futuras versões</h3>
+     * <h3>==============================================================</h3>
+     *
+     * Método para consultar no WMS uma Nota Fiscal específica
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OPCIONAL Data de emissao da nota fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>tipoNota</b> - OPCIONAL Caso não especificado, o sistema atribuirá como uma nota de compra.
+     * Os códigos identificadores dos tipos de nota deve ser definidos previamente entre ERP e WMS Imperium<br>
+     * <b>idStatus</b> - OBRIGATÓRIO Código do status da nota à consultar.
+     * </p>
      *
      * @param string $idFornecedor Codigo do fornecedor
      * @param string $tipoNota Tipo da Nota Fiscal
@@ -119,13 +134,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'emissor' => $emissorEn,
             'numero' => $numero,
             'serie' => $serie,
-            'tipo' => $tipoNotaEn
+            'tipo' => $tipoNotaEn,
+            'status' => $idStatus
         ));
 
         if ($notaFiscalEntity == null)
             throw new \Exception('NotaFiscal não encontrada');
 
-        $itemsNF = $em->getRepository('wms:NotaFiscal')->getConferencia($fornecedorEntity->getId(), $numero, $serie, $dataEmissao, $idStatus);
+        $itemsNF = $em->getRepository('wms:NotaFiscal')->getConferencia($emissorEn->getId(), $numero, $serie, $dataEmissao, $idStatus);
 
         $itens = array();
         foreach ($itemsNF as $item) {
@@ -161,7 +177,17 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     }
 
     /**
-     * Retorna uma Nota Fiscal específico no WMS pelo seu ID.
+     * Método para consultar no WMS uma Nota Fiscal específica
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OPCIONAL Data de emissao da nota fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>tipoNota</b> - OPCIONAL Caso não especificado, o sistema atribuirá como uma nota de compra.
+     * Os códigos identificadores dos tipos de nota deve ser definidos previamente entre ERP e WMS Imperium<br>
+     * </p>
      *
      * @param string $idFornecedor Codigo do fornecedor
      * @param string $numero Numero da nota fiscal
@@ -246,7 +272,28 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
     /**
-     * Salva uma Nota Fiscal no WMS
+     * Se a Nota Fiscal já existe e já foi recebida (conferida e recebimento finalizado), retornará uma <b>Exception</b>
+     *
+     * <p>Se a Nota Fiscal já existe e está em recebimento, caso um dos itens alterados já tiver sido conferido por completo, retornará uma <b>Exception</b></p>
+     *
+     * <p>Se a Nota Fiscal não existe ou já existe mas não está em recebimento, o sistema irá atualizar as informações</p>
+     * 
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OBRIGATÓRIO Data de emissao da nota fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>placa</b> - OPCIONAL Se não especificado será atribuido o valor padrão configurado pelo usuário do WMS<br>
+     * <b>itens</b> - OBRIGATÓRIO<br>
+     * <b>bonificacao</b> - DEPRECIADO Este campo será removido em versões futuras <br>
+     * <b>observacao</b> - OPCIONAL Campo para informações pertinentes à nota<br>
+     * <b>tipoNota</b> - OPCIONAL Caso não especificado, o sistema atribuirá como uma nota de compra.
+     * Os códigos identificadores dos tipos de nota deve ser definidos previamente entre ERP e WMS Imperium<br>
+     * <b>cnpjDestinatario</b> - CONDICIONAL Caso a empresa use a mesma instalação do WMS para múltiplas filiais é OBRIGATORIO o CNPJ da filial que fará o recebimento<br>
+     * <b>cnpjProprietario</b> - CONDICIONAL Caso a empresa use uma mesma filial para controlar o saldo virtual de multiplas é OBRIGATORIO o CNPJ da filial que receberá o saldo
+     * </p>
      *
      * @param string $idFornecedor Codigo do fornecedor
      * @param string $numero Numero da nota fiscal
@@ -289,6 +336,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
             $bonificacao = "N";
 
+            /** @var $emissorEn Papel\Fornecedor|Papel\Cliente */
+            /** @var $tipoNotaEn NotaFiscalEntity\Tipo */
             list($emissorEn, $tipoNotaEn) = self::getEmissorAndTipo($em, $idEmissor, $tipoNota);
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
@@ -360,8 +409,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
                 $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
                 if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
-                    return true;
-                    //throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." já recebida");
+                    $nomEmissor = $emissorEn->getNome();
+                    $dscTipo = $tipoNotaEn->getDescricao();
+                    $msg = "NF de $dscTipo de $nomEmissor, nº $numero e série $serie, já foi conferida";
+                    throw new \Exception ("Não é possível alterar, $msg");
                 }
 
                 if ($notaFiscalEn->getStatus()->getId() == NotaFiscalEntity::STATUS_CANCELADA) {
@@ -387,12 +438,36 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             return true;
         } catch (\Exception $e) {
             $em->rollback();
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
     /**
-     * Salva uma Nota Fiscal no WMS atraves de Json para os itens
+     * <h3>=========================== ATENÇÃO ===========================</h3>
+     * <h3>Este método é semelhante ao método <b>"salvar"</b>, porém,
+     * <br>o atributo <b>"itens"</b> deve ser enviado como uma string no formato JSON.
+     * <br><u>Recomendamos fortemente que seja utilizado o método <b>"salvar"</b>!</u></h3>
+     * <h3>==============================================================</h3>
+     *
+     * <p>Se a Nota Fiscal já existe e já foi recebida (conferida e recebimento finalizado), retornará uma <b>Exception</b></p>
+     *
+     * <p>Se a Nota Fiscal já existe e está em recebimento, caso um dos itens alterados já tiver sido conferido por completo, retornará uma <b>Exception</b></p>
+     *
+     * <p>Se a Nota Fiscal não existe ou já existe mas não está em recebimento, o sistema irá atualizar as informações</p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OBRIGATÓRIO Data de emissao da nota fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>placa</b> - OPCIONAL Se não especificado será atribuido o valor padrão configurado pelo usuário do WMS<br>
+     * <b>itens</b> - OBRIGATÓRIO<br>
+     * <b>bonificacao</b> - DEPRECIADO Este campo será removido em versões futuras <br>
+     * <b>observacao</b> - OPCIONAL Campo para informações pertinentes à nota<br>
+     * <b>cnpjDestinatario</b> - CONDICIONAL Caso a empresa use a mesma instalação do WMS para múltiplas filiais é OBRIGATORIO o CNPJ da filial que fará o recebimento<br>
+     * </p>
      *
      * @param string $idFornecedor Codigo do fornecedor
      * @param string $numero Numero da nota fiscal
@@ -402,7 +477,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
-     * @param string $cnpjDestinatario CNPJ da filial dona da nota
+     * @param string $cnpjDestinatario CNPJ da filial que irá receber a nota
      * @return boolean
      * @throws Exception
      */
@@ -419,14 +494,25 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa, $arrayItens,$bonificacao, $observacao, "",$cnpjDestinatario);
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa, $arrayItens,$bonificacao, $observacao, null,$cnpjDestinatario, null);
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
     /**
-     * Retorna Nota fiscal ativa no WMS ( Integrada, Em Recebimento ou Recebida )
+     * Método para consultar no WMS o status da Nota fiscal( Integrada, Em Recebimento ou Recebida )
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OPCIONAL Data de emissao da nota fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>tipoNota</b> - OPCIONAL Caso não especificado, o sistema atribuirá como uma nota de compra.
+     * Os códigos identificadores dos tipos de nota deve ser definidos previamente entre ERP e WMS Imperium<br>
+     * </p>
+     *
      *
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
@@ -462,15 +548,21 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * Descarta uma nota desvinculando ela do recebimento.
-     * <br />Ação pode ser executada em qualquer status em que a nota esteja.
-     * <br />
-     * <br />(Obrigatório) idFornecedor -> Código externo do fornecedor
-     * <br />(Obrigatório) numero -> Número da Nota fiscal
-     * <br />(Obrigatório) serie -> Série da nota fiscal
-     * <br />(Opcional) dataEmissao -> Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY' -- Será descontinuado em futuras versões
-     * <br />(Obrigatório) observacao -> Descrição do porquê da nota fiscal foi descartada
-     * <br />(Obrigatório) tipoNota -> Identificador do tipo da Nota Fiscal (Valor parametrizável)
-     * <br />
+     *
+     * <p>Ação só pode ser executada quando a nota estiver no status <b>"Em Recebimento"</b></p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OPCIONAL Data de emissao da Nota Fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>observacao</b> - OBRIGATÓRIO Descrição do porquê da nota fiscal foi descartada<br>
+     * <b>tipoNota</b> - OPCIONAL Caso não especificado, o sistema atribuirá como uma nota de compra.
+     * Os códigos identificadores dos tipos de nota deve ser definidos previamente entre ERP e WMS Imperium<br>
+     * </p>
+     *
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota fiscal
@@ -489,7 +581,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $observacao = trim($observacao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
-        /** @var $emissorEn Papel\Emissor */
+        /** @var $emissorEn Papel\EmissorInterface */
         /** @var $tipoNotaEn NotaFiscalEntity\Tipo */
         list($emissorEn, $tipoNotaEn) = self::getEmissorAndTipo($em, $idEmissor, $tipoNota);
 
@@ -511,8 +603,21 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     }
 
     /**
-     * Desfazer uma nota, basicamente ela é cancelada. Caso o recebimento não possua mais notas ele também é cancelado
-     * Ação pode ser executada em qualquer status válido ( Integrada, Em Recebimento ou Recebida ) em que a nota esteja.
+     * Desfazer uma nota, basicamente ela é cancelada. Caso a Nota Fiscal esteja em recebimento e o mesmo não possua mais notas ele também é cancelado!
+     *
+     * <p>Ação só pode ser executada quando a nota estiver no status <b>"Integrada"</b> ou <b>"Em Recebimento"</b></p>
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO Código do Emissor da nota (Préviamente cadastrado, como Fornecedor ou Cliente caso devolução) <br>
+     * <b>numero</b> - OBRIGATÓRIO Número Nota Fiscal<br>
+     * <b>serie</b> - OBRIGATÓRIO Serie da Nota Fiscal<br>
+     * <b>dataEmissao</b> - OPCIONAL Data de emissao da Nota Fiscal. Formato esperado (DD/MM/AAAA) ex:'22/11/2010'<br>
+     * <b>observacao</b> - OBRIGATÓRIO Descrição do porquê da nota fiscal foi descartada<br>
+     * <b>tipoNota</b> - OPCIONAL Caso não especificado, o sistema atribuirá como uma nota de compra.
+     * Os códigos identificadores dos tipos de nota deve ser definidos previamente entre ERP e WMS Imperium<br>
+     * </p>
      *
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
@@ -533,7 +638,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $observacao = trim($observacao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
-        /** @var $emissorEn Papel\Emissor */
+        /** @var $emissorEn Papel\EmissorInterface */
         /** @var $tipoNotaEn NotaFiscalEntity\Tipo */
         list($emissorEn, $tipoNotaEn) = self::getEmissorAndTipo($em, $idEmissor, $tipoNota);
 

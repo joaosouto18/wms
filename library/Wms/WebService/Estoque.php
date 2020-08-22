@@ -55,8 +55,12 @@ class Wms_WebService_Estoque extends Wms_WebService
     }
 
     /**
-     *  Retorna o estoque armazenado e disponível de todos os produtos informados no filtro
-     *     *
+     * Retorna o estoque armazenado e disponível de todos os produtos informados no filtro
+     *
+     * <p>
+     * <b>produtos</b> - OBRIGATÓRIO Array de produtos à serem consultados
+     * </p>
+     *
      * @param filtroProduto[] $produtos filtro com os produtos que deseja consultar estoque
      * @return estoque[] Estoque Armazenado e disponível dos produtos
      */

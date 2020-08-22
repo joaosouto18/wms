@@ -51,12 +51,18 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     /**
      * Método para salvar um Fornecedor no WMS. Se o Fornecedor já existe atualiza, se não, registra
      *
+     * <p>Se o Fornecedor for Pessoa Física, o campo <b>CNPJ</b> deve ser nulo ou
+     * desconsiderado, e o campo <b>CPF</b> fica OBRIGATÓRIO</p>
+     *
+     * <p>Se o Fornecedor for Pessoa Jurídica, o campo <b>CNPJ</b> é OBRIGATÓRIO
+     * e o campo <b>CPF</b> deve ser nulo ou desconsiderado</p>
+     *
      * <p>Este método pode retornar uma <b>Exception</b></p>
      *
      * <p>
      * <b>idFornecedor</b> - OBRIGATÓRIO<br>
      * <b>cnpj</b> - CONDICIONAL Caso seja pessoa Jurídica
-     * <b>insc</b> - OPCIONAL Inscrição Estadual
+     * <b>insc</b> - OPCIONAL Inscrição Estadual (Preenchido opcionalmente apenas se for pessoa Jurídica)
      * <b>nome</b> - OBRIGATÓRIO
      * <b>cpf</b> - CONDICIONAL Caso seja pessoa Física
      * </p>
@@ -91,15 +97,21 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     }
 
     /**
-     * Exclui um fornecedor do WMS
-     * 
-     * @param string $id
-     * @return boolean|Exception
+     * Método para excluir um Fornecedor do WMS
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
+     * <p>
+     * <b>idFornecedor</b> - OBRIGATÓRIO
+     * </p>
+     *
+     * @param string $idFornecedor
+     * @return boolean
+     * @throws Exception
      */
     public function excluir($idFornecedor)
     {
         $idFornecedor = trim($idFornecedor);
-
 
         /** @var \Wms\Service\FornecedorService $fornecedorSvc */
         $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
@@ -117,6 +129,10 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     }
 
     /**
+     * Método para listar todos os Fornecedores cadastrados no WMS Imperium
+     *
+     * <p>Este método pode retornar uma <b>Exception</b></p>
+     *
      * @return array
      * @throws Exception
      */

@@ -17,11 +17,10 @@ class FornecedorService extends AbstractService
             $cpf = String::retirarMaskCpfCnpj($data['cpf']);
             $cnpj = String::retirarMaskCpfCnpj($data['cnpj']);
 
-            /** @var Pessoa $pessoa */
-            $pessoa = null;
-
             if (empty($entity)) {
                 $entity = new Fornecedor();
+                /** @var Pessoa $pessoa */
+                $pessoa = null;
                 if (!empty($cnpj)) {
                     $pessoa = $this->em->getRepository('wms:Pessoa\Juridica')
                         ->findOneBy(['cnpj' => $cnpj]);
@@ -40,6 +39,7 @@ class FornecedorService extends AbstractService
                         $fornecedor['pessoa']['juridica']['cnpj'] = $cnpj;
                         $fornecedor['pessoa']['juridica']['idTipoOrganizacao'] = null;
                         $fornecedor['pessoa']['juridica']['idRamoAtividade'] = null;
+                        $fornecedor['pessoa']['juridica']['inscricaoEstadual'] = $data['insc'];
                         $fornecedor['pessoa']['juridica']['nome'] = $data['nome'];
                     } else if (!empty($cpf)) {
                         $fornecedor['pessoa']['tipo'] = 'F';
