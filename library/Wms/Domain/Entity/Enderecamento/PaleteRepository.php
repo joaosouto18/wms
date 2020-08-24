@@ -178,8 +178,8 @@ class PaleteRepository extends EntityRepository {
         return $result;
     }
 
-    public function getPaletes($idRecebimento, $idProduto, $grade, $trowException = true, $tipoEnderecamento = 'A') {
-        $this->gerarPaletes($idRecebimento, $idProduto, $grade, $trowException, $tipoEnderecamento);
+    public function getPaletes($quebraPorLote, $idRecebimento, $idProduto, $grade, $trowException = true, $tipoEnderecamento = 'A') {
+        $this->gerarPaletes($quebraPorLote, $idRecebimento, $idProduto, $grade, $trowException, $tipoEnderecamento);
         $paletes = $this->getPaletesAndVolumes($idRecebimento, $idProduto, $grade);
 
         return $paletes;
@@ -814,7 +814,7 @@ class PaleteRepository extends EntityRepository {
         return $qtd - $qtdTotalEnd;
     }
 
-    public function gerarPaletes($idRecebimento, $idProduto, $grade, $throwException = true, $tipoEnderecamento = 'A') {
+    public function gerarPaletes($quebraPorLote, $idRecebimento, $idProduto, $grade, $throwException = true, $tipoEnderecamento = 'A') {
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
         $conferenciaRepo = $this->getEntityManager()->getRepository('wms:Recebimento\Conferencia');
         $recebimentoEn = $this->getEntityManager()->getRepository('wms:Recebimento')->find($idRecebimento);
@@ -900,7 +900,7 @@ class PaleteRepository extends EntityRepository {
             $pesoLimite = $this->getPesoLimiteRecebimento($recebimentoEn->getId(), $idProduto, $grade, $qtdRecebida, $qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento, $pesoLimite, $pesoTotalConferido);
+        $this->salvaNovosPaletes($quebraPorLote, $produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento, $pesoLimite, $pesoTotalConferido);
         $this->_em->flush();
         $this->_em->clear();
     }
@@ -955,7 +955,7 @@ class PaleteRepository extends EntityRepository {
         }
     }
 
-    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento = 'A', $pesoLimite = null, $pesoTotalConferido = null) {
+    public function salvaNovosPaletes($quebraPorLote, $produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento = 'A', $pesoLimite = null, $pesoTotalConferido = null) {
         //QUANTIDADE DA NOTA
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
         $nfRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
@@ -970,10 +970,10 @@ class PaleteRepository extends EntityRepository {
             }else{
                 $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'] = $dados['QTD'];
                 $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO'] = $dados['PESO'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['COD_NORMA_PALETIZACAO'] = $dados['COD_NORMA_PALETIZACAO'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['NUM_NORMA'] = $dados['NUM_NORMA'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['COD_UNITIZADOR'] = $dados['COD_UNITIZADOR'];
             }
-            $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['COD_NORMA_PALETIZACAO'] = $dados['COD_NORMA_PALETIZACAO'];
-            $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['NUM_NORMA'] = $dados['NUM_NORMA'];
-            $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['COD_UNITIZADOR'] = $dados['COD_UNITIZADOR'];
             if(isset($dados['LOTE'])) {
                 $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['LOTE'][$key]['LOTE'] = $dados['LOTE'];
                 $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['LOTE'][$key]['QTD'] = $dados['QTD'];
@@ -1039,23 +1039,19 @@ class PaleteRepository extends EntityRepository {
                     }
                 }
 
-                $qtdPaletes = $qtd / $unitizador['NUM_NORMA'];
-                $qtdUltimoPalete = fmod($qtd, $unitizador['NUM_NORMA']);
                 $unitizadorEn = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
                 $pesoTotalPaletes = 0;
-                if ($qtdPaletes > 0)
-                    $pesoPorPalete = (float) ($peso / $qtdPaletes);
                 if(isset($unitizador['LOTE'])) {
                     $vetLote = $unitizador['LOTE'];
                 }
 
-                $newPalete = function(){ return [ 'qtdTotal' => 0, 'lotes' => [] ]; };
+                $newPalete = [ 'qtdTotal' => 0, 'lotes' => [] ];
 
                 $paletesCompletos = [];
-                $ultimoPalete = [];
+                $arrayUltimoPaleteLote = [];
                 $qtdNoPalete = $unitizador['NUM_NORMA'];
                 if (isset($vetLote) && !empty($vetLote)) {
-                    $palete = $newPalete();
+                    $palete = $newPalete;
                     foreach ($vetLote as $lote) {
                         $qtdLote = $lote['QTD'];
                         while ($qtdLote > 0) {
@@ -1065,9 +1061,14 @@ class PaleteRepository extends EntityRepository {
                                 $palete['lotes'][$lote['LOTE']] = $qtdLote;
                                 if ($incremento == $qtdNoPalete) {
                                     $paletesCompletos[] = $palete;
-                                    $palete = $newPalete();
+                                    $palete = $newPalete;
                                 }
-                                $ultimoPalete = $palete;
+                                if ($quebraPorLote) {
+                                    $arrayUltimoPaleteLote[] = $palete;
+                                    $palete = $newPalete;
+                                } else {
+                                    $arrayUltimoPaleteLote[0] = $palete;
+                                }
                                 $qtdLote = 0;
                             } else {
                                 $excedente = Math::subtrair($incremento, $qtdNoPalete);
@@ -1075,11 +1076,22 @@ class PaleteRepository extends EntityRepository {
                                 $palete['lotes'][$lote['LOTE']] = Math::subtrair($qtdLote, $excedente);
                                 $paletesCompletos[] = $palete;
                                 $qtdLote = $excedente;
-                                $palete = $newPalete();
+                                $palete = $newPalete;
                             }
                         }
                     }
                 }
+
+                if (!empty($vetLote) && $quebraPorLote) {
+                    $qtdPaletes = count($paletesCompletos);
+                    $qtdUltimoPalete = count($arrayUltimoPaleteLote);
+                } else {
+                    $qtdPaletes = $qtd / $unitizador['NUM_NORMA'];
+                    $qtdUltimoPalete = fmod($qtd, $unitizador['NUM_NORMA']);
+                }
+
+                if ($qtdPaletes > 0)
+                    $pesoPorPalete = (float) ($peso / $qtdPaletes);
 
                 for ($i = 0; $i < floor($qtdPaletes); $i++) {
                     $pesoTotal += $pesoPorPalete;
@@ -1092,8 +1104,10 @@ class PaleteRepository extends EntityRepository {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
                     if ($recebimentoFinalizado == true || ($qtdTotalConferido == $qtdNotaFiscal)) {
                         $pesoUltimoPalete = $peso - $pesoTotalPaletes;
-                        if(!isset($arrayUltimoPaleteLote) && isset($vetLote)){
-                            $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete, $ultimoPalete);
+                        if(!empty($arrayUltimoPaleteLote)){
+                            foreach ($arrayUltimoPaleteLote as $ultimoPalete) {
+                                $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete, $ultimoPalete);
+                            }
                         }else {
                             $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete);
                         }

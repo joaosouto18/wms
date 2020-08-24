@@ -154,8 +154,8 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                             addNewRow($(this).parent().parent().data("id"));
                             $("#qtdConferida-" + $(this).parent().parent().data("id")).removeAttr("style");
                         } else {
-                            alert("O Lote do último campo não foi informado");
-                            $(this).focus().select();
+                            removeRowLote($(this).parent().parent().data("id"));
+                            $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                         }
                     } else {
                         $(".lote-input").last().focus().select();
@@ -216,10 +216,14 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
 
         $(".remover-lote").live("click", function () {
             var id = $(this).attr("id");
-            $("#row-inputs-"+id).remove();
+            removeRowLote(id);
             alert("Removeu o lote na linha " + (parseInt(id)+1));
-            calcTotalLote();
         });
+
+        var removeRowLote = function (id) {
+            $("#row-inputs-"+id).remove();
+            calcTotalLote();
+        }
 
         var checkInputs = function (toNext) {
             var inputVal = $("#dataValidade");
@@ -303,7 +307,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     if (checkValidade()) {
                         var quantidade = document.getElementById('qtdConferida-0');
                         if (quantidade) {
-                            quantidade.focus().select();
+                            quantidade.select();
                             if (event.preventDefault) {
                                 event.preventDefault();
                             } else {
