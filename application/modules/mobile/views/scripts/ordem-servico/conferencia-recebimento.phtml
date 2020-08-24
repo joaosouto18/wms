@@ -24,10 +24,10 @@
                 <p><span style="background-color: #ff9c00; font-size: 18px">Todas as notas do recebimento <?php echo $recebimento['COD_RECEBIMENTO'] ?> foram removidas, cancele este recebimento</span></p>
             <?php else :
                 $url = $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $idReceb)); ?>
-                <?php if (!empty($recebimento['DSC_OBSERVACAO']))
+                <?php if (!empty($recebimento['DSC_OBSERVACAO'])) {
                     echo '<a class="recebimento-info" data-msg="'.$recebimento['DSC_OBSERVACAO'].'">
                             <img src="/img/icons/bell.png" alt="recebimento">
-                          </a>'?>
+                          </a>';}?>
                 <a class="btn btn-xs gradientBtn" href="<?php echo $url ?>" title="<?php echo $idReceb ?>" >Receb. <?php echo $idReceb ?> - Box <?php echo $recebimento['COD_BOX'] ?> - F: <?php echo $recebimento['FORNECEDOR'] ?> </a>
             <?php endif; ?>
         <?php endforeach; ?>
@@ -41,10 +41,10 @@
                 <p><span style="background-color: #ff9c00; font-size: 18px">Todas as notas do recebimento <?php echo $recebimento['COD_RECEBIMENTO'] ?> foram removidas, cancele este recebimento</span></p>
             <?php else :
                 $url = $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $idReceb)); ?>
-                <?php if (!empty($recebimento['DSC_OBSERVACAO']))
+                <?php if (!empty($recebimento['DSC_OBSERVACAO'])) {
                 echo '<a href="" class="recebimento-info" data-msg="'.$recebimento['DSC_OBSERVACAO'].'">
                             <img src="/img/icons/bell.png" alt="recebimento">
-                          </a>'?>
+                          </a>';}?>
                 <a class="btn btn-xs gradientBtn" href="<?php echo $url ?>" title="<?php echo $idReceb ?>" >Receb. <?php echo $idReceb ?> - Box <?php echo $recebimento['COD_BOX'] ?> - F: <?php echo $recebimento['FORNECEDOR'] ?> </a>
             <?php endif; ?>
         <?php endforeach; ?>

@@ -48,3 +48,4 @@ public/img/logo_cliente.jpg
 public/enderecos.txt
 data.lk
 log/exceptions
+application/configs/linfo.php

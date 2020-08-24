@@ -3157,10 +3157,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         return $etqArray;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
-
-
     }
 
     public function getEtiquetasByExpedicaoAndVolumePatrimonio($idExpedicao, $volumePatrimonio)

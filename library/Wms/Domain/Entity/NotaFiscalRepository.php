@@ -12,6 +12,7 @@ use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Pessoa\Papel\Emissor;
+use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
 use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\Entity\Produto\LoteRepository;
 use Wms\Math;
@@ -290,6 +291,9 @@ class NotaFiscalRepository extends EntityRepository {
         if ($notaFiscalEntity->getStatus()->getId() == NotaFiscalEntity::STATUS_CANCELADA)
             throw new \Exception('Nota Fiscal se encontra cancelada');
 
+        if ($notaFiscalEntity->getStatus()->getId() == NotaFiscalEntity::STATUS_RECEBIDA)
+            throw new \Exception('Nota Fiscal se encontra recebida');
+
         if ($notaFiscalEntity->getStatus()->getId() == NotaFiscalEntity::STATUS_INTEGRADA)
             throw new \Exception('Nota Fiscal já se encontra no status integrada');
 
@@ -359,11 +363,15 @@ class NotaFiscalRepository extends EntityRepository {
         if ($notaFiscalEntity->getStatus()->getId() == NotaFiscalEntity::STATUS_CANCELADA)
             throw new \Exception('Nota Fiscal se encontra cancelada');
 
+        if ($notaFiscalEntity->getStatus()->getId() == NotaFiscalEntity::STATUS_RECEBIDA)
+            throw new \Exception('Nota Fiscal se encontra recebida');
+
         $recebimentoEntity = $notaFiscalEntity->getRecebimento();
 
         $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_CANCELADA);
 
-        $notaFiscalEntity->setStatus($statusEntity);
+        $notaFiscalEntity->setRecebimento(null)
+                         ->setStatus($statusEntity);
 
         $em->persist($notaFiscalEntity);
         $em->flush();
@@ -505,7 +513,7 @@ class NotaFiscalRepository extends EntityRepository {
     /**
      * Retorna Nota fiscal que esteja nos status Integrada, Em Recebimento ou Recebida pelo WMS.
      *
-     * @param Emissor $emissor Emissor da Nota fiscal
+     * @param EmissorInterface $emissor Emissor da Nota fiscal
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
@@ -1040,7 +1048,7 @@ class NotaFiscalRepository extends EntityRepository {
     }
 
     /**
-     * @param $emissor Emissor
+     * @param $emissor EmissorInterface
      * @param $tipoNota NotaFiscalEntity\Tipo
      * @param $numero
      * @param $serie
