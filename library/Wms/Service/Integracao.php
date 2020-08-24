@@ -637,7 +637,7 @@ class Integracao {
         $fornecedoresCPF = array();
 
         $fornecedores['9999'] = array(
-            'idExterno' => '9999',
+            'codExterno' => '9999',
             'cpf_cnpj' => '9999999999',
             'nome' => 'DEVOLUCAO',
             'inscricaoEstadual' => 'ISENTO',
