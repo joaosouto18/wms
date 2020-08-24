@@ -115,7 +115,7 @@ class Notafiscal_ImportarxmlController extends Crud
             $bonificacao    = 'N';
             $itens          = $result['NotaFiscalItem'];
             $importacaoService = new Importacao(true);
-            $importacaoService->saveNotaFiscal($this->_em, $idFornecedor, $numero, $serie,$dataEmissao, $placa, $itens, $bonificacao,null, true, 'E' );
+            $importacaoService->saveNotaFiscal($this->_em, $idFornecedor, $numero, $serie,$dataEmissao, $placa, $itens, $bonificacao,null, true, null);
             $this->addFlashMessage("success", "Nota Fiscal $numero / $serie importada com sucesso");
 
         } catch (Exception $e) {
