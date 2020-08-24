@@ -1174,7 +1174,7 @@ class PaleteRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
-        $reservaEstoqueRepo->validaOperacaoExpedicaoEmFinalizacao(implode(", ", $arrPaletesResult), "U" );
+        $reservaEstoqueRepo->validaOperacaoExpedicaoEmFinalizacao(implode(", ", $paletes), "U" );
 
         $ok = false;
         $arrPaletesResult = array();

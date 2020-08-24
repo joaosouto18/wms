@@ -9,6 +9,7 @@ use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
+use Wms\Domain\Entity\NotaFiscal\Tipo as TipoNotaFiscal;
 use Wms\Domain\Entity\Ressuprimento\PedidoAcumulado;
 use Wms\Math;
 
@@ -634,42 +635,12 @@ class Integracao {
         $em = $this->_em;
         $importacaoService = new Importacao(true);
         $fornecedores = array();
-        $fornecedoresCPF = array();
-
-        $fornecedores['9999'] = array(
-            'idExterno' => '9999',
-            'cpf_cnpj' => '9999999999',
-            'nome' => 'DEVOLUCAO',
-            'inscricaoEstadual' => 'ISENTO',
-            'tipoPessoa' => 'F'
-        );
 
         $itens = array();
         $notasFiscais = array();
 
-
         foreach ($dados as $key => $notaFiscal) {
             $notaFiscal = array_change_key_case($notaFiscal,CASE_UPPER);
-            $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
-            if (strlen($cpf_cnpj) == 11) {
-                $tipoPessoa = 'F';
-            } else {
-                $tipoPessoa = 'J';
-            }
-
-            if ($tipoPessoa == 'F') {
-                $fornecedoresCPF[] = $notaFiscal['COD_FORNECEDOR'];
-            } else {
-                if (!array_key_exists($notaFiscal['COD_FORNECEDOR'], $fornecedores)) {
-                    $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
-                        'idExterno' => $notaFiscal['COD_FORNECEDOR'],
-                        'cpf_cnpj' => $cpf_cnpj,
-                        'nome' => $notaFiscal['NOM_FORNECEDOR'],
-                        'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
-                        'tipoPessoa' => $tipoPessoa
-                    );
-                }
-            }
 
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
@@ -698,6 +669,9 @@ class Integracao {
             }
 
             if ($FimNotaAtual == true) {
+
+                $tipoNota = isset($notaFiscal['TIPO_NOTA']) && !empty($notaFiscal['TIPO_NOTA']) ? $notaFiscal['TIPO_NOTA'] : 'ENTRADA_FORNECEDOR';
+
                 $notasFiscais[] = array(
                     'id' => $notaFiscal['NUM_NOTA_FISCAL'],
                     'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
@@ -705,18 +679,41 @@ class Integracao {
                     'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],
                     'dtEmissao' => $notaFiscal['DAT_EMISSAO'],
                     'placaVeiculo' => $notaFiscal['DSC_PLACA_VEICULO'],
-                    'tipoNota' => isset($notaFiscal['COD_TIPO_NOTA_FISCAL']) && !empty($notaFiscal['COD_TIPO_NOTA_FISCAL']) ? $notaFiscal['COD_TIPO_NOTA_FISCAL'] : 'ENTRADA_FORNECEDOR',
-                    'itens' => $itens
+                    'tipoNota' => $tipoNota,
+                    'itens' => $itens,
+                    'nomeFornecedor' => $notaFiscal['NOM_FORNECEDOR']
                 );
+
+                if (!empty($tipoNota)) {
+                    $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['codExterno' => $tipoNota]);
+                    if (empty($tipoNota))
+                        throw new \Exception("Tipo de nota '$tipoNota' não identificado");
+                } else {
+                    $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['recebimentoDefault' => true]);
+                }
+
+                $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
+                if (strlen($cpf_cnpj) == 11) {
+                    $tipoPessoa = 'F';
+                } else {
+                    $tipoPessoa = 'J';
+                }
+
+                /** @var $tipoNotaEn TipoNotaFiscal */
+                if ($tipoNotaEn->getEmissor() === Papel\EmissorInterface::EMISSOR_FORNECEDOR) {
+                    if (!array_key_exists($notaFiscal['COD_FORNECEDOR'], $fornecedores)) {
+                        $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
+                            'codExterno' => $notaFiscal['COD_FORNECEDOR'],
+                            'cpf_cnpj' => $cpf_cnpj,
+                            'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                            'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                            'tipoPessoa' => $tipoPessoa
+                        );
+                    }
+                }
+
                 unset($itens);
                 $itens = array();
-            }
-        }
-        foreach ($notasFiscais as $key => $nf) {
-            foreach ($fornecedoresCPF as $cpf) {
-                if ($cpf == $nf['codFornecedor']) {
-                    $notasFiscais[$key]['codFornecedor'] = '9999';
-                }
             }
         }
 
@@ -729,7 +726,7 @@ class Integracao {
                     'Numero NF' => $nf['numNota'],
                     'Serie' => $nf['serie'],
                     'Dt. Emissão' => $nf['dtEmissao'],
-                    'Fornecedor' => $fornecedores[$nf['codFornecedor']]['nome'],
+                    'Fornecedor' => $nf['nomeFornecedor'],
                     'Veículo' => $nf['placaVeiculo'],
                     'Qtd. Produtos' => count($nf['itens'])
                 );

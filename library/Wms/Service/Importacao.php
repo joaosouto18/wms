@@ -15,7 +15,7 @@ use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\NotaFiscal\Tipo as TipoNotaFiscal;
-use Wms\Domain\Entity\NotaFiscal as NotaFiscal;
+use Wms\Domain\Entity\NotaFiscal as NFEntity;
 use Wms\Domain\Entity\NotaFiscalRepository;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -397,7 +397,7 @@ class Importacao
         if (!empty($tipoNota)) {
             $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['codExterno' => $tipoNota]);
             if (empty($tipoNota))
-                throw new Exception("Tipo de nota '$tipoNota' não identificado");
+                throw new \Exception("Tipo de nota '$tipoNota' não identificado");
         } else {
             $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['recebimentoDefault' => true]);
         }
@@ -408,13 +408,13 @@ class Importacao
         } else {
             $emissorEntity = $em->getRepository(Papel\Cliente::class)->findOneBy(array('codExterno' => $idEmissor));
         }
-        /** @var NotaFiscal $notaFiscalEn */
+        /** @var NFEntity $notaFiscalEn */
         $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'emissor' => $emissorEntity, 'tipo' => $tipoNotaEn));
         if (!$notaFiscalEn) {
             $notaFiscalRepo->salvarNota($emissorEntity, $tipoNotaEn, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao,null, null, true);
         } else {
             $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
-            if ($statusNotaFiscal == NotaFiscal::STATUS_RECEBIDA) {
+            if ($statusNotaFiscal == NFEntity::STATUS_RECEBIDA) {
                 if ($showExpt) {
                     throw new \Exception ("Não é possível alterar, NF " . $notaFiscalEn->getNumero() . " já recebida");
                 } else {
@@ -422,8 +422,8 @@ class Importacao
                 }
             }
 
-            if ($notaFiscalEn->getStatus()->getId() == NotaFiscal::STATUS_CANCELADA) {
-                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscal::STATUS_INTEGRADA);
+            if ($notaFiscalEn->getStatus()->getId() == NFEntity::STATUS_CANCELADA) {
+                $statusEntity = $em->getReference('wms:Util\Sigla', NFEntity::STATUS_INTEGRADA);
                 $notaFiscalEn->setRecebimento(null);
                 $notaFiscalEn->setStatus($statusEntity);
                 $em->persist($notaFiscalEn);
