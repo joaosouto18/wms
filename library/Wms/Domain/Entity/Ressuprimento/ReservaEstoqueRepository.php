@@ -740,7 +740,7 @@ class ReservaEstoqueRepository extends EntityRepository
         if ($tipoOperacao == "E") { //Finalização de Expedição
             $tabela = "RESERVA_ESTOQUE_EXPEDICAO";
             $filtroOperacao = " AND REO.COD_EXPEDICAO = $idOperacao";
-            $subFiltro = " AND E.COD_EXPEDICAO <> $idExpedicao";
+            $subFiltro = " AND E.COD_EXPEDICAO <> $idOperacao";
         } else if ($tipoOperacao == "O") { // Finalização de Ressuprimento
             $tabela = "RESERVA_ESTOQUE_ONDA_RESSUP";
             $filtroOperacao = " AND REO.COD_ONDA_RESSUPRIMENTO_OS = $idOperacao";
