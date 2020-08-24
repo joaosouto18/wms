@@ -705,7 +705,7 @@ class Integracao {
                     'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],
                     'dtEmissao' => $notaFiscal['DAT_EMISSAO'],
                     'placaVeiculo' => $notaFiscal['DSC_PLACA_VEICULO'],
-                    'tipoNota' => isset($notaFiscal['COD_TIPO_NOTA_FISCAL']) && !empty($notaFiscal['COD_TIPO_NOTA_FISCAL']) ? $notaFiscal['COD_TIPO_NOTA_FISCAL'] : 'ENTRADA_FORNECEDOR',
+                    'tipoNota' => isset($notaFiscal['TIPO_NOTA']) && !empty($notaFiscal['TIPO_NOTA']) ? $notaFiscal['TIPO_NOTA'] : 'ENTRADA_FORNECEDOR',
                     'itens' => $itens
                 );
                 unset($itens);
