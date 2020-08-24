@@ -399,7 +399,7 @@ class Importacao
             if (empty($tipoNota))
                 throw new Exception("Tipo de nota '$tipoNota' não identificado");
         } else {
-            $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['recebimentoDefault' => true]);
+            $tipoNotaEn = $em->getRepository(TipoNotaFiscal::class)->findOneBy(['recebimentoDefault' => 1]);
         }
 
         /** @var $tipoNotaEn TipoNotaFiscal */
