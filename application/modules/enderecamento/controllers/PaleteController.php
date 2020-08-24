@@ -23,6 +23,7 @@ class Enderecamento_PaleteController extends Action
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository = $this->em->getRepository('wms:Produto');
         $produtoEspecifico = false;
+        $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
 
         if (!empty($codProduto) && !empty($grade)) {
             /** @var \Wms\Domain\Entity\Produto $produtoEn */
@@ -32,7 +33,7 @@ class Enderecamento_PaleteController extends Action
 
             try {
                 $completaPicking = ($produtos) ? true : false;
-                $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                $paletes = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
 
                 $idPaletes = array();
                 $existeLote = false;
@@ -44,7 +45,7 @@ class Enderecamento_PaleteController extends Action
                 }
                 if ($completaPicking) {
                     $paleteRepo->enderecaPicking($idPaletes, $completaPicking);
-                    $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                    $paletes = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                 }
 
             } catch (Exception $e) {
@@ -88,7 +89,7 @@ class Enderecamento_PaleteController extends Action
                     $arr['descricao'] = $produtoEn->getDescricao();
                     $arr['endPicking'] = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
-                    $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                    $arr['paletes'] = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                     $paletes = array();
                     $existeLote = false;
                     foreach ($arr['paletes'] as $palete) {
@@ -99,7 +100,7 @@ class Enderecamento_PaleteController extends Action
                     }
                     if ($completaPicking) {
                         $paleteRepo->enderecaPicking($paletes, $completaPicking);
-                        $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                        $arr['paletes'] = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                     }
                     $result[] = $arr;
                 }

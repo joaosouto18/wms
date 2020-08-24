@@ -360,7 +360,7 @@ class Mobile_EnderecamentoController extends Action
                     $this->createXml('error', 'Espaço insuficiente no endereço');
                 }
                 if ($enderecoAntigo != NULL) {
-                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId(), $paleteEn->getId());
+                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
                     $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
                 }
                 $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR", $paleteEn->getId());
@@ -575,6 +575,7 @@ class Mobile_EnderecamentoController extends Action
 
             //IDENTIFICO OS PRODUTOS DO RECEBIMENTO
             $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+            $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
 
             //GERAR OS PALETES PARA CADA PRODUTO DO RECEBIMENTO INDIVIDUALMENTE
             foreach ($produtos as $produto) {
@@ -582,8 +583,8 @@ class Mobile_EnderecamentoController extends Action
                 $grade      = $produto['grade'];
 
                 //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
-                $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,false,$tipoEnderecamento = 'A');
-                $paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
+                $paletes = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento,$codProduto,$grade,false,'A');
+                //$paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
             }
 
             $paletesResumo = $this->getPaletesExibirResumo($idRecebimento);
@@ -600,7 +601,8 @@ class Mobile_EnderecamentoController extends Action
     }
 
     public function getPaletesExibirResumo($codRecebimento){
-        $statusEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
+        $paleteEmRecebimento = Palete::STATUS_EM_RECEBIMENTO;
+        $paleteRecebido = Palete::STATUS_RECEBIDO;
         $SQL = "SELECT LISTAGG(UMA, ', ') WITHIN GROUP (ORDER BY UMA) ALL_UMA,
                        COUNT(DISTINCT UMA) as QTD_UMA,
                        COD_PRODUTO,
@@ -622,17 +624,16 @@ class Mobile_EnderecamentoController extends Action
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PROD.COD_PRODUTO = PE.COD_PRODUTO AND PROD.DSC_GRADE = PE.DSC_GRADE
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PE.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
                  WHERE P.COD_RECEBIMENTO = $codRecebimento
-                   AND P.COD_STATUS = $statusEnderecamento
+                   AND P.COD_STATUS in ($paleteRecebido, $paleteEmRecebimento)
                    AND P.IND_IMPRESSO = 'N'
-                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL
+                   AND P.COD_DEPOSITO_ENDERECO IS NULL
                    AND PE.DTH_INATIVACAO IS NULL
                    AND PV.DTH_INATIVACAO IS NULL)
                 GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $result;
-
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function detalheEnderecoAction()
@@ -691,10 +692,11 @@ class Mobile_EnderecamentoController extends Action
 
             $codProduto = $this->_getParam('produto');
             $grade = $this->_getParam('grade');
+            $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
 
             $paletes = array();
 
-            $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false, true, true);
+            $tmpPaletes = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento,$codProduto,$grade, false);
             foreach ($tmpPaletes as $tmpPalete) {
                 if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
                     ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
