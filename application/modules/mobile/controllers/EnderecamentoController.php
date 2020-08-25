@@ -583,8 +583,12 @@ class Mobile_EnderecamentoController extends Action
                 $grade      = $produto['grade'];
 
                 //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
-                $paletes = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento,$codProduto,$grade,false,'A');
+                $paleteRepo->getPaletes($quebraPorLote, $idRecebimento,$codProduto,$grade,false,'A');
+            }
+
+            if (!empty($this->_getParam('enderecar'))) {
                 //$paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
+                $arrPaletes = $this->_getParam('palete');
             }
 
             $paletesResumo = $this->getPaletesExibirResumo($idRecebimento);
@@ -720,22 +724,22 @@ class Mobile_EnderecamentoController extends Action
                     $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
                     if ($paleteEn->getDepositoEndereco() == null) {
 
-                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
-
-                        if ($sugestaoEndereco != null) {
-                            foreach($sugestaoEndereco as $sugestao) {
-
-                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
-                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
-
-                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
-                                if ($permiteEnderecar == true) {
-                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
-                                    $this->getEntityManager()->flush();
-                                    break;
-                                }
-                            }
-                        }
+//                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
+//
+//                        if ($sugestaoEndereco != null) {
+//                            foreach($sugestaoEndereco as $sugestao) {
+//
+//                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
+//                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
+//
+//                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
+//                                if ($permiteEnderecar == true) {
+//                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
+//                                    $this->getEntityManager()->flush();
+//                                    break;
+//                                }
+//                            }
+//                        }
                     } else {
                         $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
                         $tmp['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();

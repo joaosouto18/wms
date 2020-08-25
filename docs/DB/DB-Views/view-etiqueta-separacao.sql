@@ -9,6 +9,7 @@
  18/05/19   (Digão)      Alterar join entre TIPO_PEDIDO e SIGLA para LEFT
  08/07/19   (Tarcísio)   Inclusão da posição do volume no agrupamento de etiquetas
  28/08/19   (Tarcísio)   Inclusão da posição e totalizador do volume no agrupamento de etiquetas por entrega (cliente)
+ 17/08/20   (Tarcísio)   Normatização da nomenclatura codClienteExterno para cod_externo (cliente)
 
  */
 
