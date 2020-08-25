@@ -1,7 +1,11 @@
-﻿<form id="enderecamento-form" method="post" class="saveForm">
-    <div style="font-size: 14pt; font-weight: bolder">
-        Paletes
-        <input type="submit" name="imprimir" class="finalizar" style="margin-top: 0pt; margin-bottom: 4pt" value="Imprimir">
+﻿<form class="saveForm">
+    <div>
+        <span style="font-size: 14pt; font-weight: bolder" class="left">Paletes</span>
+        <button type="button" name="imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Endereçar</button>
+    </div>
+    <div>
+        <button name="trocarNorma" class="btn gradientBtn" style="width:auto; margin-top: 0pt; margin-bottom: 4pt" >Recalcular</button>
+        <button name="imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Imprimir</button>
     </div>
 
     <div id="quantidade-grid" class="grid">
@@ -11,17 +15,15 @@
                     <tr>
                         <td colspan="3"><b><?php echo $this->paletes[0]['produto'] ?></b></td>
                     </tr>
-
                     <?php
                     foreach ($this->paletes as $key => $palete):
                         $fontColor = "black";
                         $liberado = true;
-                        if ($palete['motivoNaoLiberar'] != '') {
+                        if (!empty($palete['motivoNaoLiberar'])) {
                             $fontColor = "gray";
                             $liberado = false;
-                        }
-                        $this->color = !($this->color);?>
-                        <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
+                        }?>
+                        <tr <?php if (!($this->color)) {echo 'style="background-color: #EDEDED"';}?>>
                             <td> <input name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/>
                             <?php echo "<b>UMA:</b> " . $palete['uma'] ?>
                             </td>

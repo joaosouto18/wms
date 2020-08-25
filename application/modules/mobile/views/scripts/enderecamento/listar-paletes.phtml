@@ -1,22 +1,23 @@
-﻿<form id="enderecamento-form" method="post" class="saveForm">
-    <div style="font-size: 14pt; font-weight: bolder">
-        Paletes
-        <input type="submit" name="imprimir" class="finalizar btn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; " value="Imprimir">
-        <input type="submit" name="trocarNorma" class="finalizarAmarelo btn" style="width:auto; background:#5353e4; margin-top: 0pt; margin-bottom: 4pt" value="Recalcular">
-
+﻿<form class="saveForm">
+    <div>
+        <span style="font-size: 14pt; font-weight: bolder" class="left">Paletes</span>
+        <button type="button" name="imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Endereçar</button>
     </div>
-
+    <div>
+        <button name="trocarNorma" class="btn gradientBtn" style="width:auto; margin-top: 0pt; margin-bottom: 4pt" >Recalcular</button>
+        <button name="imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Imprimir</button>
+    </div>
     <div id="quantidade-grid" class="grid">
+        <div style="text-align: start">
+            <label><input type="checkbox" id="check_all" checked style="height: auto !important; margin: 5px">Todos</label>
+        </div>
         <table style="width: 100%">
             <tbody>
             <?php
             if(is_array($this->paletes)){
-                foreach ($this->paletes as $palete):
-                    $fontColor = "black";
-                    $liberado = true;
-                    $this->color = !($this->color);?>
-                    <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
-                        <td> <input name="palete[]" value="<?php echo $palete['ALL_UMA'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
+                foreach ($this->paletes as $palete): ?>
+                    <tr <?php if (!($this->color)) {echo 'style="background-color: #EDEDED"';}?>>
+                        <td><input class="umas" name="palete[]" value="<?php echo $palete['ALL_UMA'] ?>" type="checkbox" checked/></td>
                         <td style="padding-bottom: 3pt;padding-top: 3pt">
                             <table style="width: 100%">
                                 <tr>
@@ -38,5 +39,12 @@
             </tbody>
         </table>
     </div>
-
 </form>
+<script>
+    $("#check_all").change(function () {
+        var toggleTo = $(this).attr('checked');
+        $(".umas").each(function (_,inpt) {
+            inpt.checked = toggleTo;
+        })
+    });
+</script>
