@@ -10,6 +10,7 @@ use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 use Wms\Domain\Entity\NotaFiscal\Tipo as TipoNotaFiscal;
+use Wms\Domain\Entity\Pessoa\Papel\EmissorInterface;
 use Wms\Domain\Entity\Ressuprimento\PedidoAcumulado;
 use Wms\Math;
 
@@ -700,7 +701,7 @@ class Integracao {
                 }
 
                 /** @var $tipoNotaEn TipoNotaFiscal */
-                if ($tipoNotaEn->getEmissor() === Papel\EmissorInterface::EMISSOR_FORNECEDOR) {
+                if ($tipoNotaEn->getEmissor() === EmissorInterface::EMISSOR_FORNECEDOR) {
                     if (!array_key_exists($notaFiscal['COD_FORNECEDOR'], $fornecedores)) {
                         $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
                             'codExterno' => $notaFiscal['COD_FORNECEDOR'],
