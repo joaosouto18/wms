@@ -180,9 +180,7 @@ class PaleteRepository extends EntityRepository {
 
     public function getPaletes($quebraPorLote, $idRecebimento, $idProduto, $grade, $trowException = true, $tipoEnderecamento = 'A') {
         $this->gerarPaletes($quebraPorLote, $idRecebimento, $idProduto, $grade, $trowException, $tipoEnderecamento);
-        $paletes = $this->getPaletesAndVolumes($idRecebimento, $idProduto, $grade);
-
-        return $paletes;
+        return $this->getPaletesAndVolumes($idRecebimento, $idProduto, $grade);
     }
 
     public function getPaletesByUnitizador($idRecebimento = null, $idProduto = null, $grade = null, $detalhePalete = false) {

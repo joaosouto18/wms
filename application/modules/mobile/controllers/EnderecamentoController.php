@@ -540,7 +540,7 @@ class Mobile_EnderecamentoController extends Action
             if ($this->_getParam('imprimir') != null) {
                 if (count($paletesSelecionados) > 0) {
                     $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
-                    $Uma->imprimirPaletes ($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+                    $Uma->imprimirPaletes($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
                 } else {
                     $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
                 }
@@ -573,25 +573,37 @@ class Mobile_EnderecamentoController extends Action
                 }
             }
 
-            //IDENTIFICO OS PRODUTOS DO RECEBIMENTO
-            $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
-            $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
-
-            //GERAR OS PALETES PARA CADA PRODUTO DO RECEBIMENTO INDIVIDUALMENTE
-            foreach ($produtos as $produto) {
-                $codProduto = $produto['codigo'];
-                $grade      = $produto['grade'];
-
-                //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
-                $paleteRepo->getPaletes($quebraPorLote, $idRecebimento,$codProduto,$grade,false,'A');
-            }
-
             if (!empty($this->_getParam('enderecar'))) {
-                //$paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
-                $arrPaletes = $this->_getParam('palete');
+                if (!empty($paletesSelecionados)) {
+                    $enderecar = [];
+                    foreach ($paletesSelecionados as $strPaletes) {
+                        foreach (explode(', ', $strPaletes) as $uma) {
+                           $result = $paleteRepo->getPaletesAndVolumes(null,null,null,null,null,null,null, null,null,$uma);
+                           if (!empty($result))
+                               $enderecar[] = $result[0];
+                        }
+                    }
+                }
+                if (!empty($enderecar)) {
+                    $paleteRepo->alocaEnderecoAutomaticoPaletes($enderecar,$repositorios);
+                }
+            } else {
+                $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
+
+                //IDENTIFICO OS PRODUTOS DO RECEBIMENTO
+                $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+                //GERAR OS PALETES PARA CADA PRODUTO DO RECEBIMENTO INDIVIDUALMENTE
+                foreach ($produtos as $produto) {
+                    $codProduto = $produto['codigo'];
+                    $grade = $produto['grade'];
+
+                    //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
+                    $paleteRepo->getPaletes($quebraPorLote, $idRecebimento, $codProduto, $grade, false, 'A');
+                }
             }
 
             $paletesResumo = $this->getPaletesExibirResumo($idRecebimento);
+
             if (count($paletesResumo) == 0) {
                 $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
             }
@@ -607,6 +619,7 @@ class Mobile_EnderecamentoController extends Action
     public function getPaletesExibirResumo($codRecebimento){
         $paleteEmRecebimento = Palete::STATUS_EM_RECEBIMENTO;
         $paleteRecebido = Palete::STATUS_RECEBIDO;
+        $paleteEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
         $SQL = "SELECT LISTAGG(UMA, ', ') WITHIN GROUP (ORDER BY UMA) ALL_UMA,
                        COUNT(DISTINCT UMA) as QTD_UMA,
                        COD_PRODUTO,
@@ -628,9 +641,8 @@ class Mobile_EnderecamentoController extends Action
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PROD.COD_PRODUTO = PE.COD_PRODUTO AND PROD.DSC_GRADE = PE.DSC_GRADE
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PE.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
                  WHERE P.COD_RECEBIMENTO = $codRecebimento
-                   AND P.COD_STATUS in ($paleteRecebido, $paleteEmRecebimento)
+                   AND P.COD_STATUS in ($paleteEmRecebimento, $paleteRecebido, $paleteEmEnderecamento)
                    AND P.IND_IMPRESSO = 'N'
-                   AND P.COD_DEPOSITO_ENDERECO IS NULL
                    AND PE.DTH_INATIVACAO IS NULL
                    AND PV.DTH_INATIVACAO IS NULL)
                 GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
@@ -653,6 +665,7 @@ class Mobile_EnderecamentoController extends Action
             $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
 
             $repositorios = array(
+                'enderecoRepo'            => $enderecoRepo,
                 'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
                 'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
                 'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
@@ -665,7 +678,7 @@ class Mobile_EnderecamentoController extends Action
             if ($this->_getParam('imprimir') != null) {
                 if (count($paletesSelecionados) >0) {
                     $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
-                    $Uma->imprimirPaletes ($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+                    $Uma->imprimirPaletes($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
                 } else {
                     $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
                 }
@@ -696,10 +709,25 @@ class Mobile_EnderecamentoController extends Action
 
             $codProduto = $this->_getParam('produto');
             $grade = $this->_getParam('grade');
-            $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
+
+            if (!empty($this->_getParam('enderecar'))) {
+                if (!empty($paletesSelecionados)) {
+                    $enderecar = [];
+                    foreach ($paletesSelecionados as $uma) {
+                        $result = $paleteRepo->getPaletesAndVolumes(null,$codProduto,$grade,null,null,null,null, null,null,$uma);
+                        if (!empty($result))
+                            $enderecar[] = $result[0];
+                    }
+                    if (!empty($enderecar)) {
+                        $paleteRepo->alocaEnderecoAutomaticoPaletes($enderecar,$repositorios);
+                    }
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
 
             $paletes = array();
-
+            $quebraPorLote = ($this->getSystemParameterValue("QUEBRA_UMA_POR_LOTE") == 'S');
             $tmpPaletes = $paleteRepo->getPaletes($quebraPorLote, $idRecebimento,$codProduto,$grade, false);
             foreach ($tmpPaletes as $tmpPalete) {
                 if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
@@ -713,6 +741,7 @@ class Mobile_EnderecamentoController extends Action
                     $tmp['codProduto'] = $tmpPalete['COD_PRODUTO'];
                     $tmp['dscGrade'] = $tmpPalete['DSC_GRADE'];
                     $tmp['dscProduto'] = $tmpPalete['DSC_PRODUTO'];
+                    $tmp['lote'] = $tmpPalete['LOTE'];
                     $tmp['idEndereco'] = 0;
                     $tmp['endereco'] = '';
                     $tmp['motivoNaoLiberar'] = '';
@@ -722,28 +751,27 @@ class Mobile_EnderecamentoController extends Action
                     }
 
                     $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
-                    if ($paleteEn->getDepositoEndereco() == null) {
-
-//                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
-//
-//                        if ($sugestaoEndereco != null) {
-//                            foreach($sugestaoEndereco as $sugestao) {
-//
-//                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
-//                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
-//
-//                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
-//                                if ($permiteEnderecar == true) {
-//                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
-//                                    $this->getEntityManager()->flush();
-//                                    break;
-//                                }
-//                            }
-//                        }
-                    } else {
+                    if (!empty($paleteEn->getDepositoEndereco())) {
                         $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
                         $tmp['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
-                    }
+                    } /*else {
+                       $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
+
+                        if ($sugestaoEndereco != null) {
+                            foreach($sugestaoEndereco as $sugestao) {
+
+                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
+
+                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
+                                if ($permiteEnderecar == true) {
+                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
+                                    $this->getEntityManager()->flush();
+                                    break;
+                                }
+                            }
+                        }
+                    }*/
 
                     if (($tmp['motivoNaoLiberar'] == '') && ($tmp['idEndereco'] == 0)) {
                         $tmp['motivoNaoLiberar'] = 'Sem Sugestão de Endereço';

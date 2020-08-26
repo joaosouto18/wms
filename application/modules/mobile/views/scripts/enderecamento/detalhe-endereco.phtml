@@ -1,50 +1,75 @@
 ﻿<form class="saveForm">
     <div>
         <span style="font-size: 14pt; font-weight: bolder" class="left">Paletes</span>
-        <button type="button" name="imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Endereçar</button>
+        <button name="enderecar" value="Endereçar" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Endereçar</button>
     </div>
     <div>
-        <button name="trocarNorma" class="btn gradientBtn" style="width:auto; margin-top: 0pt; margin-bottom: 4pt" >Recalcular</button>
-        <button name="imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Imprimir</button>
+        <button name="trocarNorma" value="Recalcular" class="btn gradientBtn" style="width:auto; margin-top: 0pt; margin-bottom: 4pt" >Recalcular</button>
+        <button name="imprimir" value="Imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Imprimir</button>
     </div>
-
     <div id="quantidade-grid" class="grid">
+        <?php if(!empty($this->paletes)):?>
+        <div style="text-align: start">
+            <label><input type="checkbox" id="check_all" checked style="height: auto !important; margin: 5px">Todos</label>
+        </div>
         <table style="width: 100%">
-            <tbody>
-                <table style="width: 100%">
-                    <tr>
-                        <td colspan="3"><b><?php echo $this->paletes[0]['produto'] ?></b></td>
-                    </tr>
-                    <?php
-                    foreach ($this->paletes as $key => $palete):
-                        $fontColor = "black";
-                        $liberado = true;
-                        if (!empty($palete['motivoNaoLiberar'])) {
-                            $fontColor = "gray";
-                            $liberado = false;
-                        }?>
-                        <tr <?php if (!($this->color)) {echo 'style="background-color: #EDEDED"';}?>>
-                            <td> <input name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/>
-                            <?php echo "<b>UMA:</b> " . $palete['uma'] ?>
-                            </td>
-
-                            <td style="padding-bottom: 3pt;padding-top: 3pt">
-                                <table style="width: 100%">
-                                    <tr>
-                                        <input type="hidden" name="<?php echo 'endereco[' . $palete['uma'] . ']'?>" value="<?php echo $palete['idEndereco'] ?>">
-                                    </tr>
-                                    <tr>
-
-                                        <td colspan="3"> <b></b><?php if ($palete['motivoNaoLiberar'] == '') {echo $palete['endereco'];} else { echo $palete['motivoNaoLiberar'];} ?></td>
-                                        <td><?php echo "<b>Qtd:<b> " . $palete['qtd']  ?></td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </table>
-            </tbody>
+            <tr>
+                <td colspan="3"><b><?php echo $this->paletes[0]['produto'] ?></b></td>
+            </tr>
+            <?php
+            foreach ($this->paletes as $key => $palete):
+                $fontColor = "black";
+                $liberado = true;
+                if (!empty($palete['motivoNaoLiberar'])) {
+                    $fontColor = "gray";
+                    $liberado = false;
+                }?>
+                <tr <?php if (!($this->color)) {echo 'style="background-color: #EDEDED"';}?> >
+                    <td>
+                        <?php if ($palete['motivoNaoLiberar'] !== 'Aguardando conf. todos volumes') :?>
+                        <input class="umas" name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/>
+                        <?php endif;?>
+                    <?php echo "<b>UMA:</b> " . $palete['uma'] ?>
+                    </td>
+                    <td style="padding-bottom: 3pt;padding-top: 3pt">
+                        <table style="width: 100%">
+                            <tr>
+                                <input type="hidden" name="<?php echo 'endereco[' . $palete['uma'] . ']'?>" value="<?php echo $palete['idEndereco'] ?>">
+                            </tr>
+                            <tr>
+                                <td colspan="3"><?php if ($palete['motivoNaoLiberar'] == '') {echo $palete['endereco'];} else { echo $palete['motivoNaoLiberar'];} ?></td>
+                                <td><?php echo "<b>Qtd: $palete[qtd] [$palete[lote]]</b>" ?></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
         </table>
+        <?php endif;?>
     </div>
-
 </form>
+<script>
+    var checkAllInput = $("#check_all");
+    var umasInput = $(".umas");
+
+    checkAllInput.change(function () {
+        var toggleTo = $(this).attr('checked');
+        umasInput.each(function (_,inpt) {
+            inpt.checked = toggleTo;
+        })
+    });
+
+    function verifyAllChecked() {
+        var allChecked = true;
+        umasInput.each(function (_,inpt) {
+            allChecked = inpt.checked;
+            if (!allChecked)
+                return allChecked;
+        })
+        checkAllInput.attr('checked', allChecked);
+    }
+
+    umasInput.change(function () {
+        verifyAllChecked();
+    })
+</script>

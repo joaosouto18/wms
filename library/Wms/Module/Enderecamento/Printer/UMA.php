@@ -37,6 +37,10 @@ class UMA extends Pdf {
 
         $paletes = explode(',', $palete);
         foreach ($paletes as $codPalete) {
+            $result = $paleteRepository->getPaletesAndVolumes(null,null,null,null,null,null,null,null,null,$codPalete);
+            if (empty($result) || $result[0]['QTD_VOL_TOTAL'] > $result[0]['QTD_VOL_CONFERIDO']) {
+                continue;
+            }
             $paleteEn = $paleteRepository->findOneBy(array('id' => $codPalete));
 
             $idRecebimento = $paleteEn->getRecebimento()->getId();
@@ -47,7 +51,6 @@ class UMA extends Pdf {
             if ($paleteEn->getDepositoEndereco() != null) {
                 $dscEndereco = $paleteEn->getDepositoEndereco()->getDescricao();
             }
-            ;
 
             $dadosPalete = array();
             $dadosPalete['endereco'] = $dscEndereco;

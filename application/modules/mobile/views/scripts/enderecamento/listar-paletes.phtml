@@ -8,13 +8,15 @@
         <button name="imprimir" value="Imprimir" class="btn gradientBtn" style="margin-top: 0pt; margin-bottom: 4pt; width:auto; ">Imprimir</button>
     </div>
     <div id="quantidade-grid" class="grid">
+        <?php if(!empty($this->paletes)):?>
         <div style="text-align: start">
             <label><input type="checkbox" id="check_all" checked style="height: auto !important; margin: 5px">Todos</label>
         </div>
+        <?php endif;?>
         <table style="width: 100%">
             <tbody>
             <?php
-            if(is_array($this->paletes)){
+            if(!empty($this->paletes)){
                 foreach ($this->paletes as $palete): ?>
                     <tr <?php if (!($this->color)) {echo 'style="background-color: #EDEDED"';}?>>
                         <td><input class="umas" name="palete[]" value="<?php echo $palete['ALL_UMA'] ?>" type="checkbox" checked/></td>
@@ -41,10 +43,26 @@
     </div>
 </form>
 <script>
-    $("#check_all").change(function () {
+    var checkAllInput = $("#check_all");
+    var umasInput = $(".umas");
+
+    checkAllInput.change(function () {
         var toggleTo = $(this).attr('checked');
-        $(".umas").each(function (_,inpt) {
+        umasInput.each(function (_,inpt) {
             inpt.checked = toggleTo;
         })
     });
+
+    function verifyAllChecked() {
+        var allChecked = true;
+        umasInput.each(function (_,inpt) {
+            allChecked = inpt.checked;
+            if (!allChecked) return
+        })
+        checkAllInput.attr('checked', allChecked);
+    }
+
+    umasInput.change(function () {
+        verifyAllChecked();
+    })
 </script>
