@@ -4437,7 +4437,7 @@ class ExpedicaoRepository extends EntityRepository {
                         if ($embalado == true) {
 
                             if ($modeloSeparacao->getTipoQuebraVolume() == "C") {
-                                $idCliente = $etiquetaSeparacao->getPedido()->getPessoa()->getCodClienteExterno();
+                                $idCliente = $etiquetaSeparacao->getPedido()->getPessoa()->getCodExterno();
                                 $idTipoVolume = $idCliente;
                             } else {
                                 $idCarga = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
@@ -4495,7 +4495,7 @@ class ExpedicaoRepository extends EntityRepository {
             $idCarga = 0;
             $idExpedicao = 0;
             foreach ($etiquetas as $etiqueta) {
-                $idCliente = $etiqueta->getPedido()->getPessoa()->getCodClienteExterno();
+                $idCliente = $etiqueta->getPedido()->getPessoa()->getCodExterno();
                 $idCarga = $etiqueta->getPedido()->getCarga()->getId();
                 $idExpedicao = $etiqueta->getPedido()->getCarga()->getExpedicao()->getId();
 

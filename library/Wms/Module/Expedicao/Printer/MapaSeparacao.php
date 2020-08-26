@@ -2586,7 +2586,7 @@ class MapaSeparacao extends eFPDF {
             $descricao = utf8_decode($mapaProduto->getProduto()->getDescricao());
             $cliente = $mapaProduto->getPedidoProduto()->getPedido()->getPessoa();
             $nomCliente = $cliente->getPessoa()->getNome();
-            $codCliente = $cliente->getCodClienteExterno();
+            $codCliente = $cliente->getCodExterno();
 
             /** @var Produto\Embalagem|Produto\Volume $elemento */
             $elemento = null;

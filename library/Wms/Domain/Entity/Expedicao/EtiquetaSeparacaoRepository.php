@@ -2134,7 +2134,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
                 $cliente = $pedidoProdutoEn->getPedido()->getPessoa();
                 $nomCliente = $cliente->getPessoa()->getNome();
-                $codQuebra = $cliente->getCodClienteExterno();
+                $codQuebra = $cliente->getCodExterno();
                 $dscQuebra = "CLIENTE: $codQuebra - $nomCliente";
             }
 
@@ -2167,7 +2167,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //PRAÇA
             elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
-                $codQuebra = $clienteRepo->getCodPracaByClienteId($pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno());
+                $codQuebra = $clienteRepo->getCodPracaByClienteId($pedidoProdutoEn->getPedido()->getPessoa()->getCodExterno());
                 if ($codQuebra == 0){
                     $nomPraca = "(SEM PRAÇA DEFINIDA)";
                 } else {
@@ -2182,7 +2182,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $codQuebra = 0;
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
-                $clienteEn = $clienteRepo->findOneBy(array('codClienteExterno' => $pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno()));
+                $clienteEn = $clienteRepo->findOneBy(array('codExterno' => $pedidoProdutoEn->getPedido()->getPessoa()->getCodExterno()));
                 $rota = $clienteEn->getRota();
                 if ($rota != null) $codQuebra = $rota->getId();
 
@@ -2210,7 +2210,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         break;
                     case ModeloSeparacao::QUEBRA_PULMAO_DOCA_ROTA:
                         $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
-                        $clienteEn = $clienteRepo->findOneBy(array('codClienteExterno' => $pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno()));
+                        $clienteEn = $clienteRepo->findOneBy(array('codExterno' => $pedidoProdutoEn->getPedido()->getPessoa()->getCodExterno()));
                         $rota = $clienteEn->getRota();
                         if ($rota != null) $codQuebra = $rota->getId();
 
@@ -2225,7 +2225,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         break;
                     case ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
                         $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
-                        $codQuebra = $clienteRepo->getCodPracaByClienteId($pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno());
+                        $codQuebra = $clienteRepo->getCodPracaByClienteId($pedidoProdutoEn->getPedido()->getPessoa()->getCodExterno());
                         if ($codQuebra == 0){
                             $nomPraca = "(SEM PRAÇA DEFINIDA)";
                         } else {
@@ -2237,7 +2237,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     case ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
                         $cliente = $pedidoProdutoEn->getPedido()->getPessoa();
                         $nomCliente = $cliente->getPessoa()->getNome();
-                        $codQuebra = $cliente->getCodClienteExterno();
+                        $codQuebra = $cliente->getCodExterno();
                         $dscPD = "CLIENTE: $codQuebra - $nomCliente";
                         break;
                 }
@@ -2328,7 +2328,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //CLIENTE
             $quebra = $quebra['tipoQuebra'];
             if ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
-                $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
+                $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodExterno();
                 $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
@@ -2378,7 +2378,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //PRAÇA
             if ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
-                $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
+                $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodExterno());
                 if ($codPraca == 0){
                     $nomPraca = "Sem Praça Definida";
                 } else {
@@ -3336,7 +3336,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.dataConferencia,
                       es.dataConferenciaTransbordo,
                       es.codOSTransbordo,
-                      cli.codClienteExterno,
+                      cli.codExterno,
                       usuarioPessoa.login,
                       usuarioTransbordo.login as loginTransbordo,
                       siglaEpx.sigla as siglaEpxedicao')

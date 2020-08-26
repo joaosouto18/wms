@@ -18,7 +18,7 @@ class ClienteRepository extends AtorRepository
             if (!$clienteEn)
                 $clienteEn = new Cliente();
 
-            $clienteEn->setCodClienteExterno($idCliente);
+            $clienteEn->setCodExterno($idCliente);
             $em->persist($clienteEn);
 
         } catch (\Exception $e) {
@@ -99,7 +99,7 @@ class ClienteRepository extends AtorRepository
 
     public function getCodPracaByClienteId($codClienteExterno) {
         $codPraca = 0;
-        $clienteEn = $this->findOneBy(array('codClienteExterno'=>$codClienteExterno));
+        $clienteEn = $this->findOneBy(array('codExterno'=>$codClienteExterno));
         $praca = $clienteEn->getPraca();
             if ($praca != null) return $praca->getId();
 
