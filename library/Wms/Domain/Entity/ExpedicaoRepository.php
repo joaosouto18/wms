@@ -4941,6 +4941,9 @@ class ExpedicaoRepository extends EntityRepository {
         if ($produtoEn->getIndControlaLote() == 'S' && !empty($lote)) {
             $whereArr[] = "REP.DSC_LOTE = '$lote'";
         }
+        if (!empty($idEndereco)) {
+            $whereArr[] = "RE.COD_DEPOSITO_ENDERECO = $idEndereco";
+        }
 
         $where = (!empty($whereArr)) ? " AND " . implode(" AND ", $whereArr ): "";
 
@@ -4952,7 +4955,6 @@ class ExpedicaoRepository extends EntityRepository {
                    AND REP.COD_PRODUTO = '$codProduto'
                    AND REP.DSC_GRADE = '$grade'
                    AND RE.IND_ATENDIDA = 'N'
-                   AND RE.COD_DEPOSITO_ENDERECO = $idEndereco
                    $where
                  ORDER BY $ordenacao";
         $reservas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
