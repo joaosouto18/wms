@@ -971,9 +971,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if (empty($modeloSeparacaoEn))
                 throw new \Exception("O modelo de separação $idModeloSeparacao não foi encontrado");
 
-            $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
-            $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
-            $quebrasEmbalado = $modeloSeparacaoRepo->getQuebraEmbalado($idModeloSeparacao);
+            $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($modeloSeparacaoEn->getId());
+            $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($modeloSeparacaoEn->getId());
+            $quebrasEmbalado = $modeloSeparacaoRepo->getQuebraEmbalado($modeloSeparacaoEn->getId());
             $forcarEmbVendaDefault = $modeloSeparacaoEn->getForcarEmbVenda();
             $quebraUnidFracionavel = ($modeloSeparacaoEn->getQuebraUnidFracionavel() == 'S');
 
