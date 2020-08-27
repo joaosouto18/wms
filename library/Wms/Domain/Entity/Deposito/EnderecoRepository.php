@@ -1217,6 +1217,12 @@ class EnderecoRepository extends EntityRepository {
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 
+    /**
+     * @param $enderecoAntigoEn EnderecoEntity
+     * @param $enderecoNovoEn EnderecoEntity
+     * @param $embVolEn
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function verificaAlocacaoPickingDinamico($enderecoAntigoEn, $enderecoNovoEn, $embVolEn){
 
         $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
