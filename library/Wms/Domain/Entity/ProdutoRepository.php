@@ -361,10 +361,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 }
             };
 
-            $menorEmb = new \stdClass();
-            $menorEmb->id = null;
-            $menorEmb->qtd = 9999999999999;
-
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 if (isset($itemEmbalagem['quantidade']))
                     $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
@@ -497,11 +493,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             foreach ($values['dadosLogisticos'] as $key => $dadoLogistico) {
                                 $values['dadosLogisticos'][$key]['idEmbalagem'] = $idEmbalagem;
                             }
-                        }
-
-                        if ($embalagemEntity->getQuantidade() < $menorEmb->qtd) {
-                            $menorEmb->qtd = $embalagemEntity->getQuantidade();
-                            $menorEmb->id = $idEmbalagem;
                         }
 
                         break;
@@ -670,35 +661,32 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
                 $embsArray = $embalagemRepo->findBy(['codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade(), 'dataInativacao' => null], ['quantidade' => 'ASC']);
                 if (!empty($embsArray)) {
-                    $menorEmb->id = $embsArray[0]->getId();
-                    $menorEmb->qtd = $embsArray[0]->getQuantidade();
+                    $idDefaultPDL = "-default" . time();
+                    $idDefaultNP = "-default" . time();
+                    $values['dadosLogisticos'][$idDefaultPDL] = [
+                        'acao' => 'incluir',
+                        'id' => $idDefaultPDL,
+                        'idEmbalagem' => $embsArray[0]->getId(),
+                        'qtdEmbalagem' => $embsArray[0]->getQuantidade(),
+                        'idNormaPaletizacao' => $idDefaultNP,
+                        'largura' => 0,
+                        'altura' => 0,
+                        'profundidade' => 0,
+                        'cubagem' => 0,
+                        'peso' => 0
+                    ];
+                    $values['normasPaletizacao'][$idDefaultNP] = [
+                        "acao" => "incluir",
+                        "id" => $idDefaultNP,
+                        "idUnitizadorTemp" => $unitizador->getId(),
+                        "idUnitizador" => $unitizador->getId(),
+                        'isPadrao' => "S",
+                        'numLastro' => 999,
+                        'numCamadas' => 999,
+                        'numNorma' => 998001,
+                        'numPeso' => 0
+                    ];
                 }
-
-                $idDefaultPDL = "-default" . time();
-                $idDefaultNP = "-default" . time();
-                $values['dadosLogisticos'][$idDefaultPDL] = [
-                    'acao' => 'incluir',
-                    'id' => $idDefaultPDL,
-                    'idEmbalagem' => $menorEmb->id,
-                    'qtdEmbalagem' => $menorEmb->qtd,
-                    'idNormaPaletizacao' => $idDefaultNP,
-                    'largura' => 0,
-                    'altura' => 0,
-                    'profundidade' => 0,
-                    'cubagem' => 0,
-                    'peso' => 0
-                ];
-                $values['normasPaletizacao'][$idDefaultNP] = [
-                    "acao" => "incluir",
-                    "id" => $idDefaultNP,
-                    "idUnitizadorTemp" => $unitizador->getId(),
-                    "idUnitizador" => $unitizador->getId(),
-                    'isPadrao' => "S",
-                    'numLastro' => 999,
-                    'numCamadas' => 999,
-                    'numNorma' => 998001,
-                    'numPeso' => 0
-                ];
             }
             // gravo dados logisticos
             $this->persistirDadosLogisticos($values, $produtoEntity);

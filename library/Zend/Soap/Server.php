@@ -1023,7 +1023,7 @@ class Zend_Soap_Server implements Zend_Server_Interface
         $diretorio = APPLICATION_PATH . '/../data/log/' . $dtAtual;
 
         if (!is_dir($diretorio)) {
-            mkdir($diretorio, 777);
+            mkdir($diretorio, 0777);
         }
         $nomeServico = $this->_class;
 
@@ -1034,6 +1034,7 @@ class Zend_Soap_Server implements Zend_Server_Interface
         $file = fopen($nomeArquivo, "a");
         fwrite($file, $texto);
         fclose($file);
+        chmod($file, 0777);
     }
 
 }
