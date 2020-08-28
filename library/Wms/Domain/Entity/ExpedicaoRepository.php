@@ -5425,7 +5425,7 @@ class ExpedicaoRepository extends EntityRepository {
                   WHERE 1 = 1
                         AND P.CENTRAL_ENTREGA = $central
                         $whereFinal
-                  ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_EXTERNO, COD_PEDIDO, COD_PRODUTO";
+                  ORDER BY C.COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, CL.COD_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
