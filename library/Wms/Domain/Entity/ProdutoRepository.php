@@ -632,12 +632,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 if ($itemEmbalagem['acao'] != 'excluir') {
                     $embsEditadas[$embalagemEntity->getId()] = $embalagemEntity->getCodigoBarras();
                 }
-
-                $altura = null;
-                $largura = null;
-                $profundidade = null;
-                $cubagem = null;
-                $peso = null;
             }
             if (!empty($arrItens)) {
                 $arrStr = [];

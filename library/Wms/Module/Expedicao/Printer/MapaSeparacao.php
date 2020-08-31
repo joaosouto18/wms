@@ -20,6 +20,13 @@ class MapaSeparacao extends eFPDF {
     private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total, $pesoCarga, $cubagemCarga;
     private $itinerarios;
 
+    private $arrLimitPage = [
+        5 => 42,
+        11 => 30,
+        14 => 42,
+        15 => 35
+    ];
+
     /** @var $em EntityManager */
     private $em;
 
@@ -73,9 +80,11 @@ class MapaSeparacao extends eFPDF {
         $qtdProdPorMapa = array();
         $peso = 0;
         $cubagem = 0;
+        $qtdTotalExpedicao = 0;
         foreach ($mapaSeparacao as $mapa) {
             $qtdProdutos = $this->mapaSeparacaoProdRepo->findBy(array('mapaSeparacao' => $mapa->getId()));
             $qtdProdPorMapa[] = array('idMapa' => $mapa->getId(), 'qtdProd' => count($qtdProdutos));
+            $qtdTotalExpedicao += count($qtdProdutos);
 
             foreach ($qtdProdutos as $prod) {
                 $qtdEmbalagem = $prod->getQtdEmbalagem();
@@ -89,24 +98,24 @@ class MapaSeparacao extends eFPDF {
                     $peso    += ($pesoProduto->getPeso() * $quantidade * $qtdEmbalagem);
                     $cubagem += ($pesoProduto->getCubagem() * $quantidade * $qtdEmbalagem);
                 }
-
-
             }
         }
 
         $this->pesoCarga = $peso;
         $this->cubagemCarga = $cubagem;
 
-        if (($modelo == 11) || ($modelo == 5) || $modelo == 14){
-            if ($modelo == 11) $limitPg = 30;
-            if ($modelo == 5)  $limitPg = 42;
-            if ($modelo == 14) $limitPg = 42;
+
+        if (isset($this->arrLimitPage[$modelo])){
+            $limitPg = $this->arrLimitPage[$modelo];
 
             $qtdPag = 0;
-            foreach ($qtdProdPorMapa as $mapa) {
-                $qtdPag += ceil($mapa['qtdProd'] / $limitPg);
+            if ($modelo == 15) {
+                $qtdPag = ceil($qtdTotalExpedicao / $limitPg);
+            } else {
+                foreach ($qtdProdPorMapa as $mapa) {
+                    $qtdPag += ceil($mapa['qtdProd'] / $limitPg);
+                }
             }
-            $qtdPag = $qtdPag;
         } else {
             $qtdPag = count($mapaSeparacao);
         }
@@ -213,6 +222,9 @@ class MapaSeparacao extends eFPDF {
                         break;
                     case 14:
                         $this->layoutModelo14($mapa, $produtos, !empty($quebraConsolidado), ['txt' => $txtCarga, 'str' => $stringCargas]);
+                        break;
+                    case 15:
+                        $this->layoutModelo15($mapa, $produtos, !empty($quebraConsolidado), ['txt' => $txtCarga, 'str' => $stringCargas]);
                         break;
                     default:
                         $this->layoutModelo1($mapa, $produtos, $usaGrade, !empty($quebraConsolidado), $dscBox, ['txt' => $txtCarga, 'str' => $stringCargas]);
@@ -2666,6 +2678,117 @@ class MapaSeparacao extends eFPDF {
         $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
         $this->Cell($wPage * 2, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
         $this->InFooter = false;
+    }
+
+    private function layoutModelo15($mapa, $produtos, $tipoQuebra, $arrDataCargas) {
+
+        $this->idMapa = $mapa->getId();
+        $this->quebrasEtiqueta = $mapa->getDscQuebra();
+        $pesoTotal = 0.0;
+        $cubagemTotal = 0;
+
+        $this->AddPage();
+
+        $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
+        /**
+         * Cria cabeçalho
+         */
+        //Select Arial bold 8
+        $this->Cell(20, 1, "", 0, 1);
+        $total = 0;
+        $contadorPg = 0;
+        $limitPg = $this->arrLimitPage[15];
+        $totalPg = $this->countPages;
+        $pgAtual = 1;
+        $this->buildHead($this, $imgCodBarras, $tipoQuebra, $arrDataCargas, '1 de ' . $totalPg);
+        $qtdProdutos = 0;
+        $codProdutoAnterior = "";
+        foreach ($produtos as $produto) {
+            $produto = reset($produto);
+            $contadorPg++;
+            if ($contadorPg == $limitPg) {
+                $contadorPg = 0;
+                $pgAtual++;
+                /**
+                 * Cria rodape
+                 */
+                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas, $qtdProdutos);
+                $total = 0;
+                $qtdProdutos = 0;
+                $codProdutoAnterior = "";
+                /**
+                 * Cria cabeçalho
+                 */
+                $paginas = $pgAtual . ' de ' . $totalPg;
+                $this->buildHead($this, $imgCodBarras, $tipoQuebra, $arrDataCargas, $paginas);
+            }
+            $this->SetFont('Arial', null, 9);
+            $pesoProduto = $this->pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
+
+            $codigoBarras = '';
+            $embalagem = '';
+
+            $embalagemEn = $produto->getProdutoEmbalagem();
+            $qtdEmbalagem = 1;
+            if (isset($embalagemEn) && !empty($embalagemEn)) {
+                $codigoBarras = '...' . substr($embalagemEn->getCodigoBarras(), -5);
+                $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
+                $qtdEmbalagem = $embalagemEn->getQuantidade();
+            }
+
+            $endereco = $produto->getDepositoEndereco();
+            $codProduto = $produto->getCodProduto();
+            $descricao = self::SetStringByMaxWidth(utf8_decode($produto->getProduto()->getDescricao()), 90);
+            $referencia = $produto->getProduto()->getReferencia();
+            $quantidade = $produto->getQtdSeparar();
+            $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
+            $dscEndereco = "";
+
+            if ($endereco != null)
+                $dscEndereco = $endereco->getDescricao();
+
+            if (isset($pesoProduto) && !empty($pesoProduto)) {
+                $pesoTotal += ($pesoProduto->getPeso() * $quantidade * $qtdEmbalagem);
+                $cubagemTotal += $pesoProduto->getCubagem() * $quantidade * $qtdEmbalagem;
+            }
+
+            if ($tipoQuebra) {
+                $this->Cell(21, 4, $dscEndereco, 0, 0);
+                $this->Cell(13, 4, $codProduto, 0, 0);
+                $this->Cell(90, 4, $descricao, 0, 0);
+                $this->Cell(18, 4, $codigoBarras, 0, 0);
+                $this->Cell(18, 4, $referencia, 0, 0);
+                $this->Cell(19, 4, $embalagem, 0, 0);
+                $this->SetFont('Arial', "B", 10);
+                $this->Cell(15, 4, $quantidade, 0, 0);
+                $this->Cell(15, 4, $caixas, 0, 1, 'C');
+            } else {
+                $this->Cell(21, 4, $dscEndereco, 0, 0);
+                $this->Cell(13, 4, $codProduto, 0, 0);
+                $this->Cell(90, 4, $descricao, 0, 0);
+                $this->Cell(18, 4, $codigoBarras, 0, 0);
+                $this->Cell(18, 4, $referencia, 0, 0);
+                $this->Cell(19, 4, $embalagem, 0, 0);
+                $this->SetFont('Arial', "B", 10);
+                $this->Cell(15, 4, $quantidade, 0, 1, 'C');
+            }
+            $this->SetFont('Arial', null, 9);
+            $total += $quantidade;
+            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+
+            if ($codProduto != $codProdutoAnterior) {
+                $qtdProdutos += 1;
+            }
+            $codProdutoAnterior = $codProduto;
+        }
+        //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
+        /**
+         * Cria rodape
+         */
+        if ($contadorPg > 0) {
+            $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas, $qtdProdutos);
+        }
+
     }
 
     /**

@@ -508,6 +508,10 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $descricaoEmbalagem = $embalagemCadastrada->getDescricao();
             $encontrouEmbalagem = false;
+            $altura = 0;
+            $largura = 0;
+            $comprimento = 0;
+            $peso = 0;
 
             $fator = $embalagemCadastrada->getQuantidade();
             foreach ($embalagens as $embalagemWs) {
@@ -516,6 +520,10 @@ class Wms_WebService_Produto extends Wms_WebService {
                     $encontrouEmbalagem = true;
                     $descricaoEmbalagem = $embalagemWs->descricao;
                     $fator = $embalagemWs->qtdEmbalagem;
+                    $altura = floatval($embalagemWs->altura);
+                    $largura = floatval($embalagemWs->largura);
+                    $comprimento = floatval($embalagemWs->comprimento);
+                    $peso = floatval($embalagemWs->peso);
                     continue;
                 }
             }
@@ -536,7 +544,11 @@ class Wms_WebService_Produto extends Wms_WebService {
                 'pontoReposicao' => $embalagemCadastrada->getPontoReposicao(),
                 'descricao' => $descricaoEmbalagem,
                 'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
-                'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
+                'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault(),
+                'altura' => $altura,
+                'largura' => $largura,
+                'profundidade' => $comprimento,
+                'peso' => $peso
             );
 
             if ($encontrouEmbalagem == false) {
@@ -578,7 +590,11 @@ class Wms_WebService_Produto extends Wms_WebService {
                     'pontoReposicao' => 0,
                     'endereco' => null,
                     'isEmbExpDefault' => 'N',
-                    'isEmbFracionavelDefault' => 'N'
+                    'isEmbFracionavelDefault' => 'N',
+                    'altura' => floatval($embalagemWs->altura),
+                    'largura' => floatval($embalagemWs->largura),
+                    'profundidade' => floatval($embalagemWs->comprimento),
+                    'peso' => floatval($embalagemWs->peso)
                 );
                 $embalagensArray[] = $embalagemArray;
             }

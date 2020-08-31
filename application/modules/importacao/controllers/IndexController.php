@@ -206,12 +206,12 @@ class Importacao_IndexController extends Action
                     }
 
                     /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedor */
-                    $fornecedor = $fornecedorRepo->findOneBy(array('codExterno' => $arrRegistro['idExterno']));
+                    $fornecedor = $fornecedorRepo->findOneBy(array('codExterno' => $arrRegistro['codExterno']));
                     if (!empty($fornecedor)){
                         $nome = $fornecedor->getPessoa()->getNome();
                         $nomFantasia = $fornecedor->getPessoa()->getNomeFantasia();
                         $nom = (!empty($nomFantasia)) ? $nomFantasia : $nome;
-                        $arrErroRows[$linha] = "O fornecedor $nom já está cadastrado com o código $arrRegistro[idExterno]";
+                        $arrErroRows[$linha] = "O fornecedor $nom já está cadastrado com o código $arrRegistro[codExterno]";
                         break;
                     }
 
@@ -225,7 +225,7 @@ class Importacao_IndexController extends Action
                                 $arrErroRows[$linha] = 'Fornecedor já cadastrado: ' . $arrRegistro['nome'];
                                 break;
                             } else {
-                                $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
+                                $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['codExterno']);
                                 if (is_string($result)) {
                                     $arrErroRows['exception'] = $result;
                                 } else {
@@ -244,7 +244,7 @@ class Importacao_IndexController extends Action
                                 $arrErroRows[$linha] = 'Fornecedor já cadastrado: ' . $arrRegistro['nome'];
                                 break;
                             } else {
-                                $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
+                                $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['codExterno']);
                                 if (is_string($result)) {
                                     $arrErroRows['exception'] = $result;
                                 } else {
