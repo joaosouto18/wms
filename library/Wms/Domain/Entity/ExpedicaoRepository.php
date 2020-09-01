@@ -1892,7 +1892,7 @@ class ExpedicaoRepository extends EntityRepository {
      */
     public function getCodCargasExterno($idExpedicao) {
         $source = $this->getEntityManager()->createQueryBuilder()
-                ->select('c.codCargaExterno, c.sequencia')
+                ->select('c.codCargaExterno, c.sequencia, c.placaCarga')
                 ->from('wms:Expedicao', 'e')
                 ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
                 ->where('e.id = :idExpedicao')
