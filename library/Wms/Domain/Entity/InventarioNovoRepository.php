@@ -345,9 +345,9 @@ class InventarioNovoRepository extends EntityRepository
                 ->setParameter(11, $params['linhaSep']);
         
         if (!empty($params['idCarac'])) {
-            $caracteristicas = json_decode($params['idCarac'], true);
+            $caracteristicas = array_keys(json_decode($params['idCarac'], true), true);
             if (!empty($caracteristicas)) {
-                $caracSelected = implode(',', array_keys($caracteristicas, true));
+                $caracSelected = implode(',', $caracteristicas);
                 $query->andWhere("de.idCaracteristica IN ($caracSelected)");
             }
         }
