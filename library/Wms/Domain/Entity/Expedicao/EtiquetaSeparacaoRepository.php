@@ -436,8 +436,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(" es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
-                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega, pedEnd.localidade as cidadeEntrega, uf.referencia siglaEstado,
-                    exp.id as reentregaExpedicao, pedEnd.descricao ruaEntrega, pedEnd.numero numeroEntrega,
+                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega,
+                    exp.id as reentregaExpedicao,
                     r.id as codReentrega,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                     CASE WHEN emb.CBInterno    IS NULL THEN vol.CBInterno ELSE emb.CBInterno END as CBInterno,
@@ -447,8 +447,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'es.codStatus = s.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
             ->leftJoin('etq.reentrega','r')
-            ->leftJoin(PedidoEndereco::class, 'pedEnd', 'WITH', 'pedEnd.pedido = etq.pedido')
-            ->leftJoin('wms:Util\Sigla', 'uf', 'WITH', 'uf.id = pedEnd.uf')
             ->leftJoin('r.carga','c')
             ->leftJoin('c.expedicao','exp')
             ->leftJoin('etq.produtoEmbalagem','emb')
