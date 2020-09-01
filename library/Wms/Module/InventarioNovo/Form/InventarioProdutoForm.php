@@ -13,6 +13,14 @@ class InventarioProdutoForm extends Form
 {
     public function init($utilizaGrade = 'N')
     {
+        $caractOptions = $this->getEm()->getRepository('wms:Deposito\Endereco\Caracteristica')->getIdValue();
+        foreach ($caractOptions as $key => $value) {
+            $caractOptions[$key] = [
+                'label' => $value,
+                'attribs' => ['ng-model' => "criterioForm.idCarac[$key]"]
+            ];
+        }
+
         $this->setAttribs(array('id' => 'criterio-inventario-form', 'class' => 'filtro'));
         try{
             $this->addElement('text', 'codProduto', array(
@@ -36,6 +44,12 @@ class InventarioProdutoForm extends Form
                     'label' => 'Incluir picking (mesmo se estiver vazio)',
                     'checkedValue' => 'true',
                     'ng-model' => 'criterioForm.incluirPicking'
+                ))
+                ->addElement('multiCheckbox', 'idCarac', array(
+                    'class' => 'medio',
+                    'multiOptions' => $caractOptions,
+                    'checkedValue' => true,
+                    'label' => 'Caractristica',
                 ))
                 ->addElement('select', 'linhaSep', array(
                     'mostrarSelecione' => true,
@@ -73,7 +87,7 @@ class InventarioProdutoForm extends Form
                 ));
             }
 
-            $this->addDisplayGroup(array('criterio', 'codProduto', 'grade', 'descricao', 'fabricante', 'classe', 'linhaSep', 'incluirPicking', 'btnBuscar', 'clearForm'), 'identificacao', array('legend' => 'Filtros de Busca'));
+            $this->addDisplayGroup(array('criterio', 'codProduto', 'grade', 'descricao', 'fabricante', 'classe', 'linhaSep', 'idCarac', 'incluirPicking', 'btnBuscar', 'clearForm'), 'identificacao', array('legend' => 'Filtros de Busca'));
         }
         catch (\Zend_Form_Exception $e) {
 
