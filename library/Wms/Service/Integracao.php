@@ -671,7 +671,7 @@ class Integracao {
 
             if ($FimNotaAtual == true) {
 
-                $tipoNota = isset($notaFiscal['TIPO_NOTA']) && !empty($notaFiscal['TIPO_NOTA']) ? $notaFiscal['TIPO_NOTA'] : 'ENTRADA_FORNECEDOR';
+                $tipoNota = isset($notaFiscal['TIPO_NOTA']) && !empty($notaFiscal['TIPO_NOTA']) ? $notaFiscal['TIPO_NOTA'] : null;
 
                 $notasFiscais[] = array(
                     'id' => $notaFiscal['NUM_NOTA_FISCAL'],
