@@ -648,7 +648,7 @@ class Integracao {
                 'grade' => $notaFiscal['DSC_GRADE'],
                 'quantidade' => $notaFiscal['QTD_ITEM'],
                 'peso' => $notaFiscal['QTD_ITEM'],
-                'lote' => $notaFiscal['DSC_LOTE']
+                'lote' => (!empty($notaFiscal['DSC_LOTE'])) ? $notaFiscal['DSC_LOTE'] : null
             );
 
             $numNfAtual = $notaFiscal['NUM_NOTA_FISCAL'];
