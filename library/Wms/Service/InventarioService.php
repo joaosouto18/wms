@@ -666,8 +666,11 @@ class InventarioService extends AbstractService
                     (!$invContEnd->isContagemDivergencia() && ($invContEnd->getSequencia() >= $inventario['numContagens'])) ? 1 : $invContEnd->getContagem() + 1,
                     $contDiverg
                 );
-                $situacao = ($contDiverg) ? "divergência" : "sucesso";
-                return ["code" => 2, "msg" => "Contagem finalizada com $situacao"];
+
+                if (!$contDiverg)
+                    return ["code" => 2, "msg" => "Contagem finalizada com sucesso"];
+                else
+                    return ["code" => 3, "msg" => "Contagem finalizada com divergência"];
             } else {
                 return $this->finalizarEndereco($invContEnd->getInventarioEndereco());
             }
@@ -687,7 +690,7 @@ class InventarioService extends AbstractService
     {
         try {
 
-            if (isset($produto["idVolume"]) && ($produto["idVolume"] != 'null') ) {
+            if (!empty($produto["idVolume"])) {
                 $isEmb = false;
                 $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
                 $volumeEn = $produtoVolumeRepo->find($produto["idVolume"]);
@@ -777,7 +780,7 @@ class InventarioService extends AbstractService
                 return $this->concluirInventario($inventarioEnd->getInventario());
             }
 
-            return ["code" => 3, "msg" => "Endereço finalizado com sucesso"];
+            return ["code" => 4, "msg" => "Endereço finalizado com sucesso"];
 
         } catch (\Exception $e) {
             throw $e;
@@ -795,7 +798,7 @@ class InventarioService extends AbstractService
             $inventario->concluir();
             $this->em->persist($inventario);
             self::newLog($inventario,InventarioNovo\InventarioAndamento::STATUS_CONCLUIDO);
-            return ["code" => 4, "msg" => "Inventário concluído com sucesso"];
+            return ["code" => 5, "msg" => "Inventário concluído com sucesso"];
         } catch (\Exception $e) {
             throw $e;
         }
@@ -875,6 +878,7 @@ class InventarioService extends AbstractService
         $this->em->beginTransaction();
         try{
             $produto["idVolume"] = json_decode($produto["idVolume"]);
+            $produto["lote"] = json_decode($produto["lote"]);
             $this->zerarProduto(
                 $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia, true),
                 $produto,
