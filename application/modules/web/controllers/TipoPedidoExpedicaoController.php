@@ -8,13 +8,13 @@
 class Web_TipoPedidoExpedicaoController extends \Wms\Module\Web\Controller\Action\Crud
 {
 
-    protected $entityName = 'Deposito\Expedicao\Pedido\Tipo';
+    protected $entityName = "Expedicao\TipoPedido";
 
     public function indexAction()
     {
         $source = $this->em->createQueryBuilder()
                 ->select('t')
-                ->from('wms:Deposito\Expedicao\Pedido\Tipo', 't')
+                ->from(\Wms\Domain\Entity\Expedicao\TipoPedido::class, 't')
                 ->orderBy('t.descricao');
 
         $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
@@ -26,6 +26,10 @@ class Web_TipoPedidoExpedicaoController extends \Wms\Module\Web\Controller\Actio
                 ->addColumn(array(
                     'label' => 'Descrição',
                     'index' => 'descricao'
+                ))
+                ->addColumn(array(
+                    'label' => 'Código ERP',
+                    'index' => 'codExterno'
                 ))
                 ->addAction(array(
                     'label' => 'Editar',
