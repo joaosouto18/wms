@@ -272,9 +272,13 @@ class InventarioNovoRepository extends EntityRepository
             $query->andWhere("de.status = :status")
                 ->setParameter('status', $params['status']);
 
-        if (!empty($params['idCarac']))
-            $query->andWhere("de.idCaracteristica = ?1")
-                ->setParameter(1, $params['idCarac']);
+        if (!empty($params['idCarac'])) {
+            $caracteristicas = array_keys(json_decode($params['idCarac'], true), true);
+            if (!empty($caracteristicas)) {
+                $caracSelected = implode(',', $caracteristicas);
+                $query->andWhere("de.idCaracteristica IN ($caracSelected)");
+            }
+        }
 
         if (!empty($params['estrutArmaz']))
             $query->andWhere("de.idEstruturaArmazenagem = ?2")
@@ -313,15 +317,14 @@ class InventarioNovoRepository extends EntityRepository
             ->innerJoin('e.depositoEndereco', 'de')
             ->innerJoin('e.produto', 'p')
             ->innerJoin('p.classe', 'cl')
-            ->innerJoin('p.fabricante', 'f')
             ->innerJoin('de.caracteristica', 'c')
-            ->innerJoin('p.linhaSeparacao', 'ls')
         ;
 
         $query->distinct(true);
 
         if (!empty($params['fabricante']))
-            $query->andWhere("f.id = ?6")
+            $query->innerJoin('p.fabricante', 'f')
+                ->andWhere("f.id = ?6")
                 ->setParameter(6, $params['fabricante']);
 
         if (!empty($params['descricao']))
@@ -341,7 +344,8 @@ class InventarioNovoRepository extends EntityRepository
                 ->setParameter(10, $params['classe']);
 
         if (!empty($params['linhaSep']))
-            $query->andWhere("ls.id = ?11")
+            $query->innerJoin('p.linhaSeparacao', 'ls')
+                ->andWhere("ls.id = ?11")
                 ->setParameter(11, $params['linhaSep']);
         
         if (!empty($params['idCarac'])) {
@@ -369,17 +373,16 @@ class InventarioNovoRepository extends EntityRepository
                     REPLACE(de.descricao, '.', '') cleanEnd")
                 ->from("wms:Produto", 'p')
                 ->innerJoin('p.classe', 'cl')
-                ->innerJoin('p.fabricante', 'f')
-                ->innerJoin('p.linhaSeparacao', 'ls')
                 ->leftJoin('p.embalagens', 'pe')
                 ->leftJoin('p.volumes', 'pv')
-                ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco')
+                ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco)')
                 ->innerJoin('de.caracteristica', 'c');
 
             $query->distinct(true);
 
             if (!empty($params['fabricante']))
-                $query->andWhere("f.id = ?6")
+                $query->innerJoin('p.fabricante', 'f')
+                    ->andWhere("f.id = ?6")
                     ->setParameter(6, $params['fabricante']);
 
             if (!empty($params['descricao']))
@@ -399,7 +402,8 @@ class InventarioNovoRepository extends EntityRepository
                     ->setParameter(10, $params['classe']);
 
             if (!empty($params['linhaSep']))
-                $query->andWhere("ls.id = ?11")
+                $query->innerJoin('p.linhaSeparacao', 'ls')
+                    ->andWhere("ls.id = ?11")
                     ->setParameter(11, $params['linhaSep']);
 
             $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
