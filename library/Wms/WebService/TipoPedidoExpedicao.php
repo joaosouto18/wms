@@ -1,7 +1,5 @@
 <?php
 
-use Bisna\Base\Domain\Entity\Repository as BisnaRepository;
-
 /**
  * 
  */
@@ -10,21 +8,21 @@ class Wms_WebService_TipoPedidoExpedicao extends Wms_WebService
 
     /**
      * Adiciona um TipoPedidoExpedicao no WMS
-     * 
-     * @param string $nome Nome do Tipo de Pedido de Expedição
+     *
      * @param string $descricao Descrição do Tipo de Pedido de Expedição
+     * @param string $codExterno Código do Tipo de Pedido no ERP
      * @return boolean|Exception se o Tipo de Pedido de Expedicao foi inserido com sucesso ou não
      */
-    public function salvar($nome, $descricao)
+    public function salvar($descricao, $codExterno)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         try {
             $em->beginTransaction();
             
-            $tipoPedidoExpedicao  = new Wms\Domain\Entity\Deposito\Expedicao\Pedido\Tipo;
-            $tipoPedidoExpedicao->setNome($nome)
-                    ->setDescricao($descricao);
+            $tipoPedidoExpedicao  = new Wms\Domain\Entity\Expedicao\TipoPedido();
+            $tipoPedidoExpedicao->setDescricao($descricao)
+                    ->setCodExterno($codExterno);
 
             $em->persist($tipoPedidoExpedicao);
             $em->flush();
