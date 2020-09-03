@@ -356,13 +356,16 @@ class EtiquetaEmbalados extends eFPDF
 
     private function bodyExpedicaoModelo6($volumes, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
-        $totalEtiquetas = count($volumes);
         foreach ($volumes as $volume) {
 
             $existeItensPendentes = true;
-            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S'));
+
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']));
+            $totalEtiquetas = count($mapaSeparacaoEmbaladoRepo->findBy(array('pessoa' => $mapaSeparacaoEmbaladoEn->getPessoa(), 'mapaSeparacao' => $mapaSeparacaoEmbaladoEn->getMapaSeparacao())));
+
             if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
-                $existeItensPendentes = false;
+                if ($mapaSeparacaoEmbaladoEn->getUltimoVolume() == 'S')
+                    $existeItensPendentes = false;
             }
 
             $imgW = 45;
