@@ -408,7 +408,7 @@ class InventarioNovoRepository extends EntityRepository
 
             $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
 
-            $arr = array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR);
+            $arr = array_values(array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR));
         }
 
         return $arr;

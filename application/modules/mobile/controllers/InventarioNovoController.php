@@ -186,9 +186,13 @@ class Mobile_InventarioNovoController extends Action
 
             $response = $inventarioSrvc->finalizarOs( $inventario, $contEnd, \Wms\Domain\Entity\OrdemServico::COLETOR);
 
+            if ($response['code'] === 3) {
+                throw new Exception($response['msg'], 4001);
+            }
+
             $this->_helper->json(
                 [
-                    "status" => ($response['code'] !== 3) ? "ok": "error",
+                    "status" => "ok",
                     'response' => $response
                 ]
             );
