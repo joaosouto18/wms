@@ -244,7 +244,7 @@
         var usaGrade = <?php echo ($this->usaGrade) ? "true" : "false"; ?>;
         var showing = 0;
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
-        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto, #lbl-embvol, #lbl-picking"];
+        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco, #lbl-pickingOf", "lbl-produto, #lbl-embvol, #lbl-picking"];
         var onErrRedirectTo = {4000: "list-inventarios", 4001: "bipagem-endereco", 4002: "bipagem-produto" };
         var endConfig = <?php echo $this->endConfig; ?>;
         var msgShowed = true;
@@ -372,11 +372,9 @@
             if (showing > 1) {
                 $("#divBtnBack").show();
                 if ((showing - 2) > divHeaders.children("div").length) {
-                    var active = divActiveHeader.children("div:first");
-                    divHeaders.append(active);
+                    divHeaders.append($("#" + headersArr[(showing -3)]));
                 } else {
-                    var newActive = divHeaders.children("div:last");
-                    divActiveHeader.prepend(newActive);
+                    divActiveHeader.prepend($("#" + headersArr[(showing -2)]));
                 }
 
                 divActiveHeader.show();
@@ -928,9 +926,9 @@
             ).done(function( result ) {
                 if (result.status === "ok") {
                     notificar("success", result.response.msg);
-                    if (result.response.code !== 4) {
+                    if (result.response.code !== 5) {
                         getEnderecos();
-                    } else if (result.response.code === 4) {
+                    } else if (result.response.code === 5) {
                         getInventarios();
                     }
                 } else {

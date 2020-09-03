@@ -184,10 +184,12 @@ class Mobile_InventarioNovoController extends Action
 
             $inventarioSrvc->verificarRequisicaoColetor($inventario['id'], $contEnd['idEnd']);
 
+            $response = $inventarioSrvc->finalizarOs( $inventario, $contEnd, \Wms\Domain\Entity\OrdemServico::COLETOR);
+
             $this->_helper->json(
                 [
-                    "status" => "ok",
-                    'response' => $inventarioSrvc->finalizarOs( $inventario, $contEnd, \Wms\Domain\Entity\OrdemServico::COLETOR)
+                    "status" => ($response['code'] !== 3) ? "ok": "error",
+                    'response' => $response
                 ]
             );
 
