@@ -803,7 +803,7 @@ class EtiquetaEmbalados extends eFPDF
             $imgW = 14;
             $imgH = 5.5;
             $this->AddPage();
-            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 2, $imgW - 1, $imgH);
+//            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 3, 2, $imgW - 1, $imgH);
 
             $this->SetFont('Arial', 'B', 8);
             $impressao = "CARGA: $volume[COD_CARGA_EXTERNO]";
@@ -818,6 +818,9 @@ class EtiquetaEmbalados extends eFPDF
             $impressao  = utf8_decode("ENTREGA: $volume[COD_PEDIDO] - $volume[DSC_ENDERECO], N $volume[NUM_ENDERECO], $volume[NOM_LOCALIDADE] - $volume[COD_REFERENCIA_SIGLA]");
             $this->Cell(60, 3, $impressao, 0, 1,'L');
 
+            $agora = new \DateTime();
+            $agora = $agora->format('d-m-Y H:i:s');
+            $this->Cell(70, 3, $agora, 0, 1,'L');
             $this->SetY(-22);
             $this->Cell(20, 10, '', 0, 1, "L");
             $this->SetFont('Arial','B',8);
