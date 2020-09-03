@@ -189,6 +189,8 @@ class Mobile_InventarioNovoController extends Action
             $this->_helper->json(
                 [
                     "status" => ($response['code'] !== 3) ? "ok": "error",
+                    'errorCode' => ($response['code'] !== 3) ?  0: 4001,
+                    'exception' => ($response['code'] !== 3) ? '': $response['msg'],
                     'response' => $response
                 ]
             );
