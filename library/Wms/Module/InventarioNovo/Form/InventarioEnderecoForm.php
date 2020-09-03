@@ -16,6 +16,14 @@ class InventarioEnderecoForm extends SubForm
     {
         $sessao = new \Zend_Session_Namespace('deposito');
 
+        $caractOptions = $this->getEm()->getRepository('wms:Deposito\Endereco\Caracteristica')->getIdValue();
+        foreach ($caractOptions as $key => $value) {
+            $caractOptions[$key] = [
+                'label' => $value,
+                'attribs' => ['ng-model' => "criterioForm.idCarac[$key]"]
+            ];
+        }
+
         //form's attr
         $this->setAttribs(array('id' => 'criterio-inventario-form', 'class' => 'filtro'));
 
@@ -103,12 +111,11 @@ class InventarioEnderecoForm extends SubForm
                     'label' => 'Ativo',
                     'ng-model' => "criterioForm.ativo"
                 ))
-                ->addElement('select', 'idCarac', array(
-                    'mostrarSelecione' => false,
+                ->addElement('multiCheckbox', 'idCarac', array(
                     'class' => 'medio',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\Endereco\Caracteristica')->getIdValue()),
+                    'multiOptions' => $caractOptions,
+                    'checkedValue' => true,
                     'label' => 'Caractristica',
-                    'ng-model' => "criterioForm.idCarac"
                 ))
                 ->addElement('select', 'estrutArmaz', array(
                     'mostrarSelecione' => false,

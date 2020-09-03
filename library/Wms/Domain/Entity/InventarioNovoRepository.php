@@ -272,9 +272,13 @@ class InventarioNovoRepository extends EntityRepository
             $query->andWhere("de.status = :status")
                 ->setParameter('status', $params['status']);
 
-        if (!empty($params['idCarac']))
-            $query->andWhere("de.idCaracteristica = ?1")
-                ->setParameter(1, $params['idCarac']);
+        if (!empty($params['idCarac'])) {
+            $caracteristicas = array_keys(json_decode($params['idCarac'], true), true);
+            if (!empty($caracteristicas)) {
+                $caracSelected = implode(',', $caracteristicas);
+                $query->andWhere("de.idCaracteristica IN ($caracSelected)");
+            }
+        }
 
         if (!empty($params['estrutArmaz']))
             $query->andWhere("de.idEstruturaArmazenagem = ?2")
@@ -404,7 +408,8 @@ class InventarioNovoRepository extends EntityRepository
 
             $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
 
-            $arr = array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR);
+            $arr = array_values(array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR));
+
         }
 
         return $arr;
