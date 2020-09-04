@@ -1193,7 +1193,7 @@ class PedidoRepository extends EntityRepository
     public function getClienteByExpedicao($idExpedicao)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('pessoa.nome, nvl(pj.cnpj, pf.cpf) documento, pe.descricao, pe.bairro, pe.localidade, pe.cep, pe.numero, s.sigla')
+            ->select('pessoa.nome, nvl(pj.cnpj, pf.cpf) documento, pe.descricao, pe.bairro, pe.localidade, pe.cep, pe.numero, s.sigla, c.motorista')
 //            ->select('e.id')
             ->from('wms:Expedicao','e')
             ->innerJoin('wms:Expedicao\Carga','c','WITH','c.codExpedicao = e.id')
