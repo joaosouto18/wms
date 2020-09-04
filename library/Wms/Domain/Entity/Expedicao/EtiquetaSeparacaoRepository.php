@@ -932,6 +932,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedProdRepo */
+        $pedProdRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
 
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
         if (isset($arrayRepositorios['expedicaoRepo'])) {
@@ -995,6 +997,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             /** @var PedidoProduto $pedidoProduto */
             foreach ($pedidosProdutos as $pedidoProduto) {
+                /* Esta linha parece redundante, mas recarrega a entidade após passar por um clean em métodos anteriores */
+                $pedidoProduto = $pedProdRepo->find($pedidoProduto->getId());
+
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
                 /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEntity */
