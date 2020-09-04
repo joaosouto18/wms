@@ -820,6 +820,7 @@ class EtiquetaEmbalados extends eFPDF
 
             $agora = new \DateTime();
             $agora = $agora->format('d-m-Y H:i:s');
+            $this->SetFont('Arial', 'B', 7);
             $this->Cell(70, 3, $agora, 0, 1,'L');
             $this->SetY(-22);
             $this->Cell(20, 10, '', 0, 1, "L");
