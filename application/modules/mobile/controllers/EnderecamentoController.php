@@ -1436,7 +1436,7 @@ class Mobile_EnderecamentoController extends Action
                 if ($enderecoEn->isBloqueadaEntrada() || $enderecoEn->isBloqueadaSaida()) {
                     if ($enderecoEn->isBloqueadaEntrada()) $str[] = "Entrada";
                     if ($enderecoEn->isBloqueadaSaida()) $str[] = "Saída";
-                    throw new Exception('error', "O endereço ".$enderecoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
+                    throw new Exception("O endereço ".$enderecoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
                 }
 
                 $codBarras = ColetorUtil::adequaCodigoBarras($codBarras);
