@@ -2405,16 +2405,48 @@ class RecebimentoRepository extends EntityRepository
 
         /** @var AcaoIntegracao $acaoEn */
         $acaoEn = $acaoIntRepo->find($idIntegracao);
-        if (!empty($acaoEn)) {
-            foreach ($arrNotas as $nota) {
-                $options = [];
-                $options[] = $nota->getSerie();
-                $options[] = $nota->getNumero();
-                $options[] = $nota->getEmissor()->getCodExterno();
-                $options[] = date_format($nota->getDataEmissao(), $formatoData);
-                $options[] = $usuario->getCodErp();
 
-                $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+        if (!empty($acaoEn)) {
+            $idTipoAcao = $acaoEn->getTipoAcao()->getId();
+
+            if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_NOTA_FISCAL) {
+
+                /*
+                 * Devolve o Retorno a integração a nível de recebimento do ERP
+                 * ?1 - Numero da Nota Fiscal
+                 * ?2 - Série da Nota Fiscal
+                 * ?3 - Código do Fornecedor
+                 * ?4 - CNPJ do Fornecedor
+                 * ?5 - Data de Emissão da Nota Fiscal
+                 * ?6 - Código do Recebimento no ERP da Nota Fiscal
+                 */
+
+                /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
+                foreach ($arrNotas as $notaFiscalEntity) {
+                    $options = array(
+                        0 => $notaFiscalEntity->getNumero(),
+                        1 => $notaFiscalEntity->getSerie(),
+                        2 => $notaFiscalEntity->getEmissor()->getCodExterno(),
+                        3 => $notaFiscalEntity->getEmissor()->getCpfCnpj(),
+                        4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
+                        5 => $notaFiscalEntity->getCodRecebimentoErp(),
+                        6 => $notaFiscalEntity->getDivergencia(),
+                        7 => $notaFiscalEntity->getRecebimento()->getId()
+                    );
+                    $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                    unset($options);
+                }
+            } else {
+                foreach ($arrNotas as $nota) {
+                    $options = [];
+                    $options[] = $nota->getSerie();
+                    $options[] = $nota->getNumero();
+                    $options[] = $nota->getEmissor()->getCodExterno();
+                    $options[] = date_format($nota->getDataEmissao(), $formatoData);
+                    $options[] = $usuario->getCodErp();
+
+                    $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                }
             }
         }
     }
