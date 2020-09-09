@@ -106,7 +106,6 @@ class MapaSeparacao extends eFPDF {
             foreach ($qtdProdPorMapa as $mapa) {
                 $qtdPag += ceil($mapa['qtdProd'] / $limitPg);
             }
-            $qtdPag = $qtdPag;
         } else {
             $qtdPag = count($mapaSeparacao);
         }
