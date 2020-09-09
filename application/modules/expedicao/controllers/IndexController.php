@@ -129,6 +129,7 @@ class Expedicao_IndexController extends Action {
                     $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
 
                     if ($cargaCanceladaEntity) {
+                        $acaoEn = $acaoIntRepo->find(24);
                         $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                         $update = true;
                         $conexaoEn = $acaoEn->getConexao();
